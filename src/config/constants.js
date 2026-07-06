@@ -1,7 +1,7 @@
 export const APP_METADATA = Object.freeze({
   title: 'Endless Rooms',
-  version: '0.1',
-  stepLabel: 'Step 1 - Foundation',
+  version: '0.2',
+  stepLabel: 'Step 2 - First-person Controller',
 });
 
 export const SCENE_CONFIG = Object.freeze({
@@ -12,8 +12,8 @@ export const CAMERA_CONFIG = Object.freeze({
   fieldOfView: 60,
   near: 0.1,
   far: 500,
-  startPosition: Object.freeze({ x: 12, y: 9, z: 12 }),
-  lookAt: Object.freeze({ x: 0, y: 0, z: 0 }),
+  startPosition: Object.freeze({ x: 0, y: 1.7, z: 8 }),
+  lookAt: Object.freeze({ x: 0, y: 1.6, z: 0 }),
 });
 
 export const RENDERER_CONFIG = Object.freeze({
@@ -48,17 +48,31 @@ export const FLOOR_CONFIG = Object.freeze({
   metalness: 0,
 });
 
-export const ORBIT_CONTROLS_CONFIG = Object.freeze({
-  target: Object.freeze({ x: 0, y: 0, z: 0 }),
-  enableDamping: true,
-  dampingFactor: 0.08,
-  minDistance: 4,
-  maxDistance: 42,
-  maxPolarAngle: Math.PI * 0.48,
+export const PLAYER_CONFIG = Object.freeze({
+  spawnPosition: Object.freeze({ x: 0, y: 1.7, z: 8 }),
+  lookAt: Object.freeze({ x: 0, y: 1.6, z: 0 }),
+  pointer: Object.freeze({
+    speed: 0.9,
+    minPolarAngle: 0.05,
+    maxPolarAngle: Math.PI - 0.05,
+    useRawMouseInput: false,
+  }),
+  movement: Object.freeze({
+    walkSpeed: 4.4,
+    sprintMultiplier: 1.75,
+    acceleration: 14,
+    stopEpsilon: 0.001,
+    keys: Object.freeze({
+      forward: Object.freeze(['KeyW']),
+      backward: Object.freeze(['KeyS']),
+      left: Object.freeze(['KeyA']),
+      right: Object.freeze(['KeyD']),
+      sprint: Object.freeze(['ShiftLeft']),
+    }),
+  }),
 });
 
 export const HUD_PLACEHOLDERS = Object.freeze({
   fps: '--',
-  coordinates: 'x --  y --  z --',
   room: 'Lobby',
 });

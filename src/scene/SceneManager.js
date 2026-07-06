@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import { Camera } from './Camera.js';
 import { Floor } from './Floor.js';
 import { Lighting } from './Lighting.js';
-import { OrbitCameraControls } from './OrbitCameraControls.js';
 import { Renderer } from './Renderer.js';
+import { Player } from '../player/Player.js';
 import { Hud } from '../ui/Hud.js';
 import { SCENE_CONFIG } from '../config/constants.js';
 
@@ -28,10 +28,10 @@ export class SceneManager {
     this.camera = new Camera(this.renderer.aspectRatio);
     this.lighting = new Lighting(this.scene);
     this.floor = new Floor(this.scene);
-    this.controls = new OrbitCameraControls(this.camera.instance, this.renderer.domElement);
     this.hud = new Hud(this.shell);
+    this.player = new Player(this.camera.instance, this.renderer.domElement, this.shell, this.hud);
 
-    this.registerUpdateable(this.controls);
+    this.registerUpdateable(this.player);
 
     this.handleResize = this.handleResize.bind(this);
     this.tick = this.tick.bind(this);
@@ -95,7 +95,7 @@ export class SceneManager {
       this.animationFrameId = null;
     }
 
-    this.controls.dispose();
+    this.player.dispose();
     this.floor.dispose();
     this.lighting.dispose();
     this.renderer.dispose();

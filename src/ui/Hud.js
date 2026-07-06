@@ -7,6 +7,12 @@ export class Hud {
     this.root.className = 'hud-root';
     this.root.innerHTML = this.createTemplate();
     this.container.append(this.root);
+
+    this.coordinateElements = {
+      x: this.root.querySelector('[data-hud-coordinate="x"]'),
+      y: this.root.querySelector('[data-hud-coordinate="y"]'),
+      z: this.root.querySelector('[data-hud-coordinate="z"]'),
+    };
   }
 
   createTemplate() {
@@ -26,8 +32,16 @@ export class Hud {
             <dd class="hud-value">${HUD_PLACEHOLDERS.fps}</dd>
           </div>
           <div class="hud-row">
-            <dt class="hud-label">Coordinates</dt>
-            <dd class="hud-value">${HUD_PLACEHOLDERS.coordinates}</dd>
+            <dt class="hud-label">X</dt>
+            <dd class="hud-value" data-hud-coordinate="x">--</dd>
+          </div>
+          <div class="hud-row">
+            <dt class="hud-label">Y</dt>
+            <dd class="hud-value" data-hud-coordinate="y">--</dd>
+          </div>
+          <div class="hud-row">
+            <dt class="hud-label">Z</dt>
+            <dd class="hud-value" data-hud-coordinate="z">--</dd>
           </div>
           <div class="hud-row">
             <dt class="hud-label">Room</dt>
@@ -38,8 +52,17 @@ export class Hud {
     `;
   }
 
+  updateCoordinates(position) {
+    this.coordinateElements.x.textContent = this.formatCoordinate(position.x);
+    this.coordinateElements.y.textContent = this.formatCoordinate(position.y);
+    this.coordinateElements.z.textContent = this.formatCoordinate(position.z);
+  }
+
+  formatCoordinate(value) {
+    return value.toFixed(2);
+  }
+
   dispose() {
     this.root.remove();
   }
 }
-
