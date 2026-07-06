@@ -1,0 +1,19 @@
+{
+  "name": "endless-rooms",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Step 1 foundation for a browser-based first-person exploration project.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "vite": "^8.1.3"
+  }
+}
+
