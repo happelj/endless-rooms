@@ -71,7 +71,7 @@ select {
 .hud-panel--status {
   right: clamp(16px, 2.4vw, 28px);
   bottom: clamp(16px, 2.4vw, 28px);
-  min-width: min(240px, calc(100vw - 32px));
+  min-width: min(280px, calc(100vw - 32px));
   padding: 12px 14px;
 }
 
@@ -109,6 +109,11 @@ select {
   min-height: 20px;
 }
 
+.hud-row--stacked {
+  display: grid;
+  gap: 2px;
+}
+
 .hud-label {
   color: #9fb1c0;
   white-space: nowrap;
@@ -118,6 +123,18 @@ select {
   color: #f7fbff;
   font-variant-numeric: tabular-nums;
   text-align: right;
+}
+
+.hud-row--stacked .hud-value {
+  text-align: left;
+}
+
+.hud-value--destinations {
+  max-width: min(252px, calc(100vw - 60px));
+  overflow: hidden;
+  color: #ffe1a3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .start-overlay {

@@ -3,6 +3,7 @@ import { Portal } from '../portals/Portal.js';
 import { PortalManager } from '../portals/PortalManager.js';
 import { LobbyRoom } from './LobbyRoom.js';
 import { TestRoom } from './TestRoom.js';
+import { TomAndJerryRoom } from './TomAndJerryRoom.js';
 
 export class RoomManager {
   constructor(scene, collisionSystem, hud) {
@@ -27,6 +28,7 @@ export class RoomManager {
   createRooms() {
     this.registerRoom(new LobbyRoom(this.scene, this.collisionSystem));
     this.registerRoom(new TestRoom(this.scene, this.collisionSystem));
+    this.registerRoom(new TomAndJerryRoom(this.scene, this.collisionSystem));
   }
 
   registerRoom(room) {
@@ -106,7 +108,15 @@ export class RoomManager {
       currentRoom: activeRoom.name,
       portalCount: this.portalManager.getPortalCount(),
       connectedRooms: this.portalManager.getConnectedRoomCount(this.activeRoomId),
+      connectedDestinations: this.getConnectedDestinationNames(this.activeRoomId),
     });
+  }
+
+  getConnectedDestinationNames(roomId) {
+    const roomNames = Array.from(this.portalManager.getConnectedRooms(roomId))
+      .map((connectedRoomId) => this.getRequiredRoom(connectedRoomId).name);
+
+    return roomNames.length > 0 ? roomNames.join(', ') : 'None';
   }
 
   getRooms() {

@@ -168,6 +168,7 @@ export class RectangularRoom extends Room {
 
       this.addLabel(new RoomLabel({
         text: opening.label,
+        subtitle: opening.subtitle,
         width: this.config.openings.labelWidth,
         height: this.config.openings.labelHeight,
         position: this.getLabelPosition(opening),
@@ -227,9 +228,13 @@ export class RectangularRoom extends Room {
       const light = new THREE.PointLight(config.color, config.intensity, config.distance, config.decay);
       light.name = `${this.name}CeilingPointLight:${index + 1}`;
       light.position.set(position.x, y, position.z);
-      light.castShadow = true;
-      light.shadow.mapSize.set(config.shadowMapSize, config.shadowMapSize);
-      light.shadow.bias = config.shadowBias;
+      light.castShadow = config.castShadow ?? true;
+
+      if (light.castShadow) {
+        light.shadow.mapSize.set(config.shadowMapSize, config.shadowMapSize);
+        light.shadow.bias = config.shadowBias;
+      }
+
       this.addLight(light);
     }
   }

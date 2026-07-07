@@ -2,13 +2,13 @@
 
 Endless Rooms is a browser-based first-person exploration project built with Three.js, Vite, ES modules, JavaScript, HTML5, and CSS3.
 
-This repository currently contains Step 5: Player Physics Foundation. The project now has reusable gravity, floor resolution, grounded state, and vertical velocity behavior layered under the existing first-person movement and portal system.
+This repository currently contains Step 6: Tom & Jerry Room. The project now has a themed destination room connected to the lobby through the reusable portal and room-management systems.
 
 ## Current Step
 
-Version: 0.5
+Version: 0.6
 
-Step 5 includes:
+Step 6 includes:
 
 - Vite development setup
 - Three.js scene, perspective camera, and WebGL renderer
@@ -17,16 +17,18 @@ Step 5 includes:
 - Left Shift sprint
 - Smooth delta-time horizontal movement
 - Player physics module for gravity and grounding
-- Configurable player height and eye height
-- Configurable gravity, max fall speed, snap distance, and vertical tolerances
+- Configurable player height, eye height, and gravity settings
 - Collision-backed floor and ceiling resolution
-- Portal transitions that preserve player height and grounded state
-- Debug HUD rows for grounded state and vertical velocity
-- Optional debug visualization for player bounds, portal triggers, and room bounds
 - Enclosed lobby hub
 - Connected Test Room
+- Connected Tom & Jerry Room
 - Directional portal system
 - Room manager with room registration and activation
+- HUD room metadata with connected destination names
+- Furniture collision for large room props
+- Warm room-specific lighting
+- Debug HUD for coordinates, grounded state, vertical velocity, room, portal count, and connected rooms
+- Optional debug visualization for player bounds, portal triggers, and room bounds
 - Resize handling
 - Animation loop
 
@@ -63,11 +65,61 @@ Open that URL in a browser to view the project.
 - Hold `Left Shift` to sprint.
 - Press `ESC` to unlock the mouse and show the start overlay again.
 
+## Step 6: Tom & Jerry Room
+
+`src/rooms/TomAndJerryRoom.js` creates the first themed destination. It reuses `RectangularRoom` for the room shell and adds room-specific props, lighting, trim, and furniture.
+
+The room includes:
+
+- Wall-to-wall carpet
+- Painted walls
+- Ceiling
+- White baseboards
+- Crown molding
+- Warm ceiling lights
+- Floor lamp
+- Side table
+- Coffee table
+- Couch
+- Bean bag chair
+- Entertainment center
+- Large CRT television
+- Small rug beneath the coffee table
+- Two framed generic wall decorations
+
+The television is intentionally static in Step 6. Its screen uses a dark placeholder material so the room is ready for the Step 7 video texture system without implementing video playback early.
+
+## Furniture Collision
+
+Large furniture pieces register AABB colliders through the same collision system used by the room shell.
+
+Collidable furniture currently includes:
+
+- Couch
+- Entertainment center
+- CRT television
+- Coffee table
+- Side table
+
+The furniture is built with `FurnitureBuilder`, a small helper that keeps prop construction reusable while still letting each room own its own layout. Future rooms can reuse the same helper for furniture, decorations, collision boxes, and custom primitive meshes.
+
+## Portal Additions
+
+The lobby now has two functional connected destinations:
+
+- Test Room
+- Tom & Jerry Room
+
+The Tom & Jerry doorway uses a pair of directional portals:
+
+- `lobby-to-tom-and-jerry-room`
+- `tom-and-jerry-room-to-lobby`
+
+Both portals use continuous transitions, so walking through the doorway changes the active room without a fade or visible teleport. Unimplemented lobby destinations display `Coming Soon` on their doorway labels.
+
 ## Player Physics
 
-Step 5 introduces `src/player/Physics.js`.
-
-`Physics` owns:
+`src/player/Physics.js` owns:
 
 - Gravity
 - Ground detection
@@ -76,82 +128,9 @@ Step 5 introduces `src/player/Physics.js`.
 - Floor snapping
 - Ceiling resolution
 
-`Movement` remains focused on horizontal movement only. The player update order is horizontal movement first, then vertical physics, then HUD updates. This keeps future jumping, crouching, ramps, stairs, moving platforms, and furniture collision easier to add without turning movement into a large mixed-responsibility module.
+`Movement` remains focused on horizontal movement only. The player update order is horizontal movement first, then vertical physics, then HUD updates. This keeps future jumping, crouching, ramps, stairs, moving platforms, and furniture collision easier to add.
 
-## Ground Detection
-
-Grounding is backed by the collision system.
-
-- `CollisionSystem.getGroundInfo()` queries active room bounds and future ground colliders.
-- `RoomBoundsCollider` exposes floor and ceiling information for the active room.
-- The player eye position is resolved from configured body dimensions.
-- The player stays grounded on flat room floors and remains stable while crossing the lobby-to-Test-Room portal.
-
-Future furniture, ramps, stairs, and platforms can register ground-capable colliders without changing `Physics`.
-
-## Configuration
-
-Physics and body values live in `src/config/constants.js`.
-
-```js
-PLAYER_CONFIG.body = {
-  radius,
-  height,
-  eyeHeight,
-};
-
-PLAYER_CONFIG.physics = {
-  gravity,
-  maxFallSpeed,
-  groundedSnapDistance,
-  floorTolerance,
-  verticalStopEpsilon,
-  maxDeltaTime,
-};
-```
-
-Debug visualization is controlled by:
-
-```js
-DEBUG_CONFIG.showPhysicsBounds
-```
-
-The flag defaults to `false`.
-
-## Debug Visualization
-
-When `DEBUG_CONFIG.showPhysicsBounds` is enabled, the app displays:
-
-- Player collision bounds
-- Portal trigger volumes
-- Room bounds
-
-Debug helpers are created once and reused. They are not built when the debug flag is off.
-
-## Pointer Lock
-
-Endless Rooms uses the browser Pointer Lock API through Three.js `PointerLockControls`.
-
-Pointer lock requires a user gesture, so the app starts with an overlay. Clicking the overlay requests pointer lock from the browser. When pointer lock is active, mouse movement rotates the first-person camera. Pressing `ESC` exits pointer lock, releases the mouse cursor, and restores the overlay.
-
-## Portal System
-
-Directional portals live in `src/portals/Portal.js` and `src/portals/PortalManager.js`.
-
-Each portal owns:
-
-- Unique id
-- Source room id
-- Destination room id
-- Spawn position
-- Spawn rotation
-- Doorway dimensions
-- Trigger volume
-- Continuous-transition flag
-
-The current lobby-to-Test-Room portal is continuous, so walking through the doorway keeps the player in world space and changes only the active room once the player crosses the trigger volume.
-
-## Room Manager
+## Room System
 
 `RoomManager` owns the room graph.
 
@@ -174,6 +153,46 @@ roomManager.registerRoom(new TomAndJerryRoom(scene, collisionSystem));
 roomManager.registerRoom(new YosemiteRoom(scene, collisionSystem));
 roomManager.registerRoom(new SpaceStationRoom(scene, collisionSystem));
 ```
+
+## Portal System
+
+Directional portals live in `src/portals/Portal.js` and `src/portals/PortalManager.js`.
+
+Each portal owns:
+
+- Unique id
+- Source room id
+- Destination room id
+- Spawn position
+- Spawn rotation
+- Doorway dimensions
+- Trigger volume
+- Continuous-transition flag
+
+Doorway openings are also registered with the source room bounds collider, so the player can walk through open passages while still being blocked by solid walls.
+
+## Configuration
+
+Room dimensions, portal metadata, player body settings, movement settings, physics values, and debug flags live in `src/config/constants.js`.
+
+Important sections:
+
+```js
+ROOM_DIMENSIONS
+TEST_ROOM_DIMENSIONS
+TOM_AND_JERRY_ROOM_DIMENSIONS
+PLAYER_CONFIG
+PORTAL_CONFIGS
+DEBUG_CONFIG
+```
+
+Debug visualization is controlled by:
+
+```js
+DEBUG_CONFIG.showPhysicsBounds
+```
+
+The flag defaults to `false`.
 
 ## Build
 
@@ -231,6 +250,8 @@ endless-rooms/
     |   |-- RoomManager.js
     |   |-- LobbyRoom.js
     |   |-- TestRoom.js
+    |   |-- TomAndJerryRoom.js
+    |   |-- FurnitureBuilder.js
     |   `-- RoomLabel.js
     |-- ui/
     |   |-- Hud.js
@@ -250,8 +271,10 @@ The application is intentionally organized around small classes with narrow resp
 - `RoomManager` owns room registration, activation, and portal registration.
 - `PortalManager` owns portal lookup and connected-room counts.
 - `Portal` owns directional doorway metadata and trigger volume detection.
-- `Room` owns reusable room lifecycle concerns.
+- `Room` owns reusable room lifecycle, materials, geometry caching, and collision registration.
 - `RectangularRoom` owns reusable rectangular room shell construction.
+- `TomAndJerryRoom` owns the themed room layout and room-specific props.
+- `FurnitureBuilder` owns reusable primitive furniture construction.
 - `CollisionSystem` owns collision registration, horizontal resolution, ground queries, and ceiling queries.
 - `Player` composes pointer lock, input, horizontal movement, physics, and HUD updates.
 - `Input` tracks keyboard state without knowing movement or physics rules.
@@ -265,23 +288,21 @@ The application is intentionally organized around small classes with narrow resp
 
 Planned future steps:
 
-- Begin the Tom & Jerry themed room
-- Add portal metadata for all lobby destinations
-- Add doorway status indicators for unavailable rooms
+- Add the video texture system for the CRT television
+- Add video asset loading and lifecycle management
+- Add room-specific audio ambience
+- Add interaction prompts
 - Add jump and crouch input
-- Add furniture colliders and ground-capable object collision
+- Add furniture colliders with more precise compound shapes
 - Add ramps, stairs, and platform grounding
 - Add room streaming and unloading policy
-- Add interaction prompts
-- Add audio zones and sound effects
-- Add video texture surfaces
 - Add GLTF model loading
 - Add save system
 - Add multiplayer support
 - Add VR support
 - Add performance profiling and asset streaming
 
-## Step 5 Verification
+## Step 6 Verification
 
 After running `npm run dev`, verify:
 
@@ -292,12 +313,16 @@ After running `npm run dev`, verify:
 - Holding `Left Shift` increases movement speed.
 - Pressing `ESC` exits pointer lock and shows the overlay again.
 - The player remains grounded on the floor.
-- The HUD shows `Grounded Yes`.
-- Vertical Velocity remains near `0.00` while grounded.
+- The HUD shows live `X`, `Y`, and `Z` coordinates.
+- The HUD shows the current room name.
+- The HUD shows portal count, connected room count, and destination names.
 - Walking through the Test Room doorway changes Current Room from `Lobby` to `Test Room`.
 - Walking back through the doorway changes Current Room back to `Lobby`.
-- Portal transitions preserve player height and grounded state.
+- Walking through the Tom & Jerry doorway changes Current Room from `Lobby` to `Tom & Jerry Room`.
+- Walking back through the doorway changes Current Room back to `Lobby`.
+- The couch, television, entertainment center, coffee table, and side table block player movement.
+- Unimplemented lobby openings display `Coming Soon`.
+- The Tom & Jerry Room lighting feels warm and does not create harsh shadows.
+- The CRT television is visible and displays only a static placeholder screen.
 - Solid walls still block movement.
-- Portal Count and Connected Rooms display in the HUD.
-- The HUD displays live `X`, `Y`, and `Z` coordinates.
-- The FPS placeholder remains unchanged.
+- Project builds successfully with `npm run build`.

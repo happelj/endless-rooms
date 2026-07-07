@@ -6,8 +6,9 @@ const LABEL_PADDING = 64;
 const FONT_FAMILY = 'Inter, Segoe UI, Arial, sans-serif';
 
 export class RoomLabel {
-  constructor({ text, width, height, position, rotationY = 0 }) {
+  constructor({ text, subtitle = '', width, height, position, rotationY = 0 }) {
     this.text = text;
+    this.subtitle = subtitle;
     this.canvas = document.createElement('canvas');
     this.canvas.width = CANVAS_WIDTH;
     this.canvas.height = CANVAS_HEIGHT;
@@ -45,23 +46,34 @@ export class RoomLabel {
     this.drawRoundedRect(context, 24, 36, CANVAS_WIDTH - 48, CANVAS_HEIGHT - 72, 30);
     context.stroke();
 
-    context.fillStyle = '#f7fbff';
     context.textAlign = 'center';
     context.textBaseline = 'middle';
-    context.font = this.getFittedFont(context, this.text);
-    context.fillText(this.text, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 2);
+
+    if (this.subtitle) {
+      context.fillStyle = '#f7fbff';
+      context.font = this.getFittedFont(context, this.text, 78, 42);
+      context.fillText(this.text, CANVAS_WIDTH / 2, CANVAS_HEIGHT * 0.43);
+
+      context.fillStyle = '#f1c879';
+      context.font = this.getFittedFont(context, this.subtitle.toUpperCase(), 38, 26);
+      context.fillText(this.subtitle.toUpperCase(), CANVAS_WIDTH / 2, CANVAS_HEIGHT * 0.68);
+    } else {
+      context.fillStyle = '#f7fbff';
+      context.font = this.getFittedFont(context, this.text, 92, 42);
+      context.fillText(this.text, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 2);
+    }
 
     this.texture.needsUpdate = true;
   }
 
-  getFittedFont(context, text) {
+  getFittedFont(context, text, initialSize, minimumSize) {
     const maxWidth = CANVAS_WIDTH - LABEL_PADDING * 2;
-    let fontSize = 92;
+    let fontSize = initialSize;
 
     do {
       context.font = `700 ${fontSize}px ${FONT_FAMILY}`;
       fontSize -= 2;
-    } while (context.measureText(text).width > maxWidth && fontSize > 42);
+    } while (context.measureText(text).width > maxWidth && fontSize > minimumSize);
 
     return context.font;
   }

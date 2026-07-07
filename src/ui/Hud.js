@@ -17,6 +17,7 @@ export class Hud {
       currentRoom: this.root.querySelector('[data-hud-current-room]'),
       portalCount: this.root.querySelector('[data-hud-portal-count]'),
       connectedRooms: this.root.querySelector('[data-hud-connected-rooms]'),
+      connectedDestinations: this.root.querySelector('[data-hud-connected-destinations]'),
     };
     this.physicsElements = {
       grounded: this.root.querySelector('[data-hud-grounded]'),
@@ -72,6 +73,10 @@ export class Hud {
             <dt class="hud-label">Connected Rooms</dt>
             <dd class="hud-value" data-hud-connected-rooms>${HUD_PLACEHOLDERS.connectedRooms}</dd>
           </div>
+          <div class="hud-row hud-row--stacked">
+            <dt class="hud-label">Destinations</dt>
+            <dd class="hud-value hud-value--destinations" data-hud-connected-destinations>${HUD_PLACEHOLDERS.connectedDestinations}</dd>
+          </div>
         </dl>
       </section>
     `;
@@ -83,10 +88,12 @@ export class Hud {
     this.coordinateElements.z.textContent = this.formatCoordinate(position.z);
   }
 
-  updateRoomDebug({ currentRoom, portalCount, connectedRooms }) {
+  updateRoomDebug({ currentRoom, portalCount, connectedRooms, connectedDestinations }) {
     this.roomDebugElements.currentRoom.textContent = currentRoom;
     this.roomDebugElements.portalCount.textContent = String(portalCount);
     this.roomDebugElements.connectedRooms.textContent = String(connectedRooms);
+    this.roomDebugElements.connectedDestinations.textContent = connectedDestinations;
+    this.roomDebugElements.connectedDestinations.title = connectedDestinations;
   }
 
   updatePhysicsDebug({ grounded, verticalVelocity }) {

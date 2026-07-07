@@ -1,7 +1,7 @@
 export const APP_METADATA = Object.freeze({
   title: 'Endless Rooms',
-  version: '0.5',
-  stepLabel: 'Step 5 - Player Physics',
+  version: '0.6',
+  stepLabel: 'Step 6 - Tom & Jerry Room',
 });
 
 export const SCENE_CONFIG = Object.freeze({
@@ -75,15 +75,39 @@ export const TEST_ROOM_DIMENSIONS = Object.freeze({
   ceilingThickness: 0.22,
 });
 
+export const TOM_AND_JERRY_ROOM_DIMENSIONS = Object.freeze({
+  width: 16,
+  length: 14,
+  height: 4.2,
+  wallThickness: 0.35,
+  floorThickness: 0.18,
+  ceilingThickness: 0.22,
+});
+
 export const ROOM_IDS = Object.freeze({
   lobby: 'lobby',
   testRoom: 'test-room',
+  tomAndJerry: 'tom-and-jerry-room',
 });
 
 export const TEST_ROOM_ORIGIN = Object.freeze({
   x: 0,
   y: 0,
   z: -ROOM_DIMENSIONS.length / 2 - ROOM_DIMENSIONS.wallThickness - TEST_ROOM_DIMENSIONS.length / 2,
+});
+
+export const LOBBY_OPENING_CENTERS = Object.freeze({
+  testRoom: 0,
+  library: -4.6,
+  tomAndJerry: 4.6,
+  yosemite: 0,
+  spaceStation: 0,
+});
+
+export const TOM_AND_JERRY_ROOM_ORIGIN = Object.freeze({
+  x: ROOM_DIMENSIONS.width / 2 + ROOM_DIMENSIONS.wallThickness + TOM_AND_JERRY_ROOM_DIMENSIONS.width / 2,
+  y: 0,
+  z: LOBBY_OPENING_CENTERS.tomAndJerry,
 });
 
 export const PLAYER_CONFIG = Object.freeze({
@@ -162,11 +186,11 @@ export const LOBBY_ROOM_CONFIG = Object.freeze({
     labelElevation: 3.14,
     labelInset: 0.12,
     entries: Object.freeze([
-      Object.freeze({ id: 'test-room', label: 'Test Room', wall: 'north', center: 0, isMain: true }),
-      Object.freeze({ id: 'library', label: 'Library', wall: 'east', center: -4.6 }),
-      Object.freeze({ id: 'tom-jerry', label: 'Tom & Jerry', wall: 'east', center: 4.6 }),
-      Object.freeze({ id: 'yosemite', label: 'Yosemite', wall: 'south', center: 0 }),
-      Object.freeze({ id: 'space-station', label: 'Space Station', wall: 'west', center: 0 }),
+      Object.freeze({ id: ROOM_IDS.testRoom, label: 'Test Room', wall: 'north', center: LOBBY_OPENING_CENTERS.testRoom, isMain: true }),
+      Object.freeze({ id: 'library', label: 'Library', subtitle: 'Coming Soon', wall: 'east', center: LOBBY_OPENING_CENTERS.library }),
+      Object.freeze({ id: ROOM_IDS.tomAndJerry, label: 'Tom & Jerry', wall: 'east', center: LOBBY_OPENING_CENTERS.tomAndJerry }),
+      Object.freeze({ id: 'yosemite', label: 'Yosemite', subtitle: 'Coming Soon', wall: 'south', center: LOBBY_OPENING_CENTERS.yosemite }),
+      Object.freeze({ id: 'space-station', label: 'Space Station', subtitle: 'Coming Soon', wall: 'west', center: LOBBY_OPENING_CENTERS.spaceStation }),
     ]),
   }),
   lighting: LIGHTING_CONFIG,
@@ -253,6 +277,92 @@ export const TEST_ROOM_CONFIG = Object.freeze({
   }),
 });
 
+export const TOM_AND_JERRY_ROOM_CONFIG = Object.freeze({
+  id: ROOM_IDS.tomAndJerry,
+  name: 'Tom & Jerry Room',
+  origin: TOM_AND_JERRY_ROOM_ORIGIN,
+  dimensions: TOM_AND_JERRY_ROOM_DIMENSIONS,
+  omittedWalls: Object.freeze(['west']),
+  floorSize: Object.freeze({
+    x: TOM_AND_JERRY_ROOM_DIMENSIONS.width,
+    z: TOM_AND_JERRY_ROOM_DIMENSIONS.length,
+  }),
+  materials: Object.freeze({
+    floor: Object.freeze({
+      color: 0x7d5b4f,
+      roughness: 0.98,
+      metalness: 0,
+    }),
+    wall: Object.freeze({
+      color: 0xcfae82,
+      roughness: 0.86,
+      metalness: 0,
+    }),
+    ceiling: Object.freeze({
+      color: 0xf1eadc,
+      roughness: 0.92,
+      metalness: 0,
+    }),
+    trim: Object.freeze({
+      color: 0xf7f2e8,
+      roughness: 0.7,
+      metalness: 0,
+    }),
+  }),
+  baseboard: Object.freeze({
+    height: 0.18,
+    depth: 0.08,
+  }),
+  crownMolding: Object.freeze({
+    height: 0.16,
+    depth: 0.1,
+  }),
+  openings: Object.freeze({
+    width: 2.4,
+    height: 2.7,
+    labelWidth: 2.7,
+    labelHeight: 0.5,
+    labelElevation: 3.14,
+    labelInset: 0.12,
+    entries: Object.freeze([]),
+  }),
+  lighting: Object.freeze({
+    hemisphere: Object.freeze({
+      skyColor: 0xfff5e0,
+      groundColor: 0x5b4032,
+      intensity: 0.45,
+      position: Object.freeze({ x: 0, y: 14, z: 0 }),
+    }),
+    directional: Object.freeze({
+      color: 0xffefd4,
+      intensity: 0.22,
+      position: Object.freeze({ x: -4, y: 8, z: 3 }),
+      target: Object.freeze({ x: 1, y: 1, z: 0 }),
+      shadowMapSize: 1024,
+      shadowCameraSize: 16,
+      shadowCameraNear: 1,
+      shadowCameraFar: 26,
+      shadowBias: -0.00016,
+    }),
+    ceilingPointLights: Object.freeze({
+      color: 0xffd7a3,
+      intensity: 34,
+      distance: 8.5,
+      decay: 2,
+      heightOffset: 0.5,
+      castShadow: false,
+      shadowMapSize: 512,
+      shadowBias: -0.00028,
+      positions: Object.freeze([
+        Object.freeze({ x: -3.2, z: -3.2 }),
+        Object.freeze({ x: 3.2, z: -3.2 }),
+        Object.freeze({ x: -3.2, z: 3.2 }),
+        Object.freeze({ x: 3.2, z: 3.2 }),
+      ]),
+    }),
+  }),
+});
+
 export const PORTAL_CONFIGS = Object.freeze([
   Object.freeze({
     id: 'lobby-to-test-room',
@@ -290,6 +400,58 @@ export const PORTAL_CONFIGS = Object.freeze([
       size: Object.freeze({ x: 2.05, y: LOBBY_ROOM_CONFIG.openings.height, z: 0.46 }),
     }),
   }),
+  Object.freeze({
+    id: 'lobby-to-tom-and-jerry-room',
+    sourceRoom: ROOM_IDS.lobby,
+    destinationRoom: ROOM_IDS.tomAndJerry,
+    continuous: true,
+    spawnPosition: Object.freeze({
+      x: TOM_AND_JERRY_ROOM_ORIGIN.x - TOM_AND_JERRY_ROOM_DIMENSIONS.width / 2 + 1.1,
+      y: PLAYER_CONFIG.body.eyeHeight,
+      z: TOM_AND_JERRY_ROOM_ORIGIN.z,
+    }),
+    spawnRotation: Object.freeze({ y: -Math.PI / 2 }),
+    doorway: Object.freeze({
+      wall: 'east',
+      center: LOBBY_OPENING_CENTERS.tomAndJerry,
+      width: LOBBY_ROOM_CONFIG.openings.width,
+      height: LOBBY_ROOM_CONFIG.openings.height,
+    }),
+    triggerVolume: Object.freeze({
+      center: Object.freeze({
+        x: ROOM_DIMENSIONS.width / 2 + ROOM_DIMENSIONS.wallThickness + 0.45,
+        y: LOBBY_ROOM_CONFIG.openings.height / 2,
+        z: LOBBY_OPENING_CENTERS.tomAndJerry,
+      }),
+      size: Object.freeze({ x: 0.4, y: LOBBY_ROOM_CONFIG.openings.height, z: 2.05 }),
+    }),
+  }),
+  Object.freeze({
+    id: 'tom-and-jerry-room-to-lobby',
+    sourceRoom: ROOM_IDS.tomAndJerry,
+    destinationRoom: ROOM_IDS.lobby,
+    continuous: true,
+    spawnPosition: Object.freeze({
+      x: ROOM_DIMENSIONS.width / 2 - 1.1,
+      y: PLAYER_CONFIG.body.eyeHeight,
+      z: LOBBY_OPENING_CENTERS.tomAndJerry,
+    }),
+    spawnRotation: Object.freeze({ y: Math.PI / 2 }),
+    doorway: Object.freeze({
+      wall: 'west',
+      center: 0,
+      width: TOM_AND_JERRY_ROOM_CONFIG.openings.width,
+      height: TOM_AND_JERRY_ROOM_CONFIG.openings.height,
+    }),
+    triggerVolume: Object.freeze({
+      center: Object.freeze({
+        x: ROOM_DIMENSIONS.width / 2 - 0.45,
+        y: TOM_AND_JERRY_ROOM_CONFIG.openings.height / 2,
+        z: LOBBY_OPENING_CENTERS.tomAndJerry,
+      }),
+      size: Object.freeze({ x: 0.4, y: TOM_AND_JERRY_ROOM_CONFIG.openings.height, z: 2.05 }),
+    }),
+  }),
 ]);
 
 export const ROOM_MANAGER_CONFIG = Object.freeze({
@@ -315,6 +477,7 @@ export const HUD_PLACEHOLDERS = Object.freeze({
   room: 'Lobby',
   portalCount: '--',
   connectedRooms: '--',
+  connectedDestinations: '--',
   grounded: '--',
   verticalVelocity: '--',
 });

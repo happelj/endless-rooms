@@ -20,6 +20,7 @@ export class Room {
     this.group.name = config.name;
     this.group.position.copy(this.origin);
     this.geometryCache = new Map();
+    this.ownedGeometries = new Set();
     this.materials = new Map();
     this.registeredColliders = new Set();
     this.registeredBoundsColliders = new Set();
@@ -34,6 +35,8 @@ export class Room {
       color: config.color,
       roughness: config.roughness,
       metalness: config.metalness,
+      emissive: config.emissive ?? 0x000000,
+      emissiveIntensity: config.emissiveIntensity ?? 0,
     });
 
     material.name = `${this.config.name}:${name}`;
@@ -57,6 +60,16 @@ export class Room {
         center: this.toWorldPosition(position),
         size,
       }));
+    }
+
+    return mesh;
+  }
+
+  addMesh(mesh, { disposeGeometry = false } = {}) {
+    this.group.add(mesh);
+
+    if (disposeGeometry && mesh.geometry) {
+      this.ownedGeometries.add(mesh.geometry);
     }
 
     return mesh;
@@ -140,6 +153,10 @@ export class Room {
       geometry.dispose();
     }
 
+    for (const geometry of this.ownedGeometries) {
+      geometry.dispose();
+    }
+
     for (const material of this.materials.values()) {
       material.dispose();
     }
@@ -149,6 +166,7 @@ export class Room {
     this.labels.clear();
     this.lights.clear();
     this.geometryCache.clear();
+    this.ownedGeometries.clear();
     this.materials.clear();
   }
 }
