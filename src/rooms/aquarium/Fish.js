@@ -6,6 +6,10 @@ const DEFAULT_WANDER_MIN_SECONDS = 3.2;
 const DEFAULT_WANDER_MAX_SECONDS = 6.4;
 const WAYPOINT_REACHED_DISTANCE = 0.34;
 const MIN_WAYPOINT_DISTANCE = 2.4;
+const NEIGHBOR_AVOIDANCE_RADIUS = 0.58;
+const NEIGHBOR_AVOIDANCE_WEIGHT = 0.72;
+const NEIGHBOR_AVOIDANCE_VERTICAL_WEIGHT = 0.45;
+const MIN_NEIGHBOR_DISTANCE_SQUARED = 0.0004;
 
 export class Fish {
   constructor({
@@ -34,6 +38,8 @@ export class Fish {
     this.seekDirection = new THREE.Vector3(1, 0, 0);
     this.desiredVelocity = new THREE.Vector3();
     this.boundarySteer = new THREE.Vector3();
+    this.neighborSteer = new THREE.Vector3();
+    this.neighborOffset = new THREE.Vector3();
     this.forward = new THREE.Vector3(1, 0, 0);
     this.phase = Math.random() * Math.PI * 2;
     this.wanderTimer = 0;
@@ -115,7 +121,7 @@ export class Fish {
     this.velocity.copy(this.targetPosition).sub(this.position).normalize().multiplyScalar(this.speed);
   }
 
-  update(deltaTime, elapsedTime) {
+  update(deltaTime, elapsedTime, neighbors = []) {
     this.wanderTimer -= deltaTime;
 
     if (
@@ -127,6 +133,7 @@ export class Fish {
 
     this.seekDirection.copy(this.targetPosition).sub(this.position).normalize();
     this.applyBoundaryAvoidance();
+    this.applyNeighborAvoidance(neighbors);
     this.desiredVelocity.copy(this.seekDirection).multiplyScalar(this.speed);
     this.velocity.lerp(this.desiredVelocity, 1 - Math.exp(-this.turnRate * deltaTime));
     this.position.addScaledVector(this.velocity, deltaTime);
@@ -178,6 +185,37 @@ export class Fish {
     if (this.boundarySteer.lengthSq() > 0) {
       this.boundarySteer.normalize();
       this.seekDirection.lerp(this.boundarySteer, 0.56).normalize();
+    }
+  }
+
+  applyNeighborAvoidance(neighbors) {
+    this.neighborSteer.set(0, 0, 0);
+
+    for (const neighbor of neighbors) {
+      if (neighbor === this) {
+        continue;
+      }
+
+      this.neighborOffset.copy(this.position).sub(neighbor.position);
+      this.neighborOffset.y *= NEIGHBOR_AVOIDANCE_VERTICAL_WEIGHT;
+
+      const distanceSquared = this.neighborOffset.lengthSq();
+
+      if (
+        distanceSquared < MIN_NEIGHBOR_DISTANCE_SQUARED
+        || distanceSquared > NEIGHBOR_AVOIDANCE_RADIUS ** 2
+      ) {
+        continue;
+      }
+
+      const distance = Math.sqrt(distanceSquared);
+      const strength = 1 - distance / NEIGHBOR_AVOIDANCE_RADIUS;
+      this.neighborSteer.addScaledVector(this.neighborOffset.normalize(), strength);
+    }
+
+    if (this.neighborSteer.lengthSq() > 0) {
+      this.neighborSteer.normalize();
+      this.seekDirection.lerp(this.neighborSteer, NEIGHBOR_AVOIDANCE_WEIGHT).normalize();
     }
   }
 

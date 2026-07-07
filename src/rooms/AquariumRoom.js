@@ -683,7 +683,7 @@ export class AquariumRoom extends RectangularRoom {
 
   updateFish(deltaTime, elapsedTime) {
     for (const fish of this.fish) {
-      fish.update(deltaTime, elapsedTime);
+      fish.update(deltaTime, elapsedTime, this.fish);
     }
   }
 
