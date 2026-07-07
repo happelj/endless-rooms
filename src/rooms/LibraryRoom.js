@@ -592,8 +592,8 @@ export class LibraryRoom extends RectangularRoom {
       this.addFloorLamp(lamp);
     }
 
-    this.addDeskLamp('main', { x: -0.45, y: 0.88, z: 0.15 });
-    this.addDeskLamp('display', { x: 3.65, y: 0.88, z: 2.45 });
+    this.addDeskLamp('main', { x: -0.45, y: 0.81, z: 0.15 });
+    this.addDeskLamp('display', { x: 3.65, y: 0.66, z: 2.45 });
   }
 
   addFloorLamp({ id, x, z }) {
@@ -639,13 +639,31 @@ export class LibraryRoom extends RectangularRoom {
   }
 
   addDeskLamp(id, position) {
+    const baseHeight = 0.04;
+    const poleHeight = 0.34;
+
     this.furniture.addCylinder({
       name: `LibraryDeskLampBase:${id}`,
       radiusTop: 0.16,
       radiusBottom: 0.16,
-      height: 0.04,
+      height: baseHeight,
       radialSegments: 20,
       position,
+      material: this.libraryMaterials.brass,
+      receiveShadow: true,
+    });
+
+    this.furniture.addCylinder({
+      name: `LibraryDeskLampStem:${id}`,
+      radiusTop: 0.022,
+      radiusBottom: 0.022,
+      height: poleHeight,
+      radialSegments: 14,
+      position: {
+        x: position.x,
+        y: position.y + baseHeight / 2 + poleHeight / 2,
+        z: position.z,
+      },
       material: this.libraryMaterials.brass,
       receiveShadow: true,
     });
@@ -732,15 +750,20 @@ export class LibraryRoom extends RectangularRoom {
   }
 
   addDisplayTable() {
+    const tableCenter = { x: 3.65, y: 0.56, z: 2.45 };
+    const tableSize = { x: 1.8, y: 0.16, z: 1.0 };
+
     this.furniture.addBox({
       name: 'LibraryMagazineDisplayTable',
-      size: { x: 1.8, y: 0.16, z: 1.0 },
-      position: { x: 3.65, y: 0.56, z: 2.45 },
+      size: tableSize,
+      position: tableCenter,
       material: this.libraryMaterials.tableWood,
       castShadow: true,
       receiveShadow: true,
       collider: true,
     });
+
+    this.addDisplayTableLegs(tableCenter, tableSize);
 
     const targets = [];
 
@@ -774,6 +797,29 @@ export class LibraryRoom extends RectangularRoom {
     });
 
     this.registerReadable(targets, 'library-display-books', READABLE_CONTENT.designNotes);
+  }
+
+  addDisplayTableLegs(center, tableSize) {
+    const legHeight = 0.52;
+    const xSpan = tableSize.x - 0.32;
+    const zSpan = tableSize.z - 0.28;
+
+    for (const xOffset of [-xSpan / 2, xSpan / 2]) {
+      for (const zOffset of [-zSpan / 2, zSpan / 2]) {
+        this.furniture.addBox({
+          name: `LibraryMagazineDisplayTableLeg:${xOffset}:${zOffset}`,
+          size: { x: 0.09, y: legHeight, z: 0.09 },
+          position: {
+            x: center.x + xOffset,
+            y: legHeight / 2,
+            z: center.z + zOffset,
+          },
+          material: this.libraryMaterials.darkWood,
+          castShadow: true,
+          receiveShadow: true,
+        });
+      }
+    }
   }
 
   registerReadable(targets, id, content) {
