@@ -282,7 +282,7 @@ export const TOM_AND_JERRY_ROOM_CONFIG = Object.freeze({
   name: 'Tom & Jerry Room',
   origin: TOM_AND_JERRY_ROOM_ORIGIN,
   dimensions: TOM_AND_JERRY_ROOM_DIMENSIONS,
-  omittedWalls: Object.freeze(['west']),
+  omittedWalls: Object.freeze([]),
   floorSize: Object.freeze({
     x: TOM_AND_JERRY_ROOM_DIMENSIONS.width,
     z: TOM_AND_JERRY_ROOM_DIMENSIONS.length,
@@ -324,7 +324,9 @@ export const TOM_AND_JERRY_ROOM_CONFIG = Object.freeze({
     labelHeight: 0.5,
     labelElevation: 3.14,
     labelInset: 0.12,
-    entries: Object.freeze([]),
+    entries: Object.freeze([
+      Object.freeze({ id: ROOM_IDS.lobby, wall: 'west', center: 0 }),
+    ]),
   }),
   lighting: Object.freeze({
     hemisphere: Object.freeze({
