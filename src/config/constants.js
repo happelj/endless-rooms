@@ -1,7 +1,7 @@
 export const APP_METADATA = Object.freeze({
   title: 'Endless Rooms',
-  version: '0.4',
-  stepLabel: 'Step 4 - Room Portals',
+  version: '0.5',
+  stepLabel: 'Step 5 - Player Physics',
 });
 
 export const SCENE_CONFIG = Object.freeze({
@@ -93,6 +93,14 @@ export const PLAYER_CONFIG = Object.freeze({
     radius: 0.35,
     height: 1.8,
     eyeHeight: 1.7,
+  }),
+  physics: Object.freeze({
+    gravity: 18,
+    maxFallSpeed: 42,
+    groundedSnapDistance: 0.18,
+    floorTolerance: 0.02,
+    verticalStopEpsilon: 0.001,
+    maxDeltaTime: 0.05,
   }),
   pointer: Object.freeze({
     speed: 0.9,
@@ -288,9 +296,25 @@ export const ROOM_MANAGER_CONFIG = Object.freeze({
   initialRoomId: ROOM_IDS.lobby,
 });
 
+export const DEBUG_CONFIG = Object.freeze({
+  showPhysicsBounds: false,
+  playerBounds: Object.freeze({
+    color: 0x4fd1ff,
+    radialSegments: 20,
+  }),
+  portalTriggers: Object.freeze({
+    color: 0xffd166,
+  }),
+  roomBounds: Object.freeze({
+    color: 0x8ef58e,
+  }),
+});
+
 export const HUD_PLACEHOLDERS = Object.freeze({
   fps: '--',
   room: 'Lobby',
   portalCount: '--',
   connectedRooms: '--',
+  grounded: '--',
+  verticalVelocity: '--',
 });

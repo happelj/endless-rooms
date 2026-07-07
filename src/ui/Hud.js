@@ -18,6 +18,10 @@ export class Hud {
       portalCount: this.root.querySelector('[data-hud-portal-count]'),
       connectedRooms: this.root.querySelector('[data-hud-connected-rooms]'),
     };
+    this.physicsElements = {
+      grounded: this.root.querySelector('[data-hud-grounded]'),
+      verticalVelocity: this.root.querySelector('[data-hud-vertical-velocity]'),
+    };
   }
 
   createTemplate() {
@@ -49,6 +53,14 @@ export class Hud {
             <dd class="hud-value" data-hud-coordinate="z">--</dd>
           </div>
           <div class="hud-row">
+            <dt class="hud-label">Grounded</dt>
+            <dd class="hud-value" data-hud-grounded>${HUD_PLACEHOLDERS.grounded}</dd>
+          </div>
+          <div class="hud-row">
+            <dt class="hud-label">Vertical Velocity</dt>
+            <dd class="hud-value" data-hud-vertical-velocity>${HUD_PLACEHOLDERS.verticalVelocity}</dd>
+          </div>
+          <div class="hud-row">
             <dt class="hud-label">Current Room</dt>
             <dd class="hud-value" data-hud-current-room>${HUD_PLACEHOLDERS.room}</dd>
           </div>
@@ -75,6 +87,11 @@ export class Hud {
     this.roomDebugElements.currentRoom.textContent = currentRoom;
     this.roomDebugElements.portalCount.textContent = String(portalCount);
     this.roomDebugElements.connectedRooms.textContent = String(connectedRooms);
+  }
+
+  updatePhysicsDebug({ grounded, verticalVelocity }) {
+    this.physicsElements.grounded.textContent = grounded ? 'Yes' : 'No';
+    this.physicsElements.verticalVelocity.textContent = this.formatCoordinate(verticalVelocity);
   }
 
   formatCoordinate(value) {

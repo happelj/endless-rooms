@@ -31,6 +31,10 @@ export class PortalManager {
     return connectedRooms;
   }
 
+  getPortals() {
+    return Array.from(this.portals.values());
+  }
+
   getPortalForPosition(roomId, position) {
     for (const portal of this.portals.values()) {
       if (portal.sourceRoom === roomId && portal.containsPosition(position)) {

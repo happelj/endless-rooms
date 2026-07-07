@@ -109,6 +109,14 @@ export class RoomManager {
     });
   }
 
+  getRooms() {
+    return Array.from(this.rooms.values());
+  }
+
+  getPortals() {
+    return this.portalManager.getPortals();
+  }
+
   getRequiredRoom(roomId) {
     const room = this.rooms.get(roomId);
 

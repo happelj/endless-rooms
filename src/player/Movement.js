@@ -53,7 +53,7 @@ export class Movement {
       controls.moveForward(distance);
     }
 
-    this.collisionSystem.resolvePlayerPosition(
+    this.collisionSystem.resolveHorizontalPlayerPosition(
       controlledObject.position,
       this.previousPosition,
       this.body,

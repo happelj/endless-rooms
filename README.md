@@ -2,30 +2,31 @@
 
 Endless Rooms is a browser-based first-person exploration project built with Three.js, Vite, ES modules, JavaScript, HTML5, and CSS3.
 
-This repository currently contains Step 4: Portal System and Connected Rooms. The project now starts in the lobby hub and supports walking through a functional doorway into a connected Test Room without a fade or visible teleport.
+This repository currently contains Step 5: Player Physics Foundation. The project now has reusable gravity, floor resolution, grounded state, and vertical velocity behavior layered under the existing first-person movement and portal system.
 
 ## Current Step
 
-Version: 0.4
+Version: 0.5
 
-Step 4 includes:
+Step 5 includes:
 
 - Vite development setup
 - Three.js scene, perspective camera, and WebGL renderer
 - First-person Pointer Lock controls
 - WASD movement
 - Left Shift sprint
-- Smooth delta-time movement
-- Real-time player coordinates in the HUD
-- Start overlay that controls pointer lock entry
+- Smooth delta-time horizontal movement
+- Player physics module for gravity and grounding
+- Configurable player height and eye height
+- Configurable gravity, max fall speed, snap distance, and vertical tolerances
+- Collision-backed floor and ceiling resolution
+- Portal transitions that preserve player height and grounded state
+- Debug HUD rows for grounded state and vertical velocity
+- Optional debug visualization for player bounds, portal triggers, and room bounds
 - Enclosed lobby hub
 - Connected Test Room
-- Reusable rectangular room shell architecture
 - Directional portal system
 - Room manager with room registration and activation
-- Portal-aware collision bounds
-- Per-room lighting configuration
-- HUD debug rows for current room, portal count, and connected rooms
 - Resize handling
 - Animation loop
 
@@ -62,6 +63,71 @@ Open that URL in a browser to view the project.
 - Hold `Left Shift` to sprint.
 - Press `ESC` to unlock the mouse and show the start overlay again.
 
+## Player Physics
+
+Step 5 introduces `src/player/Physics.js`.
+
+`Physics` owns:
+
+- Gravity
+- Ground detection
+- Grounded state
+- Vertical velocity
+- Floor snapping
+- Ceiling resolution
+
+`Movement` remains focused on horizontal movement only. The player update order is horizontal movement first, then vertical physics, then HUD updates. This keeps future jumping, crouching, ramps, stairs, moving platforms, and furniture collision easier to add without turning movement into a large mixed-responsibility module.
+
+## Ground Detection
+
+Grounding is backed by the collision system.
+
+- `CollisionSystem.getGroundInfo()` queries active room bounds and future ground colliders.
+- `RoomBoundsCollider` exposes floor and ceiling information for the active room.
+- The player eye position is resolved from configured body dimensions.
+- The player stays grounded on flat room floors and remains stable while crossing the lobby-to-Test-Room portal.
+
+Future furniture, ramps, stairs, and platforms can register ground-capable colliders without changing `Physics`.
+
+## Configuration
+
+Physics and body values live in `src/config/constants.js`.
+
+```js
+PLAYER_CONFIG.body = {
+  radius,
+  height,
+  eyeHeight,
+};
+
+PLAYER_CONFIG.physics = {
+  gravity,
+  maxFallSpeed,
+  groundedSnapDistance,
+  floorTolerance,
+  verticalStopEpsilon,
+  maxDeltaTime,
+};
+```
+
+Debug visualization is controlled by:
+
+```js
+DEBUG_CONFIG.showPhysicsBounds
+```
+
+The flag defaults to `false`.
+
+## Debug Visualization
+
+When `DEBUG_CONFIG.showPhysicsBounds` is enabled, the app displays:
+
+- Player collision bounds
+- Portal trigger volumes
+- Room bounds
+
+Debug helpers are created once and reused. They are not built when the debug flag is off.
+
 ## Pointer Lock
 
 Endless Rooms uses the browser Pointer Lock API through Three.js `PointerLockControls`.
@@ -70,7 +136,7 @@ Pointer lock requires a user gesture, so the app starts with an overlay. Clickin
 
 ## Portal System
 
-Step 4 introduces directional portals through `src/portals/Portal.js` and `src/portals/PortalManager.js`.
+Directional portals live in `src/portals/Portal.js` and `src/portals/PortalManager.js`.
 
 Each portal owns:
 
@@ -83,7 +149,7 @@ Each portal owns:
 - Trigger volume
 - Continuous-transition flag
 
-The current lobby-to-Test-Room portal is continuous, so walking through the doorway keeps the player in world space and simply changes the active room once the player crosses the trigger volume. The spawn position and rotation are already part of the portal contract for future rooms that may be streamed, offset, or loaded non-contiguously.
+The current lobby-to-Test-Room portal is continuous, so walking through the doorway keeps the player in world space and changes only the active room once the player crosses the trigger volume.
 
 ## Room Manager
 
@@ -108,31 +174,6 @@ roomManager.registerRoom(new TomAndJerryRoom(scene, collisionSystem));
 roomManager.registerRoom(new YosemiteRoom(scene, collisionSystem));
 roomManager.registerRoom(new SpaceStationRoom(scene, collisionSystem));
 ```
-
-Step 4 registers `LobbyRoom` and `TestRoom` once at startup. Rooms remain instantiated so geometry is not rebuilt every frame.
-
-## Room Architecture
-
-The reusable room stack is now:
-
-- `Room`: base class for material ownership, collider registration, labels, lights, lifecycle, and world-position conversion.
-- `RectangularRoom`: reusable floor, ceiling, wall, baseboard, label, room-bound, and lighting builder.
-- `LobbyRoom`: central hub room using `RectangularRoom`.
-- `TestRoom`: connected validation room using `RectangularRoom`.
-
-Rooms own their own lighting configuration. This prepares the project for future rooms with daylight, darkness, colored lights, animated lights, and room-specific ambience without pushing lighting decisions into `SceneManager`.
-
-## Collision
-
-Collision is handled by a dedicated collision module instead of being embedded in scene composition.
-
-- `CollisionSystem` stores active room bounds and solid colliders.
-- `RoomBoundsCollider` constrains the player only for the active room.
-- Portal openings can be registered on room bounds so a connected doorway can be crossed naturally.
-- `AabbCollider` provides reusable axis-aligned solid collision for walls and future furniture.
-- `Movement` applies player motion one axis at a time, then resolves the camera position through collision.
-
-Only the functional Test Room doorway is portal-enabled in Step 4. Other lobby openings remain future connection points.
 
 ## Build
 
@@ -170,6 +211,8 @@ endless-rooms/
     |   |-- AabbCollider.js
     |   |-- CollisionSystem.js
     |   `-- RoomBoundsCollider.js
+    |-- debug/
+    |   `-- DebugVisuals.js
     |-- portals/
     |   |-- Portal.js
     |   `-- PortalManager.js
@@ -180,7 +223,8 @@ endless-rooms/
     |-- player/
     |   |-- Player.js
     |   |-- Input.js
-    |   `-- Movement.js
+    |   |-- Movement.js
+    |   `-- Physics.js
     |-- rooms/
     |   |-- Room.js
     |   |-- RectangularRoom.js
@@ -208,26 +252,26 @@ The application is intentionally organized around small classes with narrow resp
 - `Portal` owns directional doorway metadata and trigger volume detection.
 - `Room` owns reusable room lifecycle concerns.
 - `RectangularRoom` owns reusable rectangular room shell construction.
-- `CollisionSystem` owns collision registration and player position resolution.
-- `Player` composes pointer lock, input, movement, and HUD coordinate updates.
-- `Input` tracks keyboard state without knowing movement rules.
-- `Movement` converts input into smooth delta-time camera movement and collision-aware translation.
-- `Hud` owns the overlay DOM, coordinates, and room debug values.
+- `CollisionSystem` owns collision registration, horizontal resolution, ground queries, and ceiling queries.
+- `Player` composes pointer lock, input, horizontal movement, physics, and HUD updates.
+- `Input` tracks keyboard state without knowing movement or physics rules.
+- `Movement` converts input into smooth delta-time horizontal camera movement.
+- `Physics` owns vertical movement, gravity, floor snapping, and grounded state.
+- `Hud` owns the overlay DOM, coordinates, room debug values, and physics debug values.
+- `DebugVisuals` owns optional visual helpers for physics and portal debugging.
 - `StartOverlay` owns the click-to-begin pointer lock UI.
-
-Room and portal data live in `src/config/constants.js`. Future systems such as gravity, jumping, crouching, interactions, room loading, save state, networking, and VR can build around these modules without changing the app entry point.
 
 ## Future Roadmap
 
 Planned future steps:
 
-- Replace Test Room with the first themed destination room
-- Add portal metadata for Aquarium, Library, Tom & Jerry, Yosemite, and Space Station
+- Begin the Tom & Jerry themed room
+- Add portal metadata for all lobby destinations
 - Add doorway status indicators for unavailable rooms
+- Add jump and crouch input
+- Add furniture colliders and ground-capable object collision
+- Add ramps, stairs, and platform grounding
 - Add room streaming and unloading policy
-- Add gravity and grounded player movement
-- Add jumping and crouching
-- Expand collision for furniture and interactable objects
 - Add interaction prompts
 - Add audio zones and sound effects
 - Add video texture surfaces
@@ -237,7 +281,7 @@ Planned future steps:
 - Add VR support
 - Add performance profiling and asset streaming
 
-## Step 4 Verification
+## Step 5 Verification
 
 After running `npm run dev`, verify:
 
@@ -247,9 +291,12 @@ After running `npm run dev`, verify:
 - `W`, `A`, `S`, and `D` move the player smoothly.
 - Holding `Left Shift` increases movement speed.
 - Pressing `ESC` exits pointer lock and shows the overlay again.
-- The player starts at the center of the lobby.
+- The player remains grounded on the floor.
+- The HUD shows `Grounded Yes`.
+- Vertical Velocity remains near `0.00` while grounded.
 - Walking through the Test Room doorway changes Current Room from `Lobby` to `Test Room`.
 - Walking back through the doorway changes Current Room back to `Lobby`.
+- Portal transitions preserve player height and grounded state.
 - Solid walls still block movement.
 - Portal Count and Connected Rooms display in the HUD.
 - The HUD displays live `X`, `Y`, and `Z` coordinates.

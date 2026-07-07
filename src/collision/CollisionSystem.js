@@ -2,6 +2,7 @@ export class CollisionSystem {
   constructor() {
     this.boundsColliders = new Set();
     this.colliders = new Set();
+    this.groundColliders = new Set();
   }
 
   addBoundsCollider(collider) {
@@ -20,8 +21,21 @@ export class CollisionSystem {
     this.colliders.delete(collider);
   }
 
+  addGroundCollider(collider) {
+    this.groundColliders.add(collider);
+  }
+
+  removeGroundCollider(collider) {
+    this.groundColliders.delete(collider);
+  }
+
   resolvePlayerPosition(position, previousPosition, body) {
-    this.applyBounds(position, body);
+    this.resolveHorizontalPlayerPosition(position, previousPosition, body);
+    this.resolveVerticalPlayerPosition(position, body);
+  }
+
+  resolveHorizontalPlayerPosition(position, previousPosition, body) {
+    this.applyHorizontalBounds(position, body);
 
     const minY = position.y - body.eyeHeight;
     const maxY = minY + body.height;
@@ -32,19 +46,72 @@ export class CollisionSystem {
       }
     }
 
-    this.applyBounds(position, body);
+    this.applyHorizontalBounds(position, body);
   }
 
-  applyBounds(position, body) {
+  resolveVerticalPlayerPosition(position, body) {
     for (const collider of this.boundsColliders) {
       if (collider.isActive) {
-        collider.resolvePlayerPosition(position, body);
+        collider.resolveVerticalPosition(position, body);
       }
     }
+  }
+
+  getGroundInfo(position, body) {
+    let bestGround = null;
+
+    for (const collider of this.boundsColliders) {
+      if (collider.isActive) {
+        bestGround = this.selectHigherGround(bestGround, collider.getGroundInfo(position, body));
+      }
+    }
+
+    for (const collider of this.groundColliders) {
+      bestGround = this.selectHigherGround(bestGround, collider.getGroundInfo?.(position, body) ?? null);
+    }
+
+    return bestGround;
+  }
+
+  getCeilingInfo(position, body) {
+    let lowestCeiling = null;
+
+    for (const collider of this.boundsColliders) {
+      if (collider.isActive) {
+        const ceiling = collider.getCeilingInfo(position, body);
+
+        if (ceiling && (!lowestCeiling || ceiling.y < lowestCeiling.y)) {
+          lowestCeiling = ceiling;
+        }
+      }
+    }
+
+    return lowestCeiling;
+  }
+
+  applyHorizontalBounds(position, body) {
+    for (const collider of this.boundsColliders) {
+      if (collider.isActive) {
+        collider.resolveHorizontalPosition(position, body);
+      }
+    }
+  }
+
+  selectHigherGround(currentGround, candidateGround) {
+    if (!candidateGround) {
+      return currentGround;
+    }
+
+    if (!currentGround || candidateGround.y > currentGround.y) {
+      return candidateGround;
+    }
+
+    return currentGround;
   }
 
   dispose() {
     this.boundsColliders.clear();
     this.colliders.clear();
+    this.groundColliders.clear();
   }
 }

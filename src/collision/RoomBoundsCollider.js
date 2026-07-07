@@ -39,11 +39,16 @@ export class RoomBoundsCollider {
       return;
     }
 
-    const radius = body.radius;
-    const minEyeY = this.minY + body.eyeHeight;
-    const maxEyeY = this.maxY - Math.max(0, body.height - body.eyeHeight);
+    this.resolveHorizontalPosition(position, body);
+    this.resolveVerticalPosition(position, body);
+  }
 
-    position.y = THREE.MathUtils.clamp(position.y, minEyeY, maxEyeY);
+  resolveHorizontalPosition(position, body) {
+    if (!this.isActive) {
+      return;
+    }
+
+    const radius = body.radius;
 
     if (position.x < this.minX + radius && !this.isInsideOpening('west', position, body)) {
       position.x = this.minX + radius;
@@ -60,6 +65,82 @@ export class RoomBoundsCollider {
     if (position.z > this.maxZ - radius && !this.isInsideOpening('south', position, body)) {
       position.z = this.maxZ - radius;
     }
+  }
+
+  resolveVerticalPosition(position, body) {
+    if (!this.isActive) {
+      return;
+    }
+
+    const minEyeY = this.minY + body.eyeHeight;
+    const maxEyeY = this.getMaxEyeY(body);
+
+    position.y = THREE.MathUtils.clamp(position.y, minEyeY, maxEyeY);
+  }
+
+  getGroundInfo(position, body) {
+    if (!this.isActive || !this.hasGroundSupport(position, body)) {
+      return null;
+    }
+
+    return {
+      y: this.minY,
+      collider: this,
+    };
+  }
+
+  getCeilingInfo(position, body) {
+    if (!this.isActive || !this.hasGroundSupport(position, body)) {
+      return null;
+    }
+
+    return {
+      y: this.maxY,
+      maxEyeY: this.getMaxEyeY(body),
+      collider: this,
+    };
+  }
+
+  getBoundsBox() {
+    return new THREE.Box3(
+      new THREE.Vector3(this.minX, this.minY, this.minZ),
+      new THREE.Vector3(this.maxX, this.maxY, this.maxZ),
+    );
+  }
+
+  hasGroundSupport(position, body) {
+    const radius = body.radius;
+    const insideRoom =
+      position.x >= this.minX + radius
+      && position.x <= this.maxX - radius
+      && position.z >= this.minZ + radius
+      && position.z <= this.maxZ - radius;
+
+    if (insideRoom) {
+      return true;
+    }
+
+    if (position.x < this.minX + radius && this.isInsideOpening('west', position, body)) {
+      return true;
+    }
+
+    if (position.x > this.maxX - radius && this.isInsideOpening('east', position, body)) {
+      return true;
+    }
+
+    if (position.z < this.minZ + radius && this.isInsideOpening('north', position, body)) {
+      return true;
+    }
+
+    if (position.z > this.maxZ - radius && this.isInsideOpening('south', position, body)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  getMaxEyeY(body) {
+    return this.maxY - Math.max(0, body.height - body.eyeHeight);
   }
 
   isInsideOpening(wall, position, body) {

@@ -2,10 +2,11 @@ import * as THREE from 'three';
 import { Camera } from './Camera.js';
 import { Renderer } from './Renderer.js';
 import { CollisionSystem } from '../collision/CollisionSystem.js';
+import { DebugVisuals } from '../debug/DebugVisuals.js';
 import { Player } from '../player/Player.js';
 import { RoomManager } from '../rooms/RoomManager.js';
 import { Hud } from '../ui/Hud.js';
-import { SCENE_CONFIG } from '../config/constants.js';
+import { DEBUG_CONFIG, SCENE_CONFIG } from '../config/constants.js';
 
 export class SceneManager {
   constructor(container) {
@@ -37,9 +38,13 @@ export class SceneManager {
       { collisionSystem: this.collisionSystem },
     );
     this.roomManager.setPlayer(this.player);
+    this.debugVisuals = DEBUG_CONFIG.showPhysicsBounds
+      ? new DebugVisuals(this.scene, this.roomManager, this.player)
+      : null;
 
     this.registerUpdateable(this.player);
     this.registerUpdateable(this.roomManager);
+    this.registerUpdateable(this.debugVisuals);
 
     this.handleResize = this.handleResize.bind(this);
     this.tick = this.tick.bind(this);
@@ -104,6 +109,7 @@ export class SceneManager {
     }
 
     this.player.dispose();
+    this.debugVisuals?.dispose();
     this.roomManager.dispose();
     this.collisionSystem.dispose();
     this.renderer.dispose();

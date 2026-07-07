@@ -2,6 +2,7 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
 import { PLAYER_CONFIG } from '../config/constants.js';
 import { Input } from './Input.js';
 import { Movement } from './Movement.js';
+import { Physics } from './Physics.js';
 import { StartOverlay } from '../ui/StartOverlay.js';
 
 export class Player {
@@ -11,6 +12,7 @@ export class Player {
     this.controls = new PointerLockControls(camera, domElement);
     this.input = new Input();
     this.movement = new Movement(PLAYER_CONFIG.movement, collisionSystem, PLAYER_CONFIG.body);
+    this.physics = new Physics(PLAYER_CONFIG.physics, collisionSystem, PLAYER_CONFIG.body);
     this.startOverlay = new StartOverlay(overlayContainer);
 
     this.controls.pointerSpeed = PLAYER_CONFIG.pointer.speed;
@@ -40,15 +42,18 @@ export class Player {
       PLAYER_CONFIG.lookAt.y,
       PLAYER_CONFIG.lookAt.z,
     );
+    this.physics.reset(this.camera.position);
   }
 
   update(deltaTime) {
     this.movement.update(deltaTime, this.input, this.controls);
+    this.physics.update(deltaTime, this.camera.position);
     this.updateHud();
   }
 
   updateHud() {
     this.hud.updateCoordinates(this.camera.position);
+    this.hud.updatePhysicsDebug(this.physics.getState());
   }
 
   get position() {
@@ -59,6 +64,7 @@ export class Player {
     this.camera.position.copy(position);
     this.camera.rotation.set(0, rotation.y, 0);
     this.movement.stop();
+    this.physics.resolveFloor(this.camera.position, false);
     this.updateHud();
   }
 
