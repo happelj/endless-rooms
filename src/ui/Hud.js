@@ -13,6 +13,11 @@ export class Hud {
       y: this.root.querySelector('[data-hud-coordinate="y"]'),
       z: this.root.querySelector('[data-hud-coordinate="z"]'),
     };
+    this.roomDebugElements = {
+      currentRoom: this.root.querySelector('[data-hud-current-room]'),
+      portalCount: this.root.querySelector('[data-hud-portal-count]'),
+      connectedRooms: this.root.querySelector('[data-hud-connected-rooms]'),
+    };
   }
 
   createTemplate() {
@@ -44,8 +49,16 @@ export class Hud {
             <dd class="hud-value" data-hud-coordinate="z">--</dd>
           </div>
           <div class="hud-row">
-            <dt class="hud-label">Room</dt>
-            <dd class="hud-value">${HUD_PLACEHOLDERS.room}</dd>
+            <dt class="hud-label">Current Room</dt>
+            <dd class="hud-value" data-hud-current-room>${HUD_PLACEHOLDERS.room}</dd>
+          </div>
+          <div class="hud-row">
+            <dt class="hud-label">Portal Count</dt>
+            <dd class="hud-value" data-hud-portal-count>${HUD_PLACEHOLDERS.portalCount}</dd>
+          </div>
+          <div class="hud-row">
+            <dt class="hud-label">Connected Rooms</dt>
+            <dd class="hud-value" data-hud-connected-rooms>${HUD_PLACEHOLDERS.connectedRooms}</dd>
           </div>
         </dl>
       </section>
@@ -56,6 +69,12 @@ export class Hud {
     this.coordinateElements.x.textContent = this.formatCoordinate(position.x);
     this.coordinateElements.y.textContent = this.formatCoordinate(position.y);
     this.coordinateElements.z.textContent = this.formatCoordinate(position.z);
+  }
+
+  updateRoomDebug({ currentRoom, portalCount, connectedRooms }) {
+    this.roomDebugElements.currentRoom.textContent = currentRoom;
+    this.roomDebugElements.portalCount.textContent = String(portalCount);
+    this.roomDebugElements.connectedRooms.textContent = String(connectedRooms);
   }
 
   formatCoordinate(value) {

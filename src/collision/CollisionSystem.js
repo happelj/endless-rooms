@@ -37,7 +37,9 @@ export class CollisionSystem {
 
   applyBounds(position, body) {
     for (const collider of this.boundsColliders) {
-      collider.resolvePlayerPosition(position, body);
+      if (collider.isActive) {
+        collider.resolvePlayerPosition(position, body);
+      }
     }
   }
 

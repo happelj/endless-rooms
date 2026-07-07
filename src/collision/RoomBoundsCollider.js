@@ -1,23 +1,96 @@
 import * as THREE from 'three';
 
 export class RoomBoundsCollider {
-  constructor({ name = 'RoomBoundsCollider', minX, maxX, minY, maxY, minZ, maxZ }) {
+  constructor({
+    name = 'RoomBoundsCollider',
+    roomId,
+    origin = { x: 0, y: 0, z: 0 },
+    minX,
+    maxX,
+    minY,
+    maxY,
+    minZ,
+    maxZ,
+    openings = [],
+  }) {
     this.name = name;
+    this.roomId = roomId;
+    this.origin = new THREE.Vector3(origin.x, origin.y, origin.z);
     this.minX = minX;
     this.maxX = maxX;
     this.minY = minY;
     this.maxY = maxY;
     this.minZ = minZ;
     this.maxZ = maxZ;
+    this.openings = new Set(openings);
+    this.isActive = false;
+  }
+
+  setActive(isActive) {
+    this.isActive = isActive;
+  }
+
+  addOpening(opening) {
+    this.openings.add(opening);
   }
 
   resolvePlayerPosition(position, body) {
+    if (!this.isActive) {
+      return;
+    }
+
     const radius = body.radius;
     const minEyeY = this.minY + body.eyeHeight;
     const maxEyeY = this.maxY - Math.max(0, body.height - body.eyeHeight);
 
-    position.x = THREE.MathUtils.clamp(position.x, this.minX + radius, this.maxX - radius);
     position.y = THREE.MathUtils.clamp(position.y, minEyeY, maxEyeY);
-    position.z = THREE.MathUtils.clamp(position.z, this.minZ + radius, this.maxZ - radius);
+
+    if (position.x < this.minX + radius && !this.isInsideOpening('west', position, body)) {
+      position.x = this.minX + radius;
+    }
+
+    if (position.x > this.maxX - radius && !this.isInsideOpening('east', position, body)) {
+      position.x = this.maxX - radius;
+    }
+
+    if (position.z < this.minZ + radius && !this.isInsideOpening('north', position, body)) {
+      position.z = this.minZ + radius;
+    }
+
+    if (position.z > this.maxZ - radius && !this.isInsideOpening('south', position, body)) {
+      position.z = this.maxZ - radius;
+    }
+  }
+
+  isInsideOpening(wall, position, body) {
+    for (const opening of this.openings) {
+      if (opening.wall === wall && this.fitsOpening(opening, position, body)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  fitsOpening(opening, position, body) {
+    const localX = position.x - this.origin.x;
+    const localZ = position.z - this.origin.z;
+    const spanPosition = this.isNorthSouthWall(opening.wall) ? localX : localZ;
+    const halfWidth = opening.width / 2;
+    const footY = position.y - body.eyeHeight;
+    const headY = footY + body.height;
+    const openingFloor = opening.floor ?? this.minY;
+    const openingTop = openingFloor + opening.height;
+
+    return (
+      spanPosition >= opening.center - halfWidth + body.radius
+      && spanPosition <= opening.center + halfWidth - body.radius
+      && footY >= openingFloor - 0.05
+      && headY <= openingTop + 0.05
+    );
+  }
+
+  isNorthSouthWall(wall) {
+    return wall === 'north' || wall === 'south';
   }
 }

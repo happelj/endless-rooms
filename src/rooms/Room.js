@@ -1,18 +1,30 @@
 import * as THREE from 'three';
 import { AabbCollider } from '../collision/AabbCollider.js';
 
+const DEFAULT_ORIGIN = Object.freeze({ x: 0, y: 0, z: 0 });
+
 export class Room {
   constructor(scene, collisionSystem, config) {
     this.scene = scene;
     this.collisionSystem = collisionSystem;
     this.config = config;
+    this.id = config.id;
+    this.name = config.name;
+    this.origin = new THREE.Vector3(
+      config.origin?.x ?? DEFAULT_ORIGIN.x,
+      config.origin?.y ?? DEFAULT_ORIGIN.y,
+      config.origin?.z ?? DEFAULT_ORIGIN.z,
+    );
+    this.isActive = false;
     this.group = new THREE.Group();
     this.group.name = config.name;
+    this.group.position.copy(this.origin);
     this.geometryCache = new Map();
     this.materials = new Map();
     this.registeredColliders = new Set();
     this.registeredBoundsColliders = new Set();
     this.labels = new Set();
+    this.lights = new Set();
 
     this.scene.add(this.group);
   }
@@ -40,7 +52,11 @@ export class Room {
     this.group.add(mesh);
 
     if (collider) {
-      this.addCollider(new AabbCollider({ name: `${name}Collider`, center: position, size }));
+      this.addCollider(new AabbCollider({
+        name: `${name}Collider`,
+        center: this.toWorldPosition(position),
+        size,
+      }));
     }
 
     return mesh;
@@ -56,9 +72,38 @@ export class Room {
     this.registeredBoundsColliders.add(collider);
   }
 
+  addLight(light) {
+    this.lights.add(light);
+    this.group.add(light);
+  }
+
   addLabel(label) {
     this.labels.add(label);
     this.group.add(label.mesh);
+  }
+
+  activate() {
+    this.isActive = true;
+
+    for (const collider of this.registeredBoundsColliders) {
+      collider.setActive(true);
+    }
+  }
+
+  deactivate() {
+    this.isActive = false;
+
+    for (const collider of this.registeredBoundsColliders) {
+      collider.setActive(false);
+    }
+  }
+
+  toWorldPosition(position) {
+    return {
+      x: position.x + this.origin.x,
+      y: position.y + this.origin.y,
+      z: position.z + this.origin.z,
+    };
   }
 
   getBoxGeometry(size) {
@@ -102,6 +147,7 @@ export class Room {
     this.registeredColliders.clear();
     this.registeredBoundsColliders.clear();
     this.labels.clear();
+    this.lights.clear();
     this.geometryCache.clear();
     this.materials.clear();
   }

@@ -51,6 +51,17 @@ export class Player {
     this.hud.updateCoordinates(this.camera.position);
   }
 
+  get position() {
+    return this.camera.position;
+  }
+
+  setPose(position, rotation) {
+    this.camera.position.copy(position);
+    this.camera.rotation.set(0, rotation.y, 0);
+    this.movement.stop();
+    this.updateHud();
+  }
+
   handleStartRequested() {
     if (PLAYER_CONFIG.pointer.useRawMouseInput) {
       this.controls.lock(true);
