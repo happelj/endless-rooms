@@ -80,7 +80,7 @@ Open that URL in a browser to view the project.
 - Press `D` to move right.
 - Hold `Left Shift` to sprint.
 - Look at an interactable object and press `E` to use it.
-- Press `ESC` while reading to close the Content Panel.
+- Press `E` while reading to close the Content Panel; `ESC` still unlocks the mouse.
 - Press `ESC` during normal play to unlock the mouse and show the start overlay again.
 
 ## Step 10: Library Room
@@ -117,7 +117,9 @@ Step 10 adds:
 - `src/ui/ContentPanel.js`
 - `src/ui/ContentManager.js`
 
-`ContentPanel` owns the DOM for readable content. `ContentManager` owns open/close state, `ESC` closing, and player movement pause/resume.
+`ContentPanel` owns the DOM for readable content. `ContentManager` owns open/close state, `E` closing, and player movement pause/resume.
+
+Browsers reserve `ESC` as the pointer-lock exit gesture, so readable content uses `E` to close without leaving the game.
 
 Readable interactions call:
 
@@ -455,7 +457,7 @@ After running `npm run dev`, verify:
 - Looking at a Library bookshelf or display book shows `[E] Read Book`.
 - Pressing `E` near a readable Library object opens the Content Panel.
 - Player movement pauses while the Content Panel is open.
-- Pressing `ESC` closes the Content Panel.
+- Pressing `E` closes the Content Panel without leaving pointer lock.
 - Player movement resumes after the Content Panel closes.
 - Library shelves, tables, chairs, fireplace, display table, and planters block movement.
 - Library room ambience starts after entering pointer lock and remains subtle.

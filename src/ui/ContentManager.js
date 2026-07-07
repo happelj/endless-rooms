@@ -1,5 +1,7 @@
 import { ContentPanel } from './ContentPanel.js';
 
+const CLOSE_CONTENT_CODE = 'KeyE';
+
 export class ContentManager {
   constructor(container) {
     this.panel = new ContentPanel(container);
@@ -35,12 +37,12 @@ export class ContentManager {
   }
 
   handleKeyDown(event) {
-    if (!this.isOpen() || event.code !== 'Escape') {
+    if (!this.isOpen() || event.code !== CLOSE_CONTENT_CODE) {
       return;
     }
 
     event.preventDefault();
-    event.stopPropagation();
+    event.stopImmediatePropagation();
     this.close();
   }
 

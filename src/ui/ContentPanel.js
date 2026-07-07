@@ -18,12 +18,12 @@ export class ContentPanel {
       <div class="content-panel__surface">
         <h2 class="content-panel__title" data-content-panel-title></h2>
         <div class="content-panel__body" data-content-panel-body></div>
-        <div class="content-panel__footer" data-content-panel-footer>Press ESC to close.</div>
+        <div class="content-panel__footer" data-content-panel-footer>Press E to close. ESC unlocks the mouse.</div>
       </div>
     `;
   }
 
-  show({ title, body, footer = 'Press ESC to close.' }) {
+  show({ title, body, footer = 'Press E to close. ESC unlocks the mouse.' }) {
     this.titleElement.textContent = title;
     this.bodyElement.replaceChildren(...this.createBodyNodes(body));
     this.footerElement.textContent = footer;
