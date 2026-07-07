@@ -2,24 +2,58 @@
 
 Endless Rooms is a browser-based first-person exploration project built with Three.js, Vite, ES modules, JavaScript, HTML5, and CSS3.
 
-This repository currently contains Step 1: Foundation. The goal of this step is to establish a clean rendering architecture, a simple room base, and a UI shell that can grow into a larger exploration experience without rewrites.
+This repository currently contains Step 9: Aquarium Room. The lobby now connects to a premium aquarium exhibit with animated fish, a large built-in tank, positional water ambience, and interactable exhibit plaques.
 
 ## Current Step
 
-Version: 0.1
+Version: 0.9
 
-Step 1 includes:
+Step 9 includes:
 
 - Vite development setup
 - Three.js scene, perspective camera, and WebGL renderer
-- Hemisphere and directional lighting
-- Shadow-ready renderer, light, and floor
-- Large neutral floor
-- Pleasant scene background color
-- OrbitControls as a temporary camera control layer
+- First-person Pointer Lock controls
+- WASD movement
+- Left Shift sprint
+- Smooth delta-time horizontal movement
+- Player physics module for gravity and grounding
+- Configurable player height, eye height, and gravity settings
+- Collision-backed floor and ceiling resolution
+- Enclosed lobby hub
+- Connected Test Room
+- Connected Tom & Jerry Room
+- Connected Aquarium Room
+- Directional portal system
+- Room manager with room registration and activation
+- Raycast-based interaction manager
+- Reusable `Interactable` framework
+- Range-limited interaction prompts
+- Interactive CRT television
+- Local video texture playback
+- TV power control
+- TV volume control
+- Subtle CRT glow, scanlines, and brightness flicker
+- Web Audio based `AudioManager`
+- Ambient room audio loops
+- Positional room audio
+- Subtle HVAC ambience
+- CRT electrical and cabinet hum
+- Floor lamp buzz
+- Aquarium exhibit hall
+- Large built-in aquarium viewing window
+- Procedurally animated fish
+- Animated bubbles and subtle water motion
+- Caustic-like floor lighting approximation
+- Positional aquarium bubbling, pump, and room ambience
+- Interactable exhibit plaques with placeholder information panels
+- HUD room metadata with connected destination names
+- Contextual interaction prompt
+- Furniture collision for large room props
+- Warm room-specific lighting
+- Debug HUD for coordinates, grounded state, vertical velocity, room, portal count, and connected rooms
+- Optional debug visualization for player bounds, portal triggers, room bounds, and interaction ranges
 - Resize handling
 - Animation loop
-- Overlay UI with project status placeholders
 
 ## Installation
 
@@ -43,6 +77,297 @@ http://localhost:5173/
 
 Open that URL in a browser to view the project.
 
+## Controls
+
+- Click anywhere on the start overlay to begin.
+- Move the mouse to look around.
+- Press `W` to move forward.
+- Press `A` to move left.
+- Press `S` to move backward.
+- Press `D` to move right.
+- Hold `Left Shift` to sprint.
+- Look at an interactable object and press `E` to use it.
+- Press `ESC` to unlock the mouse and show the start overlay again.
+
+## Step 9: Aquarium Room
+
+`src/rooms/AquariumRoom.js` creates the second major themed destination. It reuses `RectangularRoom` for the room shell, `FurnitureBuilder` for primitive exhibit construction, `RoomLabel` for plaque signage, `Interactable` for exhibit prompts, and the shared collision and audio systems.
+
+The Aquarium Room includes:
+
+- Polished exhibit floor
+- Painted walls and ceiling
+- Soft blue accent lighting
+- Benches
+- Exhibit plaques
+- Decorative plants
+- Architectural columns near the tank
+- Large floor-to-ceiling aquarium viewing window
+- Glass, water volume, rocky bottom, aquatic plants, bubbles, and reflections
+- Animated fish
+
+The lobby now has a functional Aquarium doorway on the west wall. The existing Test Room, Tom & Jerry Room, and future Library opening remain intact.
+
+## Fish Animation
+
+`src/rooms/aquarium/Fish.js` owns reusable fish behavior. Each fish is built from shared geometry and room-owned materials, then updated by `AquariumRoom`.
+
+Fish behavior includes:
+
+- Smooth delta-time movement
+- Randomized path variation
+- Gentle turning
+- Boundary avoidance within the tank volume
+- Lightweight tail and body animation
+
+The class is intentionally independent from `AquariumRoom` layout details so future tanks can reuse it with different bounds, materials, sizes, and swim speeds.
+
+## Step 8: Audio Ambience and Interaction Framework
+
+Step 8 adds the first reusable audio and interaction systems.
+
+`src/audio/AudioManager.js` owns Web Audio lifecycle, listener updates, positional loop registration, room-based source muting, and future sound-effect support. It creates the underlying audio graph only after the player enters pointer lock, then suspends audio when pointer lock exits.
+
+`src/interactions/Interactable.js` represents one reusable interaction target. It owns:
+
+- Unique id
+- Target meshes
+- Interaction range
+- Prompt text
+- Interaction callback
+- Enabled state
+- Optional metadata
+
+`src/interactions/InteractionManager.js` filters active-room interactables by distance before raycasting, then displays a prompt only when the player is close enough and looking at a valid target.
+
+The Tom & Jerry Room now includes:
+
+- Positional HVAC ambience
+- Positional floor lamp buzz
+- Positional CRT hum while the TV is on
+- Positional CRT cabinet hum while the TV is on
+- Slight CRT screen glow
+- Subtle CRT brightness flicker
+- Lightweight scanline overlay
+
+## Step 7: CRT Video Texture
+
+`src/media/VideoScreen.js` owns the video element, Three.js `VideoTexture`, TV power state, looping playback, volume changes, and display brightness intensity.
+
+The CRT television in the Tom & Jerry Room now supports:
+
+- Power on/off
+- Looping local video playback
+- Audio playback after user interaction
+- `+` and `-` volume controls on the CRT control panel
+- Distance-based volume falloff as the player walks away from the TV
+- Automatic pause when leaving the room or pressing `ESC`
+- Resume when returning to the room or re-entering pointer lock while the TV is still powered on
+
+The interaction system uses active-room `Interactable` objects and a center-screen raycast. This keeps TV controls reusable for future doors, props, switches, books, exhibits, NPC conversations, and room-specific objects.
+
+## Audio System
+
+`AudioManager` currently generates lightweight procedural ambience through Web Audio. This avoids adding external audio files while preserving the architecture for future authored loops in `public/audio/`.
+
+The manager supports:
+
+- Ambient room loops
+- Positional audio sources
+- Room-based source activation
+- Global suspend/resume when pointer lock changes
+- Future one-shot sound effects
+
+Room classes configure their own audio through `configureAudio(audioManager)`. Future rooms can register room-specific audio without adding logic to `SceneManager`.
+
+The Aquarium Room registers:
+
+- Room ambience
+- Positional bubbling near the tank
+- Positional water pump hum near the tank system
+
+The bubbling and pump sources use panner settings that make them louder as the player approaches the viewing window.
+
+## Interaction Prompts
+
+Interaction prompts appear only when:
+
+- Pointer lock is active
+- The player is within the interactable's configured range
+- The center raycast is aimed at the interactable
+
+The TV screen and power button use `[E] Power TV...`. The CRT volume knobs use `[E] + Increase TV Volume...` and `[E] - Decrease TV Volume...`.
+
+Aquarium plaques use `[E] Read Exhibit` and open a HUD information panel. The panel currently shows placeholder copy, but the interaction path is ready for real educational content.
+
+## Video Asset
+
+The local runtime expects:
+
+```text
+public/videos/Tom-and-Jerry.mp4
+```
+
+That file is intentionally ignored by Git because the current local MP4 is larger than GitHub's normal file-size limit. For GitHub-hosted playback, provide a compressed video under 100 MB, use Git LFS, or host the video from an allowed external asset source and update `TV_CONFIG.video.src` in `src/config/constants.js`.
+
+## Tom & Jerry Room
+
+`src/rooms/TomAndJerryRoom.js` creates the first themed destination. It reuses `RectangularRoom` for the room shell and adds room-specific props, lighting, trim, and furniture.
+
+The room includes:
+
+- Wall-to-wall carpet
+- Painted walls
+- Ceiling
+- White baseboards
+- Crown molding
+- Warm ceiling lights
+- Floor lamp
+- Side table
+- Coffee table
+- Couch
+- Bean bag chair
+- Entertainment center
+- Interactive large CRT television
+- Small rug beneath the coffee table
+- Two framed generic wall decorations
+
+The television screen uses the local video asset when powered on and falls back to a dark placeholder material when powered off.
+
+## Aquarium Room
+
+The Aquarium Room is the first exhibit-style destination. It is placed west of the lobby and connected through:
+
+- `lobby-to-aquarium-room`
+- `aquarium-room-to-lobby`
+
+The room's focal point is a large built-in viewing window on the north side of the exhibit hall. The tank includes water volume, glass, rocks, aquatic plants, animated bubbles, animated fish, and subtle reflection/caustic effects.
+
+Collidable Aquarium Room objects include:
+
+- Aquarium viewing glass
+- Tank frame
+- Benches
+- Exhibit plaque bases
+- Decorative planters
+- Architectural columns
+
+## Furniture Collision
+
+Large furniture pieces register AABB colliders through the same collision system used by the room shell.
+
+Collidable furniture currently includes:
+
+- Couch
+- Entertainment center
+- CRT television
+- Coffee table
+- Side table
+
+The furniture is built with `FurnitureBuilder`, a small helper that keeps prop construction reusable while still letting each room own its own layout. Future rooms can reuse the same helper for furniture, decorations, collision boxes, and custom primitive meshes.
+
+## Portal Additions
+
+The lobby now has three functional connected destinations:
+
+- Test Room
+- Tom & Jerry Room
+- Aquarium Room
+
+The Tom & Jerry doorway uses a pair of directional portals:
+
+- `lobby-to-tom-and-jerry-room`
+- `tom-and-jerry-room-to-lobby`
+
+The Aquarium doorway uses:
+
+- `lobby-to-aquarium-room`
+- `aquarium-room-to-lobby`
+
+Both portals use continuous transitions, so walking through the doorway changes the active room without a fade or visible teleport. Unimplemented lobby destinations display `Coming Soon` on their doorway labels.
+
+## Player Physics
+
+`src/player/Physics.js` owns:
+
+- Gravity
+- Ground detection
+- Grounded state
+- Vertical velocity
+- Floor snapping
+- Ceiling resolution
+
+`Movement` remains focused on horizontal movement only. The player update order is horizontal movement first, then vertical physics, then HUD updates. This keeps future jumping, crouching, ramps, stairs, moving platforms, and furniture collision easier to add.
+
+## Room System
+
+`RoomManager` owns the room graph.
+
+Responsibilities:
+
+- Create rooms
+- Register rooms
+- Activate rooms
+- Deactivate rooms
+- Register portals
+- Update HUD room debug values
+- Prepare for future room streaming
+
+Future themed rooms should be able to follow this pattern:
+
+```js
+roomManager.registerRoom(new AquariumRoom(scene, collisionSystem));
+roomManager.registerRoom(new LibraryRoom(scene, collisionSystem));
+roomManager.registerRoom(new TomAndJerryRoom(scene, collisionSystem));
+roomManager.registerRoom(new YosemiteRoom(scene, collisionSystem));
+roomManager.registerRoom(new SpaceStationRoom(scene, collisionSystem));
+```
+
+## Portal System
+
+Directional portals live in `src/portals/Portal.js` and `src/portals/PortalManager.js`.
+
+Each portal owns:
+
+- Unique id
+- Source room id
+- Destination room id
+- Spawn position
+- Spawn rotation
+- Doorway dimensions
+- Trigger volume
+- Continuous-transition flag
+
+Doorway openings are also registered with the source room bounds collider, so the player can walk through open passages while still being blocked by solid walls.
+
+## Configuration
+
+Room dimensions, portal metadata, player body settings, movement settings, physics values, and debug flags live in `src/config/constants.js`.
+
+Important sections:
+
+```js
+ROOM_DIMENSIONS
+TEST_ROOM_DIMENSIONS
+TOM_AND_JERRY_ROOM_DIMENSIONS
+AQUARIUM_ROOM_DIMENSIONS
+PLAYER_CONFIG
+PORTAL_CONFIGS
+DEBUG_CONFIG
+INTERACTION_CONFIG
+TV_CONFIG
+AUDIO_CONFIG
+```
+
+Debug visualization is controlled by:
+
+```js
+DEBUG_CONFIG.showPhysicsBounds
+DEBUG_CONFIG.showInteractionRanges
+```
+
+Both flags default to `false`.
+
 ## Build
 
 Create a production build:
@@ -61,34 +386,63 @@ npm run preview
 
 ```text
 endless-rooms/
-├── index.html
-├── package.json
-├── vite.config.js
-├── README.md
-├── public/
-│   ├── textures/
-│   ├── audio/
-│   ├── videos/
-│   └── models/
-└── src/
-    ├── main.js
-    ├── style.css
-    ├── config/
-    │   └── constants.js
-    ├── scene/
-    │   ├── SceneManager.js
-    │   ├── Renderer.js
-    │   ├── Camera.js
-    │   ├── Lighting.js
-    │   ├── Floor.js
-    │   └── OrbitCameraControls.js
-    ├── player/
-    ├── rooms/
-    ├── ui/
-    │   └── Hud.js
-    ├── assets/
-    └── utils/
-        └── dom.js
+|-- index.html
+|-- package.json
+|-- vite.config.js
+|-- README.md
+|-- public/
+|   |-- textures/
+|   |-- audio/
+|   |-- videos/
+|   `-- models/
+`-- src/
+    |-- main.js
+    |-- style.css
+    |-- config/
+    |   `-- constants.js
+    |-- collision/
+    |   |-- AabbCollider.js
+    |   |-- CollisionSystem.js
+    |   `-- RoomBoundsCollider.js
+    |-- debug/
+    |   `-- DebugVisuals.js
+    |-- audio/
+    |   `-- AudioManager.js
+    |-- interactions/
+    |   |-- Interactable.js
+    |   `-- InteractionManager.js
+    |-- media/
+    |   `-- VideoScreen.js
+    |-- portals/
+    |   |-- Portal.js
+    |   `-- PortalManager.js
+    |-- scene/
+    |   |-- SceneManager.js
+    |   |-- Renderer.js
+    |   `-- Camera.js
+    |-- player/
+    |   |-- Player.js
+    |   |-- Input.js
+    |   |-- Movement.js
+    |   `-- Physics.js
+    |-- rooms/
+    |   |-- Room.js
+    |   |-- RectangularRoom.js
+    |   |-- RoomManager.js
+    |   |-- LobbyRoom.js
+    |   |-- TestRoom.js
+    |   |-- TomAndJerryRoom.js
+    |   |-- AquariumRoom.js
+    |   |-- FurnitureBuilder.js
+    |   |-- RoomLabel.js
+    |   `-- aquarium/
+    |       `-- Fish.js
+    |-- ui/
+    |   |-- Hud.js
+    |   `-- StartOverlay.js
+    |-- assets/
+    `-- utils/
+        `-- dom.js
 ```
 
 ## Architecture Notes
@@ -96,40 +450,95 @@ endless-rooms/
 The application is intentionally organized around small classes with narrow responsibilities:
 
 - `SceneManager` owns startup, lifecycle, frame updates, and composition.
+- `AudioManager` owns Web Audio lifecycle, listener updates, positional ambience, and future sound effects.
 - `Renderer` owns WebGL renderer configuration and resize behavior.
 - `Camera` owns perspective camera setup and aspect updates.
-- `Lighting` owns scene lighting and shadow configuration.
-- `Floor` owns the initial room foundation mesh.
-- `OrbitCameraControls` isolates the temporary controls layer so Pointer Lock can replace it cleanly later.
-- `Hud` owns the overlay DOM.
-
-The `SceneManager` maintains an updateable system list. Future features such as player movement, interactions, room streaming, audio, multiplayer networking, and VR sessions can register with the loop without turning `main.js` into a large file.
+- `RoomManager` owns room registration, activation, and portal registration.
+- `Interactable` owns reusable prompt, range, target, and callback metadata.
+- `InteractionManager` owns active-room range filtering, raycast focus, and interaction triggering.
+- `VideoScreen` owns video element and video texture lifecycle.
+- `PortalManager` owns portal lookup and connected-room counts.
+- `Portal` owns directional doorway metadata and trigger volume detection.
+- `Room` owns reusable room lifecycle, materials, geometry caching, and collision registration.
+- `RectangularRoom` owns reusable rectangular room shell construction.
+- `TomAndJerryRoom` owns the themed room layout and room-specific props.
+- `AquariumRoom` owns the exhibit hall layout, tank construction, fish updates, plaque interactions, and aquarium ambience.
+- `Fish` owns reusable procedural swimming, wander steering, and boundary avoidance.
+- `FurnitureBuilder` owns reusable primitive furniture construction.
+- `CollisionSystem` owns collision registration, horizontal resolution, ground queries, and ceiling queries.
+- `Player` composes pointer lock, input, horizontal movement, physics, and HUD updates.
+- `Input` tracks keyboard state without knowing movement or physics rules.
+- `Movement` converts input into smooth delta-time horizontal camera movement.
+- `Physics` owns vertical movement, gravity, floor snapping, and grounded state.
+- `Hud` owns the overlay DOM, coordinates, room debug values, physics debug values, interaction prompt, and exhibit information panel.
+- `DebugVisuals` owns optional visual helpers for physics and portal debugging.
+- `DebugVisuals` can also show interaction ranges when enabled.
+- `StartOverlay` owns the click-to-begin pointer lock UI.
 
 ## Future Roadmap
 
 Planned future steps:
 
-- Pointer Lock first-person controls
-- Player movement and camera rig
-- Collision detection
-- Room loading and procedural room transitions
-- Wall, ceiling, and doorway systems
-- Interaction system
-- Audio zones and sound effects
-- Video texture surfaces
-- GLTF model loading
-- Save system
-- Multiplayer support
-- VR support
-- Performance profiling and asset streaming
+- Add the Library Room as the next themed destination
+- Add authored ambient audio files
+- Add authored aquarium bubbling and pump loops
+- Add richer aquarium species data for plaques
+- Add a TV channel/source selector
+- Add subtitles or on-screen TV status text
+- Add richer object interactions
+- Add jump and crouch input
+- Add furniture colliders with more precise compound shapes
+- Add ramps, stairs, and platform grounding
+- Add room streaming and unloading policy
+- Add GLTF model loading
+- Add save system
+- Add multiplayer support
+- Add VR support
+- Add performance profiling and asset streaming
 
-## Step 1 Verification
+## Step 9 Verification
 
 After running `npm run dev`, verify:
 
-- The browser shows a large neutral floor on a softly lit scene background.
-- The camera starts angled toward the center of the floor.
-- OrbitControls can rotate, pan, and zoom the camera.
-- The top-left overlay displays `Endless Rooms`, `Version 0.1`, and `Step 1 - Foundation`.
-- The bottom-right overlay displays FPS, coordinates, and room placeholders.
-
+- The browser shows a start overlay with `ENDLESS ROOMS`.
+- Clicking the overlay activates pointer lock.
+- Mouse movement controls first-person look direction.
+- `W`, `A`, `S`, and `D` move the player smoothly.
+- Holding `Left Shift` increases movement speed.
+- Looking at the CRT screen or power button displays an interaction prompt.
+- The interaction prompt appears only when close enough to the TV controls.
+- Pressing `E` while looking at the CRT screen or power button turns the TV on and starts the local video.
+- Looking at the `+` control and pressing `E` increases TV volume.
+- Looking at the `-` control and pressing `E` decreases TV volume.
+- The TV volume gets quieter as the player moves farther from the television.
+- The powered-on CRT has a slight glow, scanlines, and subtle brightness flicker.
+- Tom & Jerry Room ambience begins after entering pointer lock.
+- HVAC ambience, floor lamp buzz, and CRT hum are spatially positioned.
+- CRT hum starts when the TV turns on and stops when the TV turns off.
+- The TV pauses when leaving the room or pressing `ESC`.
+- Room audio suspends when pressing `ESC`.
+- The TV resumes when returning to the room or clicking to begin again while powered on.
+- Pressing `ESC` exits pointer lock and shows the overlay again.
+- The player remains grounded on the floor.
+- The HUD shows live `X`, `Y`, and `Z` coordinates.
+- The HUD shows the current room name.
+- The HUD shows portal count, connected room count, and destination names.
+- Walking through the Test Room doorway changes Current Room from `Lobby` to `Test Room`.
+- Walking back through the doorway changes Current Room back to `Lobby`.
+- Walking through the Tom & Jerry doorway changes Current Room from `Lobby` to `Tom & Jerry Room`.
+- Walking back through the doorway changes Current Room back to `Lobby`.
+- Walking through the Aquarium doorway changes Current Room from `Lobby` to `Aquarium Room`.
+- Walking back through the Aquarium doorway changes Current Room back to `Lobby`.
+- Fish animate smoothly inside the aquarium tank.
+- Bubbles rise inside the tank.
+- The water volume and caustic-like lighting move subtly.
+- Aquarium bubbling and pump ambience become louder near the tank.
+- Looking at an exhibit plaque displays `[E] Read Exhibit`.
+- Pressing `E` near a plaque opens the placeholder exhibit information panel.
+- The Aquarium glass, benches, plaque bases, planters, and columns block movement.
+- The couch, television, entertainment center, coffee table, and side table block player movement.
+- Unimplemented lobby openings display `Coming Soon`.
+- The Tom & Jerry Room lighting feels warm and does not create harsh shadows.
+- The CRT television is visible and displays video after being powered on.
+- Solid walls still block movement.
+- Project builds successfully with `npm run build`.
