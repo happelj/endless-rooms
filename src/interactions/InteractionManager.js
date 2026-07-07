@@ -4,11 +4,12 @@ import { INTERACTION_CONFIG } from '../config/constants.js';
 const SCREEN_CENTER = new THREE.Vector2(0, 0);
 
 export class InteractionManager {
-  constructor(camera, domElement, roomManager, hud, config = INTERACTION_CONFIG) {
+  constructor(camera, domElement, roomManager, hud, contentManager = null, config = INTERACTION_CONFIG) {
     this.camera = camera;
     this.domElement = domElement;
     this.roomManager = roomManager;
     this.hud = hud;
+    this.contentManager = contentManager;
     this.config = config;
     this.raycaster = new THREE.Raycaster();
     this.raycaster.far = config.maxDistance;
@@ -28,6 +29,12 @@ export class InteractionManager {
   }
 
   updateFocusedInteraction() {
+    if (this.contentManager?.isOpen()) {
+      this.focusedInteraction = null;
+      this.hud.updateInteractionPrompt('');
+      return;
+    }
+
     if (document.pointerLockElement !== this.domElement) {
       this.focusedInteraction = null;
       this.hud.updateInteractionPrompt('');
@@ -99,6 +106,7 @@ export class InteractionManager {
     return `[${this.config.primaryActionLabel}] ${interaction.getPrompt({
       camera: this.camera,
       roomManager: this.roomManager,
+      contentManager: this.contentManager,
     })}`;
   }
 
@@ -131,6 +139,7 @@ export class InteractionManager {
     this.focusedInteraction.interact({
       camera: this.camera,
       roomManager: this.roomManager,
+      contentManager: this.contentManager,
     });
     this.updateFocusedInteraction();
   }

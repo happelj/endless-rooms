@@ -7,6 +7,7 @@ import { DebugVisuals } from '../debug/DebugVisuals.js';
 import { InteractionManager } from '../interactions/InteractionManager.js';
 import { Player } from '../player/Player.js';
 import { RoomManager } from '../rooms/RoomManager.js';
+import { ContentManager } from '../ui/ContentManager.js';
 import { Hud } from '../ui/Hud.js';
 import { AUDIO_CONFIG, DEBUG_CONFIG, SCENE_CONFIG } from '../config/constants.js';
 
@@ -31,6 +32,7 @@ export class SceneManager {
     this.camera = new Camera(this.renderer.aspectRatio);
     this.collisionSystem = new CollisionSystem();
     this.hud = new Hud(this.shell);
+    this.contentManager = new ContentManager(this.shell);
     this.audioManager = new AudioManager(this.camera.instance, AUDIO_CONFIG);
     this.roomManager = new RoomManager(
       this.scene,
@@ -45,12 +47,14 @@ export class SceneManager {
       this.hud,
       { collisionSystem: this.collisionSystem },
     );
+    this.contentManager.setPlayer(this.player);
     this.roomManager.setPlayer(this.player);
     this.interactionManager = new InteractionManager(
       this.camera.instance,
       this.renderer.domElement,
       this.roomManager,
       this.hud,
+      this.contentManager,
     );
     this.debugVisuals = this.shouldShowDebugVisuals()
       ? new DebugVisuals(this.scene, this.roomManager, this.player)
@@ -108,6 +112,7 @@ export class SceneManager {
   }
 
   handlePlayerUnlock() {
+    this.contentManager.close();
     this.roomManager.pauseActiveRoomMedia();
     void this.audioManager.suspend();
   }
@@ -147,6 +152,7 @@ export class SceneManager {
 
     this.player.dispose();
     this.interactionManager.dispose();
+    this.contentManager.dispose();
     this.debugVisuals?.dispose();
     this.roomManager.dispose();
     this.audioManager.dispose();

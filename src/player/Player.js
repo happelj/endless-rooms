@@ -14,6 +14,7 @@ export class Player {
     this.movement = new Movement(PLAYER_CONFIG.movement, collisionSystem, PLAYER_CONFIG.body);
     this.physics = new Physics(PLAYER_CONFIG.physics, collisionSystem, PLAYER_CONFIG.body);
     this.startOverlay = new StartOverlay(overlayContainer);
+    this.isMovementPaused = false;
 
     this.controls.pointerSpeed = PLAYER_CONFIG.pointer.speed;
     this.controls.minPolarAngle = PLAYER_CONFIG.pointer.minPolarAngle;
@@ -46,7 +47,12 @@ export class Player {
   }
 
   update(deltaTime) {
-    this.movement.update(deltaTime, this.input, this.controls);
+    if (this.isMovementPaused) {
+      this.movement.stop();
+    } else {
+      this.movement.update(deltaTime, this.input, this.controls);
+    }
+
     this.physics.update(deltaTime, this.camera.position);
     this.updateHud();
   }
@@ -68,6 +74,16 @@ export class Player {
     this.updateHud();
   }
 
+  setMovementPaused(isPaused) {
+    if (this.isMovementPaused === isPaused) {
+      return;
+    }
+
+    this.isMovementPaused = isPaused;
+    this.input.reset();
+    this.movement.stop();
+  }
+
   handleStartRequested() {
     if (PLAYER_CONFIG.pointer.useRawMouseInput) {
       this.controls.lock(true);
@@ -82,6 +98,7 @@ export class Player {
   }
 
   handleUnlock() {
+    this.setMovementPaused(false);
     this.input.reset();
     this.movement.stop();
     this.startOverlay.show();
