@@ -7,6 +7,8 @@ import { RoomLabel } from './RoomLabel.js';
 
 const SHARED_WALL_SURFACE_OFFSET = 0.018;
 const SHARED_WALL_SURFACE_DEPTH = 0.035;
+const EXHIBIT_READ_RANGE = 2.35;
+const EXHIBIT_INFO_HIDE_DISTANCE = 2.75;
 
 const TANK = Object.freeze({
   glass: Object.freeze({
@@ -68,6 +70,9 @@ export class AquariumRoom extends RectangularRoom {
     this.fish = [];
     this.bubbles = [];
     this.caustics = [];
+    this.activeExhibit = null;
+    this.infoPanelHud = null;
+    this.exhibitWorldPosition = new THREE.Vector3();
     this.createAquariumMaterials();
     this.createSharedGeometries();
     this.addSharedLobbyWallInterior();
@@ -132,6 +137,11 @@ export class AquariumRoom extends RectangularRoom {
         emissive: 0x1d6a8c,
         emissiveIntensity: 0.16,
       }),
+      fishEye: this.createMaterial('FishEye', {
+        color: 0x111719,
+        roughness: 0.32,
+        metalness: 0,
+      }),
     });
 
     this.glassMaterial = this.trackMaterial('AquariumGlass', new THREE.MeshPhysicalMaterial({
@@ -188,6 +198,7 @@ export class AquariumRoom extends RectangularRoom {
       body: new THREE.SphereGeometry(1, 20, 12),
       tail: new THREE.ConeGeometry(1, 1, 3),
       dorsalFin: new THREE.ConeGeometry(1, 1, 3),
+      eye: new THREE.SphereGeometry(1, 8, 6),
     });
     this.bubbleGeometry = new THREE.SphereGeometry(1, 8, 6);
 
@@ -443,9 +454,11 @@ export class AquariumRoom extends RectangularRoom {
         scale: spec.scale,
         bodyMaterial: this.createFishMaterial(`FishBody:${index}`, spec.color),
         finMaterial: this.createFishMaterial(`FishFin:${index}`, spec.finColor),
+        eyeMaterial: this.aquariumMaterials.fishEye,
         bodyGeometry: this.fishGeometries.body,
         tailGeometry: this.fishGeometries.tail,
         dorsalFinGeometry: this.fishGeometries.dorsalFin,
+        eyeGeometry: this.fishGeometries.eye,
       });
 
       this.fish.push(fish);
@@ -560,7 +573,7 @@ export class AquariumRoom extends RectangularRoom {
       this.addLabel(label);
       this.registerInteractable(label.mesh, {
         id: `aquarium-exhibit-${exhibit.id}`,
-        range: 2.35,
+        range: EXHIBIT_READ_RANGE,
         prompt: 'Read Exhibit',
         onInteract: ({ roomManager }) => this.showExhibitInfo(exhibit, roomManager),
       });
@@ -568,6 +581,8 @@ export class AquariumRoom extends RectangularRoom {
   }
 
   showExhibitInfo(exhibit, roomManager) {
+    this.activeExhibit = exhibit;
+    this.infoPanelHud = roomManager.hud;
     roomManager.hud.showInfoPanel({
       title: exhibit.title,
       body: exhibit.body,
@@ -641,10 +656,29 @@ export class AquariumRoom extends RectangularRoom {
   }
 
   update(deltaTime, player, elapsedTime = 0) {
+    this.updateExhibitInfoPanel(player);
     this.updateFish(deltaTime, elapsedTime);
     this.updateBubbles(deltaTime, elapsedTime);
     this.updateWater(elapsedTime);
     this.updateCaustics(elapsedTime);
+  }
+
+  updateExhibitInfoPanel(player) {
+    if (!this.activeExhibit || !this.infoPanelHud) {
+      return;
+    }
+
+    const position = this.toWorldPosition(this.activeExhibit.position);
+    this.exhibitWorldPosition.set(position.x, player.position.y, position.z);
+
+    if (this.exhibitWorldPosition.distanceTo(player.position) > EXHIBIT_INFO_HIDE_DISTANCE) {
+      this.hideExhibitInfo();
+    }
+  }
+
+  hideExhibitInfo() {
+    this.infoPanelHud?.hideInfoPanel();
+    this.activeExhibit = null;
   }
 
   updateFish(deltaTime, elapsedTime) {
@@ -680,7 +714,14 @@ export class AquariumRoom extends RectangularRoom {
     }
   }
 
+  deactivate() {
+    super.deactivate();
+    this.hideExhibitInfo();
+  }
+
   dispose() {
+    this.hideExhibitInfo();
+
     for (const fish of this.fish) {
       fish.dispose();
     }

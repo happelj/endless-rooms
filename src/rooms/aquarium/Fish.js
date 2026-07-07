@@ -1,9 +1,11 @@
 import * as THREE from 'three';
 
-const DEFAULT_BOUNDARY_MARGIN = 0.55;
-const DEFAULT_TURN_RATE = 2.4;
-const DEFAULT_WANDER_MIN_SECONDS = 1.4;
-const DEFAULT_WANDER_MAX_SECONDS = 3.2;
+const DEFAULT_BOUNDARY_MARGIN = 0.75;
+const DEFAULT_TURN_RATE = 1.9;
+const DEFAULT_WANDER_MIN_SECONDS = 3.2;
+const DEFAULT_WANDER_MAX_SECONDS = 6.4;
+const WAYPOINT_REACHED_DISTANCE = 0.34;
+const MIN_WAYPOINT_DISTANCE = 2.4;
 
 export class Fish {
   constructor({
@@ -14,9 +16,11 @@ export class Fish {
     scale,
     bodyMaterial,
     finMaterial,
+    eyeMaterial,
     bodyGeometry,
     tailGeometry,
     dorsalFinGeometry,
+    eyeGeometry,
   }) {
     this.id = id;
     this.bounds = bounds;
@@ -25,13 +29,14 @@ export class Fish {
     this.turnRate = DEFAULT_TURN_RATE;
     this.boundaryMargin = DEFAULT_BOUNDARY_MARGIN;
     this.position = new THREE.Vector3(position.x, position.y, position.z);
-    this.velocity = new THREE.Vector3(speed, 0, 0);
-    this.targetDirection = new THREE.Vector3(1, 0, 0);
+    this.velocity = new THREE.Vector3();
+    this.targetPosition = new THREE.Vector3();
+    this.seekDirection = new THREE.Vector3(1, 0, 0);
     this.desiredVelocity = new THREE.Vector3();
     this.boundarySteer = new THREE.Vector3();
     this.forward = new THREE.Vector3(1, 0, 0);
     this.phase = Math.random() * Math.PI * 2;
-    this.wanderTimer = this.getNextWanderDelay();
+    this.wanderTimer = 0;
 
     this.group = new THREE.Group();
     this.group.name = `Fish:${id}`;
@@ -44,49 +49,124 @@ export class Fish {
     this.body.receiveShadow = false;
     this.group.add(this.body);
 
-    this.tail = new THREE.Mesh(tailGeometry, finMaterial);
-    this.tail.name = `FishTail:${id}`;
-    this.tail.position.set(-scale.length * 0.82, 0, 0);
-    this.tail.rotation.z = Math.PI / 2;
-    this.tail.scale.set(scale.height, scale.height, scale.height);
-    this.group.add(this.tail);
+    this.nose = new THREE.Mesh(tailGeometry, bodyMaterial);
+    this.nose.name = `FishNose:${id}`;
+    this.nose.position.set(scale.length * 0.82, 0, 0);
+    this.nose.rotation.z = -Math.PI / 2;
+    this.nose.scale.set(scale.height * 0.42, scale.height * 0.5, scale.width * 0.42);
+    this.group.add(this.nose);
+
+    this.tailGroup = new THREE.Group();
+    this.tailGroup.name = `FishTail:${id}`;
+    this.tailGroup.position.set(-scale.length * 0.84, 0, 0);
+    this.group.add(this.tailGroup);
+
+    this.tailUpper = this.createFin(tailGeometry, finMaterial, {
+      name: `FishTailUpper:${id}`,
+      position: { x: 0, y: scale.height * 0.18, z: 0 },
+      rotation: { x: 0, y: 0, z: Math.PI / 2 },
+      scale: { x: scale.height * 0.92, y: scale.height * 0.78, z: scale.width * 0.55 },
+    });
+    this.tailLower = this.createFin(tailGeometry, finMaterial, {
+      name: `FishTailLower:${id}`,
+      position: { x: 0, y: -scale.height * 0.18, z: 0 },
+      rotation: { x: 0, y: 0, z: Math.PI / 2 },
+      scale: { x: scale.height * 0.92, y: scale.height * 0.78, z: scale.width * 0.55 },
+    });
+    this.tailLower.rotation.x = Math.PI;
+    this.tailGroup.add(this.tailUpper, this.tailLower);
 
     this.dorsalFin = new THREE.Mesh(dorsalFinGeometry, finMaterial);
     this.dorsalFin.name = `FishDorsalFin:${id}`;
-    this.dorsalFin.position.set(-scale.length * 0.05, scale.height * 0.76, 0);
+    this.dorsalFin.position.set(-scale.length * 0.08, scale.height * 0.82, 0);
     this.dorsalFin.rotation.z = Math.PI / 2;
-    this.dorsalFin.scale.set(scale.height * 0.72, scale.height * 0.55, scale.height * 0.72);
+    this.dorsalFin.scale.set(scale.height * 0.62, scale.height * 0.56, scale.width * 0.46);
     this.group.add(this.dorsalFin);
+
+    this.leftFin = this.createFin(dorsalFinGeometry, finMaterial, {
+      name: `FishLeftPectoralFin:${id}`,
+      position: { x: scale.length * 0.18, y: -scale.height * 0.1, z: scale.width * 0.82 },
+      rotation: { x: Math.PI / 2.6, y: 0.48, z: Math.PI / 2 },
+      scale: { x: scale.height * 0.46, y: scale.height * 0.38, z: scale.width * 0.42 },
+    });
+    this.rightFin = this.createFin(dorsalFinGeometry, finMaterial, {
+      name: `FishRightPectoralFin:${id}`,
+      position: { x: scale.length * 0.18, y: -scale.height * 0.1, z: -scale.width * 0.82 },
+      rotation: { x: -Math.PI / 2.6, y: -0.48, z: Math.PI / 2 },
+      scale: { x: scale.height * 0.46, y: scale.height * 0.38, z: scale.width * 0.42 },
+    });
+    this.leftEye = this.createEye(eyeGeometry, eyeMaterial, {
+      name: `FishLeftEye:${id}`,
+      x: scale.length * 0.58,
+      y: scale.height * 0.24,
+      z: scale.width * 0.52,
+      size: Math.max(scale.height * 0.15, 0.018),
+    });
+    this.rightEye = this.createEye(eyeGeometry, eyeMaterial, {
+      name: `FishRightEye:${id}`,
+      x: scale.length * 0.58,
+      y: scale.height * 0.24,
+      z: -scale.width * 0.52,
+      size: Math.max(scale.height * 0.15, 0.018),
+    });
+    this.group.add(this.leftFin, this.rightFin, this.leftEye, this.rightEye);
+
+    this.chooseWanderTarget(true);
+    this.velocity.copy(this.targetPosition).sub(this.position).normalize().multiplyScalar(this.speed);
   }
 
   update(deltaTime, elapsedTime) {
     this.wanderTimer -= deltaTime;
 
-    if (this.wanderTimer <= 0) {
-      this.chooseWanderDirection();
-      this.wanderTimer = this.getNextWanderDelay();
+    if (
+      this.wanderTimer <= 0
+      || this.position.distanceToSquared(this.targetPosition) <= WAYPOINT_REACHED_DISTANCE ** 2
+    ) {
+      this.chooseWanderTarget();
     }
 
+    this.seekDirection.copy(this.targetPosition).sub(this.position).normalize();
     this.applyBoundaryAvoidance();
-    this.desiredVelocity.copy(this.targetDirection).multiplyScalar(this.speed);
+    this.desiredVelocity.copy(this.seekDirection).multiplyScalar(this.speed);
     this.velocity.lerp(this.desiredVelocity, 1 - Math.exp(-this.turnRate * deltaTime));
     this.position.addScaledVector(this.velocity, deltaTime);
     this.clampPosition();
     this.updateTransform(elapsedTime);
   }
 
-  chooseWanderDirection() {
-    this.targetDirection.set(
-      Math.random() * 2 - 1,
-      (Math.random() * 2 - 1) * 0.28,
-      Math.random() * 2 - 1,
-    );
+  createFin(geometry, material, { name, position, rotation, scale }) {
+    const fin = new THREE.Mesh(geometry, material);
+    fin.name = name;
+    fin.position.set(position.x, position.y, position.z);
+    fin.rotation.set(rotation.x, rotation.y, rotation.z);
+    fin.scale.set(scale.x, scale.y, scale.z);
 
-    if (this.targetDirection.lengthSq() === 0) {
-      this.targetDirection.set(1, 0, 0);
+    return fin;
+  }
+
+  createEye(geometry, material, { name, x, y, z, size }) {
+    const eye = new THREE.Mesh(geometry, material);
+    eye.name = name;
+    eye.position.set(x, y, z);
+    eye.scale.setScalar(size);
+
+    return eye;
+  }
+
+  chooseWanderTarget(force = false) {
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      this.targetPosition.set(
+        THREE.MathUtils.lerp(this.bounds.min.x, this.bounds.max.x, Math.random()),
+        THREE.MathUtils.lerp(this.bounds.min.y, this.bounds.max.y, Math.random()),
+        THREE.MathUtils.lerp(this.bounds.min.z, this.bounds.max.z, Math.random()),
+      );
+
+      if (force || this.targetPosition.distanceToSquared(this.position) >= MIN_WAYPOINT_DISTANCE ** 2) {
+        break;
+      }
     }
 
-    this.targetDirection.normalize();
+    this.wanderTimer = this.getNextWanderDelay();
   }
 
   applyBoundaryAvoidance() {
@@ -97,7 +177,7 @@ export class Fish {
 
     if (this.boundarySteer.lengthSq() > 0) {
       this.boundarySteer.normalize();
-      this.targetDirection.lerp(this.boundarySteer, 0.42).normalize();
+      this.seekDirection.lerp(this.boundarySteer, 0.56).normalize();
     }
   }
 
@@ -128,7 +208,10 @@ export class Fish {
     }
 
     const swim = Math.sin(elapsedTime * (5.2 + this.speed) + this.phase);
-    this.tail.rotation.y = swim * 0.56;
+    const finStroke = Math.sin(elapsedTime * 4.2 + this.phase);
+    this.tailGroup.rotation.y = swim * 0.72;
+    this.leftFin.rotation.y = 0.48 + finStroke * 0.16;
+    this.rightFin.rotation.y = -0.48 - finStroke * 0.16;
     this.body.position.y = Math.sin(elapsedTime * 1.6 + this.phase) * 0.025;
     this.group.position.copy(this.position);
   }
@@ -142,6 +225,6 @@ export class Fish {
   }
 
   dispose() {
-    this.group.remove(this.body, this.tail, this.dorsalFin);
+    this.group.clear();
   }
 }
