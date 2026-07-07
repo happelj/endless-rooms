@@ -2,13 +2,13 @@
 
 Endless Rooms is a browser-based first-person exploration project built with Three.js, Vite, ES modules, JavaScript, HTML5, and CSS3.
 
-This repository currently contains Step 7: CRT Video Texture. The Tom & Jerry Room now has an interactive CRT television that can play a local looping video file on the screen.
+This repository currently contains Step 8: Audio Ambience and Interaction Framework. The Tom & Jerry Room now has positional ambience, a reusable interaction system, and a more convincing powered-on CRT television.
 
 ## Current Step
 
-Version: 0.7
+Version: 0.8
 
-Step 7 includes:
+Step 8 includes:
 
 - Vite development setup
 - Three.js scene, perspective camera, and WebGL renderer
@@ -25,16 +25,25 @@ Step 7 includes:
 - Directional portal system
 - Room manager with room registration and activation
 - Raycast-based interaction manager
+- Reusable `Interactable` framework
+- Range-limited interaction prompts
 - Interactive CRT television
 - Local video texture playback
 - TV power control
 - TV volume control
+- Subtle CRT glow, scanlines, and brightness flicker
+- Web Audio based `AudioManager`
+- Ambient room audio loops
+- Positional room audio
+- Subtle HVAC ambience
+- CRT electrical and cabinet hum
+- Floor lamp buzz
 - HUD room metadata with connected destination names
 - Contextual interaction prompt
 - Furniture collision for large room props
 - Warm room-specific lighting
 - Debug HUD for coordinates, grounded state, vertical velocity, room, portal count, and connected rooms
-- Optional debug visualization for player bounds, portal triggers, and room bounds
+- Optional debug visualization for player bounds, portal triggers, room bounds, and interaction ranges
 - Resize handling
 - Animation loop
 
@@ -72,9 +81,37 @@ Open that URL in a browser to view the project.
 - Look at an interactable object and press `E` to use it.
 - Press `ESC` to unlock the mouse and show the start overlay again.
 
+## Step 8: Audio Ambience and Interaction Framework
+
+Step 8 adds the first reusable audio and interaction systems.
+
+`src/audio/AudioManager.js` owns Web Audio lifecycle, listener updates, positional loop registration, room-based source muting, and future sound-effect support. It creates the underlying audio graph only after the player enters pointer lock, then suspends audio when pointer lock exits.
+
+`src/interactions/Interactable.js` represents one reusable interaction target. It owns:
+
+- Unique id
+- Target meshes
+- Interaction range
+- Prompt text
+- Interaction callback
+- Enabled state
+- Optional metadata
+
+`src/interactions/InteractionManager.js` filters active-room interactables by distance before raycasting, then displays a prompt only when the player is close enough and looking at a valid target.
+
+The Tom & Jerry Room now includes:
+
+- Positional HVAC ambience
+- Positional floor lamp buzz
+- Positional CRT hum while the TV is on
+- Positional CRT cabinet hum while the TV is on
+- Slight CRT screen glow
+- Subtle CRT brightness flicker
+- Lightweight scanline overlay
+
 ## Step 7: CRT Video Texture
 
-`src/media/VideoScreen.js` owns the video element, Three.js `VideoTexture`, TV power state, looping playback, and volume changes.
+`src/media/VideoScreen.js` owns the video element, Three.js `VideoTexture`, TV power state, looping playback, volume changes, and display brightness intensity.
 
 The CRT television in the Tom & Jerry Room now supports:
 
@@ -86,7 +123,31 @@ The CRT television in the Tom & Jerry Room now supports:
 - Automatic pause when leaving the room or pressing `ESC`
 - Resume when returning to the room or re-entering pointer lock while the TV is still powered on
 
-The interaction system uses a center-screen raycast against interactable meshes in the active room. This keeps TV controls reusable for future doors, props, switches, and room-specific objects.
+The interaction system uses active-room `Interactable` objects and a center-screen raycast. This keeps TV controls reusable for future doors, props, switches, books, exhibits, NPC conversations, and room-specific objects.
+
+## Audio System
+
+`AudioManager` currently generates lightweight procedural ambience through Web Audio. This avoids adding external audio files in Step 8 while preserving the architecture for future authored loops in `public/audio/`.
+
+The manager supports:
+
+- Ambient room loops
+- Positional audio sources
+- Room-based source activation
+- Global suspend/resume when pointer lock changes
+- Future one-shot sound effects
+
+Room classes configure their own audio through `configureAudio(audioManager)`. Future rooms can register room-specific audio without adding logic to `SceneManager`.
+
+## Interaction Prompts
+
+Interaction prompts appear only when:
+
+- Pointer lock is active
+- The player is within the interactable's configured range
+- The center raycast is aimed at the interactable
+
+The TV screen and power button use `[E] Power TV...`. The CRT volume knobs use `[E] + Increase TV Volume...` and `[E] - Decrease TV Volume...`.
 
 ## Video Asset
 
@@ -219,15 +280,17 @@ PORTAL_CONFIGS
 DEBUG_CONFIG
 INTERACTION_CONFIG
 TV_CONFIG
+AUDIO_CONFIG
 ```
 
 Debug visualization is controlled by:
 
 ```js
 DEBUG_CONFIG.showPhysicsBounds
+DEBUG_CONFIG.showInteractionRanges
 ```
 
-The flag defaults to `false`.
+Both flags default to `false`.
 
 ## Build
 
@@ -267,7 +330,10 @@ endless-rooms/
     |   `-- RoomBoundsCollider.js
     |-- debug/
     |   `-- DebugVisuals.js
+    |-- audio/
+    |   `-- AudioManager.js
     |-- interactions/
+    |   |-- Interactable.js
     |   `-- InteractionManager.js
     |-- media/
     |   `-- VideoScreen.js
@@ -305,10 +371,12 @@ endless-rooms/
 The application is intentionally organized around small classes with narrow responsibilities:
 
 - `SceneManager` owns startup, lifecycle, frame updates, and composition.
+- `AudioManager` owns Web Audio lifecycle, listener updates, positional ambience, and future sound effects.
 - `Renderer` owns WebGL renderer configuration and resize behavior.
 - `Camera` owns perspective camera setup and aspect updates.
 - `RoomManager` owns room registration, activation, and portal registration.
-- `InteractionManager` owns active-room raycast interactions.
+- `Interactable` owns reusable prompt, range, target, and callback metadata.
+- `InteractionManager` owns active-room range filtering, raycast focus, and interaction triggering.
 - `VideoScreen` owns video element and video texture lifecycle.
 - `PortalManager` owns portal lookup and connected-room counts.
 - `Portal` owns directional doorway metadata and trigger volume detection.
@@ -323,16 +391,18 @@ The application is intentionally organized around small classes with narrow resp
 - `Physics` owns vertical movement, gravity, floor snapping, and grounded state.
 - `Hud` owns the overlay DOM, coordinates, room debug values, and physics debug values.
 - `DebugVisuals` owns optional visual helpers for physics and portal debugging.
+- `DebugVisuals` can also show interaction ranges when enabled.
 - `StartOverlay` owns the click-to-begin pointer lock UI.
 
 ## Future Roadmap
 
 Planned future steps:
 
+- Add the Aquarium Room as the next themed destination
+- Add authored ambient audio files
 - Add a TV channel/source selector
 - Add subtitles or on-screen TV status text
-- Add room-specific audio ambience
-- Add richer interaction prompts
+- Add richer object interactions
 - Add jump and crouch input
 - Add furniture colliders with more precise compound shapes
 - Add ramps, stairs, and platform grounding
@@ -343,7 +413,7 @@ Planned future steps:
 - Add VR support
 - Add performance profiling and asset streaming
 
-## Step 7 Verification
+## Step 8 Verification
 
 After running `npm run dev`, verify:
 
@@ -353,11 +423,17 @@ After running `npm run dev`, verify:
 - `W`, `A`, `S`, and `D` move the player smoothly.
 - Holding `Left Shift` increases movement speed.
 - Looking at the CRT screen or power button displays an interaction prompt.
+- The interaction prompt appears only when close enough to the TV controls.
 - Pressing `E` while looking at the CRT screen or power button turns the TV on and starts the local video.
 - Looking at the `+` control and pressing `E` increases TV volume.
 - Looking at the `-` control and pressing `E` decreases TV volume.
 - The TV volume gets quieter as the player moves farther from the television.
+- The powered-on CRT has a slight glow, scanlines, and subtle brightness flicker.
+- Tom & Jerry Room ambience begins after entering pointer lock.
+- HVAC ambience, floor lamp buzz, and CRT hum are spatially positioned.
+- CRT hum starts when the TV turns on and stops when the TV turns off.
 - The TV pauses when leaving the room or pressing `ESC`.
+- Room audio suspends when pressing `ESC`.
 - The TV resumes when returning to the room or clicking to begin again while powered on.
 - Pressing `ESC` exits pointer lock and shows the overlay again.
 - The player remains grounded on the floor.

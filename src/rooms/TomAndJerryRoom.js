@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { TOM_AND_JERRY_ROOM_CONFIG, TV_CONFIG } from '../config/constants.js';
+import { AUDIO_CONFIG, TOM_AND_JERRY_ROOM_CONFIG, TV_CONFIG } from '../config/constants.js';
 import { VideoScreen } from '../media/VideoScreen.js';
 import { FurnitureBuilder } from './FurnitureBuilder.js';
 import { RectangularRoom } from './RectangularRoom.js';
@@ -43,7 +43,9 @@ export class TomAndJerryRoom extends RectangularRoom {
     super.build();
 
     this.furniture = new FurnitureBuilder(this);
+    this.crtEffectTime = 0;
     this.createFurnitureMaterials();
+    this.createScreenEffectMaterials();
     this.addCrownMolding();
     this.addSharedLobbyWallInterior();
     this.addAreaRug();
@@ -146,6 +148,53 @@ export class TomAndJerryRoom extends RectangularRoom {
         metalness: 0,
       }),
     });
+  }
+
+  createScreenEffectMaterials() {
+    this.screenGlowMaterial = new THREE.MeshBasicMaterial({
+      color: 0x9fdfff,
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      toneMapped: false,
+    });
+    this.screenGlowMaterial.name = `${this.name}:CrtScreenGlow`;
+    this.materials.set('CrtScreenGlow', this.screenGlowMaterial);
+
+    this.scanlineTexture = this.createScanlineTexture();
+    this.scanlineMaterial = new THREE.MeshBasicMaterial({
+      map: this.scanlineTexture,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      toneMapped: false,
+    });
+    this.scanlineMaterial.name = `${this.name}:CrtScanlines`;
+    this.materials.set('CrtScanlines', this.scanlineMaterial);
+  }
+
+  createScanlineTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 2;
+    canvas.height = 8;
+
+    const context = canvas.getContext('2d');
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = 'rgba(0, 0, 0, 0.28)';
+    context.fillRect(0, 0, canvas.width, 1);
+    context.fillStyle = 'rgba(255, 255, 255, 0.08)';
+    context.fillRect(0, 4, canvas.width, 1);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(1, 58);
+    texture.magFilter = THREE.NearestFilter;
+    texture.minFilter = THREE.LinearFilter;
+
+    return texture;
   }
 
   addCrownMolding() {
@@ -301,7 +350,9 @@ export class TomAndJerryRoom extends RectangularRoom {
       volumeStep: TV_CONFIG.video.volumeStep,
       spatialAudio: TV_CONFIG.spatialAudio,
     });
+    this.addCrtScreenEffects();
     this.registerInteractable(screenMesh, {
+      id: 'tom-and-jerry-tv-screen',
       getPrompt: () => this.getTelevisionPowerPrompt(),
       onInteract: () => this.toggleTelevisionPower(),
     });
@@ -326,6 +377,7 @@ export class TomAndJerryRoom extends RectangularRoom {
         receiveShadow: true,
       });
       this.registerInteractable(knob, {
+        id: `tom-and-jerry-tv-volume-${index === 0 ? 'up' : 'down'}`,
         getPrompt: () => this.getTelevisionVolumePrompt(index === 0 ? '+' : '-'),
         onInteract: () => this.adjustTelevisionVolume(index === 0 ? 1 : -1),
       });
@@ -345,6 +397,7 @@ export class TomAndJerryRoom extends RectangularRoom {
       receiveShadow: true,
     });
     this.registerInteractable(this.powerButton, {
+      id: 'tom-and-jerry-tv-power-button',
       getPrompt: () => this.getTelevisionPowerPrompt(),
       onInteract: () => this.toggleTelevisionPower(),
     });
@@ -356,6 +409,28 @@ export class TomAndJerryRoom extends RectangularRoom {
       material: this.furnitureMaterials.darkWood,
       receiveShadow: true,
     });
+  }
+
+  addCrtScreenEffects() {
+    this.screenGlowMesh = this.furniture.addBox({
+      name: 'CrtTelevisionScreenGlow',
+      size: { x: 0.012, y: 0.68, z: 1.34 },
+      position: { x: LAYOUT.television.x - 0.568, y: 1.4, z: LAYOUT.television.z - 0.16 },
+      material: this.screenGlowMaterial,
+      castShadow: false,
+      receiveShadow: false,
+    });
+    this.screenGlowMesh.renderOrder = 4;
+
+    this.scanlineMesh = this.furniture.addBox({
+      name: 'CrtTelevisionScanlineOverlay',
+      size: { x: 0.01, y: 0.59, z: 1.2 },
+      position: { x: LAYOUT.television.x - 0.576, y: 1.4, z: LAYOUT.television.z - 0.16 },
+      material: this.scanlineMaterial,
+      castShadow: false,
+      receiveShadow: false,
+    });
+    this.scanlineMesh.renderOrder = 5;
   }
 
   addControlMark(symbol, { y, z }) {
@@ -414,6 +489,7 @@ export class TomAndJerryRoom extends RectangularRoom {
     this.powerButton.material = this.television.isPowered
       ? this.furnitureMaterials.powerOn
       : this.furnitureMaterials.powerOff;
+    this.setTelevisionHumEnabled(this.television.isPowered);
   }
 
   addCouch() {
@@ -608,6 +684,63 @@ export class TomAndJerryRoom extends RectangularRoom {
 
   update(deltaTime, player) {
     this.television?.updateSpatialVolume(player.position);
+    this.updateCrtEffects(deltaTime);
+  }
+
+  updateCrtEffects(deltaTime) {
+    if (!this.television?.isPowered) {
+      this.screenGlowMaterial.opacity = 0;
+      this.scanlineMaterial.opacity = 0;
+      this.television?.setDisplayIntensity(1);
+      return;
+    }
+
+    const effects = TV_CONFIG.effects;
+    this.crtEffectTime += deltaTime;
+
+    const primary = Math.sin(this.crtEffectTime * effects.flickerPrimaryRate) * 0.02;
+    const secondary = Math.sin(this.crtEffectTime * effects.flickerSecondaryRate) * 0.012;
+    const brightness = THREE.MathUtils.clamp(
+      1 + primary + secondary,
+      effects.displayMinIntensity,
+      effects.displayMaxIntensity,
+    );
+
+    this.television.setDisplayIntensity(brightness);
+    const normalizedFlicker = THREE.MathUtils.clamp(Math.abs(primary + secondary) / 0.032, 0, 1);
+    this.screenGlowMaterial.opacity = effects.glowBaseOpacity
+      + normalizedFlicker * effects.glowFlickerOpacity;
+    this.scanlineMaterial.opacity = effects.scanlineOpacity;
+  }
+
+  configureAudio(audioManager) {
+    this.audioManager = audioManager;
+
+    if (!audioManager || this.roomAudioConfigured) {
+      return;
+    }
+
+    const audioConfig = AUDIO_CONFIG.tomAndJerry;
+    this.hvacAudio = this.createRoomAudioSource(audioManager, audioConfig.hvac);
+    this.floorLampBuzzAudio = this.createRoomAudioSource(audioManager, audioConfig.floorLampBuzz);
+    this.crtHumAudio = this.createRoomAudioSource(audioManager, audioConfig.crtHum, { enabled: false });
+    this.crtCabinetHumAudio = this.createRoomAudioSource(audioManager, audioConfig.crtCabinetHum, { enabled: false });
+    this.roomAudioConfigured = true;
+    this.setTelevisionHumEnabled(this.television?.isPowered ?? false);
+  }
+
+  createRoomAudioSource(audioManager, sourceConfig, overrides = {}) {
+    return audioManager.createPositionalLoop({
+      ...sourceConfig,
+      ...overrides,
+      roomId: this.id,
+      position: this.toWorldPosition(sourceConfig.position),
+    });
+  }
+
+  setTelevisionHumEnabled(enabled) {
+    this.crtHumAudio?.setEnabled(enabled);
+    this.crtCabinetHumAudio?.setEnabled(enabled);
   }
 
   activate() {
@@ -630,6 +763,7 @@ export class TomAndJerryRoom extends RectangularRoom {
 
   dispose() {
     this.television?.dispose();
+    this.scanlineTexture?.dispose();
     super.dispose();
   }
 }

@@ -13,6 +13,8 @@ export class InteractionManager {
     this.raycaster = new THREE.Raycaster();
     this.raycaster.far = config.maxDistance;
     this.focusedInteraction = null;
+    this.candidateTargets = [];
+    this.scratchPosition = new THREE.Vector3();
 
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleClick = this.handleClick.bind(this);
@@ -50,9 +52,24 @@ export class InteractionManager {
       return null;
     }
 
-    this.raycaster.setFromCamera(SCREEN_CENTER, this.camera);
+    this.candidateTargets.length = 0;
 
-    for (const hit of this.raycaster.intersectObjects(interactables, true)) {
+    for (const interactable of interactables) {
+      if (!interactable.isEnabled() || !interactable.isInRange(this.camera.position, this.scratchPosition)) {
+        continue;
+      }
+
+      this.candidateTargets.push(...interactable.getTargets());
+    }
+
+    if (this.candidateTargets.length === 0) {
+      return null;
+    }
+
+    this.raycaster.setFromCamera(SCREEN_CENTER, this.camera);
+    this.raycaster.far = this.config.maxDistance;
+
+    for (const hit of this.raycaster.intersectObjects(this.candidateTargets, true)) {
       const interaction = this.getInteractionFromObject(hit.object);
 
       if (interaction) {
@@ -67,8 +84,8 @@ export class InteractionManager {
     let currentObject = object;
 
     while (currentObject) {
-      if (currentObject.userData.interaction) {
-        return currentObject.userData.interaction;
+      if (currentObject.userData.interactable) {
+        return currentObject.userData.interactable;
       }
 
       currentObject = currentObject.parent;
@@ -78,11 +95,10 @@ export class InteractionManager {
   }
 
   getPromptText(interaction) {
-    const label = typeof interaction.getPrompt === 'function'
-      ? interaction.getPrompt()
-      : interaction.prompt;
-
-    return `[${this.config.primaryActionLabel}] ${label}`;
+    return `[${this.config.primaryActionLabel}] ${interaction.getPrompt({
+      camera: this.camera,
+      roomManager: this.roomManager,
+    })}`;
   }
 
   handleKeyDown(event) {
@@ -106,12 +122,15 @@ export class InteractionManager {
   }
 
   triggerFocusedInteraction(event) {
-    if (!this.focusedInteraction?.onInteract) {
+    if (!this.focusedInteraction) {
       return;
     }
 
     event.preventDefault();
-    this.focusedInteraction.onInteract();
+    this.focusedInteraction.interact({
+      camera: this.camera,
+      roomManager: this.roomManager,
+    });
     this.updateFocusedInteraction();
   }
 

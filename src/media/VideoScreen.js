@@ -42,6 +42,7 @@ export class VideoScreen {
       toneMapped: false,
     });
     this.videoMaterial.name = 'VideoScreenMaterial';
+    this.setDisplayIntensity(1);
   }
 
   async togglePower() {
@@ -69,6 +70,7 @@ export class VideoScreen {
     this.isPowered = false;
     this.video.pause();
     this.mesh.material = this.offMaterial;
+    this.setDisplayIntensity(1);
   }
 
   pause() {
@@ -137,6 +139,10 @@ export class VideoScreen {
 
   getPowerLabel() {
     return this.isPowered ? 'On' : 'Off';
+  }
+
+  setDisplayIntensity(intensity) {
+    this.videoMaterial.color.setScalar(intensity);
   }
 
   clampVolume(volume) {

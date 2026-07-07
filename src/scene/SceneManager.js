@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { AudioManager } from '../audio/AudioManager.js';
 import { Camera } from './Camera.js';
 import { Renderer } from './Renderer.js';
 import { CollisionSystem } from '../collision/CollisionSystem.js';
@@ -7,7 +8,7 @@ import { InteractionManager } from '../interactions/InteractionManager.js';
 import { Player } from '../player/Player.js';
 import { RoomManager } from '../rooms/RoomManager.js';
 import { Hud } from '../ui/Hud.js';
-import { DEBUG_CONFIG, SCENE_CONFIG } from '../config/constants.js';
+import { AUDIO_CONFIG, DEBUG_CONFIG, SCENE_CONFIG } from '../config/constants.js';
 
 export class SceneManager {
   constructor(container) {
@@ -30,7 +31,13 @@ export class SceneManager {
     this.camera = new Camera(this.renderer.aspectRatio);
     this.collisionSystem = new CollisionSystem();
     this.hud = new Hud(this.shell);
-    this.roomManager = new RoomManager(this.scene, this.collisionSystem, this.hud);
+    this.audioManager = new AudioManager(this.camera.instance, AUDIO_CONFIG);
+    this.roomManager = new RoomManager(
+      this.scene,
+      this.collisionSystem,
+      this.hud,
+      this.audioManager,
+    );
     this.player = new Player(
       this.camera.instance,
       this.renderer.domElement,
@@ -45,12 +52,13 @@ export class SceneManager {
       this.roomManager,
       this.hud,
     );
-    this.debugVisuals = DEBUG_CONFIG.showPhysicsBounds
+    this.debugVisuals = this.shouldShowDebugVisuals()
       ? new DebugVisuals(this.scene, this.roomManager, this.player)
       : null;
 
     this.registerUpdateable(this.player);
     this.registerUpdateable(this.roomManager);
+    this.registerUpdateable(this.audioManager);
     this.registerUpdateable(this.interactionManager);
     this.registerUpdateable(this.debugVisuals);
 
@@ -85,17 +93,23 @@ export class SceneManager {
     this.updateables.delete(system);
   }
 
+  shouldShowDebugVisuals() {
+    return DEBUG_CONFIG.showPhysicsBounds || DEBUG_CONFIG.showInteractionRanges;
+  }
+
   handleResize() {
     this.renderer.resize();
     this.camera.resize(this.renderer.aspectRatio);
   }
 
   handlePlayerLock() {
+    void this.audioManager.resume();
     this.roomManager.resumeActiveRoomMedia();
   }
 
   handlePlayerUnlock() {
     this.roomManager.pauseActiveRoomMedia();
+    void this.audioManager.suspend();
   }
 
   tick(timestamp) {
@@ -135,6 +149,7 @@ export class SceneManager {
     this.interactionManager.dispose();
     this.debugVisuals?.dispose();
     this.roomManager.dispose();
+    this.audioManager.dispose();
     this.collisionSystem.dispose();
     this.renderer.dispose();
     this.hud.dispose();

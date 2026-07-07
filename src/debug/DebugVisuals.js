@@ -10,16 +10,25 @@ export class DebugVisuals {
     this.group = new THREE.Group();
     this.group.name = 'DebugVisuals';
     this.helpers = new Set();
+    this.interactionRangeHelpers = new Map();
 
-    this.playerBounds = this.createPlayerBounds();
-    this.createRoomBounds();
-    this.createPortalTriggers();
+    this.playerBounds = this.config.showPhysicsBounds ? this.createPlayerBounds() : null;
+
+    if (this.config.showPhysicsBounds) {
+      this.createRoomBounds();
+      this.createPortalTriggers();
+    }
+
+    if (this.config.showInteractionRanges) {
+      this.createInteractionRanges();
+    }
 
     this.scene.add(this.group);
   }
 
   update() {
     this.updatePlayerBounds();
+    this.updateInteractionRanges();
   }
 
   createPlayerBounds() {
@@ -73,13 +82,49 @@ export class DebugVisuals {
     }
   }
 
+  createInteractionRanges() {
+    for (const room of this.roomManager.getRooms()) {
+      for (const interactable of room.getInteractables()) {
+        const geometry = new THREE.SphereGeometry(
+          interactable.range,
+          this.config.interactionRanges.radialSegments,
+          Math.max(8, this.config.interactionRanges.radialSegments / 2),
+        );
+        const material = new THREE.MeshBasicMaterial({
+          color: this.config.interactionRanges.color,
+          wireframe: true,
+          depthWrite: false,
+          transparent: true,
+          opacity: 0.55,
+        });
+        const helper = new THREE.Mesh(geometry, material);
+        helper.name = `DebugInteractionRange:${interactable.id}`;
+        helper.renderOrder = 10;
+        this.interactionRangeHelpers.set(interactable, helper);
+        this.helpers.add(helper);
+        this.group.add(helper);
+      }
+    }
+  }
+
   updatePlayerBounds() {
+    if (!this.playerBounds) {
+      return;
+    }
+
     const { height, eyeHeight } = PLAYER_CONFIG.body;
     this.playerBounds.position.set(
       this.player.position.x,
       this.player.position.y - eyeHeight + height / 2,
       this.player.position.z,
     );
+  }
+
+  updateInteractionRanges() {
+    for (const [interactable, helper] of this.interactionRangeHelpers) {
+      interactable.getWorldPosition(helper.position);
+      helper.visible = interactable.isEnabled();
+    }
   }
 
   dispose() {
@@ -90,9 +135,10 @@ export class DebugVisuals {
       helper.material?.dispose?.();
     }
 
-    this.playerBounds.geometry.dispose();
-    this.playerBounds.material.dispose();
+    this.playerBounds?.geometry.dispose();
+    this.playerBounds?.material.dispose();
     this.group.clear();
     this.helpers.clear();
+    this.interactionRangeHelpers.clear();
   }
 }

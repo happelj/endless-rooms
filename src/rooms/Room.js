@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { AabbCollider } from '../collision/AabbCollider.js';
+import { Interactable } from '../interactions/Interactable.js';
 
 const DEFAULT_ORIGIN = Object.freeze({ x: 0, y: 0, z: 0 });
 
@@ -96,11 +97,26 @@ export class Room {
     this.group.add(label.mesh);
   }
 
-  registerInteractable(mesh, interaction) {
-    mesh.userData.interaction = interaction;
-    this.interactables.add(mesh);
+  registerInteractable(targets, config = {}) {
+    let interactable;
 
-    return mesh;
+    if (targets instanceof Interactable) {
+      interactable = targets;
+    } else if (config instanceof Interactable) {
+      interactable = config;
+    } else {
+      const targetList = Array.isArray(targets) ? targets : [targets];
+
+      interactable = new Interactable({
+        id: config.id ?? targetList.map((target) => target.name).join(':'),
+        targets,
+        ...config,
+      });
+    }
+
+    this.interactables.add(interactable);
+
+    return interactable;
   }
 
   getInteractables() {
@@ -156,6 +172,10 @@ export class Room {
 
     for (const label of this.labels) {
       label.dispose();
+    }
+
+    for (const interactable of this.interactables) {
+      interactable.dispose();
     }
 
     this.scene.remove(this.group);

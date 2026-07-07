@@ -6,10 +6,11 @@ import { TestRoom } from './TestRoom.js';
 import { TomAndJerryRoom } from './TomAndJerryRoom.js';
 
 export class RoomManager {
-  constructor(scene, collisionSystem, hud) {
+  constructor(scene, collisionSystem, hud, audioManager = null) {
     this.scene = scene;
     this.collisionSystem = collisionSystem;
     this.hud = hud;
+    this.audioManager = audioManager;
     this.rooms = new Map();
     this.portalManager = new PortalManager();
     this.activeRoomId = null;
@@ -37,6 +38,7 @@ export class RoomManager {
     }
 
     this.rooms.set(room.id, room);
+    room.configureAudio?.(this.audioManager);
 
     return room;
   }
@@ -67,6 +69,7 @@ export class RoomManager {
     const room = this.getRequiredRoom(roomId);
     room.activate();
     this.activeRoomId = roomId;
+    this.audioManager?.setActiveRoom(roomId);
     this.updateHud();
   }
 
@@ -167,5 +170,6 @@ export class RoomManager {
     this.rooms.clear();
     this.activeRoomId = null;
     this.player = null;
+    this.audioManager = null;
   }
 }

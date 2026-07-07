@@ -1,7 +1,7 @@
 export const APP_METADATA = Object.freeze({
   title: 'Endless Rooms',
-  version: '0.7',
-  stepLabel: 'Step 7 - CRT Video Texture',
+  version: '0.8',
+  stepLabel: 'Step 8 - Audio Ambience and Interactions',
 });
 
 export const SCENE_CONFIG = Object.freeze({
@@ -166,6 +166,76 @@ export const TV_CONFIG = Object.freeze({
     referenceDistance: 2,
     maxDistance: 9,
     minMultiplier: 0.18,
+  }),
+  effects: Object.freeze({
+    displayMinIntensity: 0.92,
+    displayMaxIntensity: 1.04,
+    glowBaseOpacity: 0.12,
+    glowFlickerOpacity: 0.035,
+    scanlineOpacity: 0.16,
+    flickerPrimaryRate: 15,
+    flickerSecondaryRate: 37,
+  }),
+});
+
+export const AUDIO_CONFIG = Object.freeze({
+  masterVolume: 0.9,
+  tomAndJerry: Object.freeze({
+    hvac: Object.freeze({
+      id: 'tom-and-jerry-room-hvac',
+      kind: 'noise',
+      volume: 0.014,
+      position: Object.freeze({ x: 0, y: 3.45, z: 0 }),
+      panner: Object.freeze({
+        refDistance: 5,
+        maxDistance: 18,
+        rolloffFactor: 0.65,
+      }),
+      filter: Object.freeze({
+        type: 'lowpass',
+        frequency: 520,
+        q: 0.45,
+      }),
+    }),
+    crtHum: Object.freeze({
+      id: 'tom-and-jerry-room-crt-hum',
+      kind: 'oscillator',
+      waveform: 'sine',
+      frequency: 60,
+      volume: 0.005,
+      position: Object.freeze({ x: 6.28, y: 1.32, z: 0 }),
+      panner: Object.freeze({
+        refDistance: 1.2,
+        maxDistance: 7,
+        rolloffFactor: 1.8,
+      }),
+    }),
+    crtCabinetHum: Object.freeze({
+      id: 'tom-and-jerry-room-crt-cabinet-hum',
+      kind: 'oscillator',
+      waveform: 'triangle',
+      frequency: 118,
+      volume: 0.0022,
+      position: Object.freeze({ x: 6.28, y: 1.25, z: 0 }),
+      panner: Object.freeze({
+        refDistance: 1,
+        maxDistance: 5.8,
+        rolloffFactor: 1.9,
+      }),
+    }),
+    floorLampBuzz: Object.freeze({
+      id: 'tom-and-jerry-room-floor-lamp-buzz',
+      kind: 'oscillator',
+      waveform: 'sine',
+      frequency: 120,
+      volume: 0.0028,
+      position: Object.freeze({ x: -3.8, y: 1.7, z: -3.75 }),
+      panner: Object.freeze({
+        refDistance: 0.9,
+        maxDistance: 5.2,
+        rolloffFactor: 1.7,
+      }),
+    }),
   }),
 });
 
@@ -484,6 +554,7 @@ export const ROOM_MANAGER_CONFIG = Object.freeze({
 
 export const DEBUG_CONFIG = Object.freeze({
   showPhysicsBounds: false,
+  showInteractionRanges: false,
   playerBounds: Object.freeze({
     color: 0x4fd1ff,
     radialSegments: 20,
@@ -493,6 +564,10 @@ export const DEBUG_CONFIG = Object.freeze({
   }),
   roomBounds: Object.freeze({
     color: 0x8ef58e,
+  }),
+  interactionRanges: Object.freeze({
+    color: 0xff6b9d,
+    radialSegments: 32,
   }),
 });
 
