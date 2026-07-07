@@ -1,8 +1,8 @@
 {
   "name": "endless-rooms",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
-  "description": "Step 6 Tom and Jerry room for a browser-based first-person exploration project.",
+  "description": "Step 7 CRT video texture system for a browser-based first-person exploration project.",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",

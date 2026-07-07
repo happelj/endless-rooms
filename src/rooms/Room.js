@@ -24,6 +24,7 @@ export class Room {
     this.materials = new Map();
     this.registeredColliders = new Set();
     this.registeredBoundsColliders = new Set();
+    this.interactables = new Set();
     this.labels = new Set();
     this.lights = new Set();
 
@@ -95,6 +96,17 @@ export class Room {
     this.group.add(label.mesh);
   }
 
+  registerInteractable(mesh, interaction) {
+    mesh.userData.interaction = interaction;
+    this.interactables.add(mesh);
+
+    return mesh;
+  }
+
+  getInteractables() {
+    return Array.from(this.interactables);
+  }
+
   activate() {
     this.isActive = true;
 
@@ -163,6 +175,7 @@ export class Room {
 
     this.registeredColliders.clear();
     this.registeredBoundsColliders.clear();
+    this.interactables.clear();
     this.labels.clear();
     this.lights.clear();
     this.geometryCache.clear();

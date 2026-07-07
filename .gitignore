@@ -10,3 +10,5 @@ yarn-error.log*
 pnpm-debug.log*
 *.local
 
+# Local video assets can exceed GitHub's normal file-size limits.
+public/videos/Tom-and-Jerry.mp4

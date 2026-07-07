@@ -1,7 +1,7 @@
 export const APP_METADATA = Object.freeze({
   title: 'Endless Rooms',
-  version: '0.6',
-  stepLabel: 'Step 6 - Tom & Jerry Room',
+  version: '0.7',
+  stepLabel: 'Step 7 - CRT Video Texture',
 });
 
 export const SCENE_CONFIG = Object.freeze({
@@ -144,6 +144,23 @@ export const PLAYER_CONFIG = Object.freeze({
       right: Object.freeze(['KeyD']),
       sprint: Object.freeze(['ShiftLeft']),
     }),
+  }),
+});
+
+export const INTERACTION_CONFIG = Object.freeze({
+  maxDistance: 3.2,
+  primaryActionLabel: 'E',
+  keys: Object.freeze({
+    interact: Object.freeze(['KeyE']),
+  }),
+});
+
+export const TV_CONFIG = Object.freeze({
+  video: Object.freeze({
+    src: '/videos/Tom-and-Jerry.mp4',
+    loop: true,
+    defaultVolume: 0.45,
+    volumeStep: 0.1,
   }),
 });
 

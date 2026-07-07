@@ -2,13 +2,13 @@
 
 Endless Rooms is a browser-based first-person exploration project built with Three.js, Vite, ES modules, JavaScript, HTML5, and CSS3.
 
-This repository currently contains Step 6: Tom & Jerry Room. The project now has a themed destination room connected to the lobby through the reusable portal and room-management systems.
+This repository currently contains Step 7: CRT Video Texture. The Tom & Jerry Room now has an interactive CRT television that can play a local looping video file on the screen.
 
 ## Current Step
 
-Version: 0.6
+Version: 0.7
 
-Step 6 includes:
+Step 7 includes:
 
 - Vite development setup
 - Three.js scene, perspective camera, and WebGL renderer
@@ -24,7 +24,13 @@ Step 6 includes:
 - Connected Tom & Jerry Room
 - Directional portal system
 - Room manager with room registration and activation
+- Raycast-based interaction manager
+- Interactive CRT television
+- Local video texture playback
+- TV power control
+- TV volume control
 - HUD room metadata with connected destination names
+- Contextual interaction prompt
 - Furniture collision for large room props
 - Warm room-specific lighting
 - Debug HUD for coordinates, grounded state, vertical velocity, room, portal count, and connected rooms
@@ -63,9 +69,35 @@ Open that URL in a browser to view the project.
 - Press `S` to move backward.
 - Press `D` to move right.
 - Hold `Left Shift` to sprint.
+- Look at an interactable object and press `E` to use it.
 - Press `ESC` to unlock the mouse and show the start overlay again.
 
-## Step 6: Tom & Jerry Room
+## Step 7: CRT Video Texture
+
+`src/media/VideoScreen.js` owns the video element, Three.js `VideoTexture`, TV power state, looping playback, and volume changes.
+
+The CRT television in the Tom & Jerry Room now supports:
+
+- Power on/off
+- Looping local video playback
+- Audio playback after user interaction
+- Volume up/down controls
+- Automatic pause when leaving the room
+- Resume when returning while the TV is still powered on
+
+The interaction system uses a center-screen raycast against interactable meshes in the active room. This keeps TV controls reusable for future doors, props, switches, and room-specific objects.
+
+## Video Asset
+
+The local runtime expects:
+
+```text
+public/videos/Tom-and-Jerry.mp4
+```
+
+That file is intentionally ignored by Git because the current local MP4 is larger than GitHub's normal file-size limit. For GitHub-hosted playback, provide a compressed video under 100 MB, use Git LFS, or host the video from an allowed external asset source and update `TV_CONFIG.video.src` in `src/config/constants.js`.
+
+## Tom & Jerry Room
 
 `src/rooms/TomAndJerryRoom.js` creates the first themed destination. It reuses `RectangularRoom` for the room shell and adds room-specific props, lighting, trim, and furniture.
 
@@ -83,11 +115,11 @@ The room includes:
 - Couch
 - Bean bag chair
 - Entertainment center
-- Large CRT television
+- Interactive large CRT television
 - Small rug beneath the coffee table
 - Two framed generic wall decorations
 
-The television is intentionally static in Step 6. Its screen uses a dark placeholder material so the room is ready for the Step 7 video texture system without implementing video playback early.
+The television screen uses the local video asset when powered on and falls back to a dark placeholder material when powered off.
 
 ## Furniture Collision
 
@@ -184,6 +216,8 @@ TOM_AND_JERRY_ROOM_DIMENSIONS
 PLAYER_CONFIG
 PORTAL_CONFIGS
 DEBUG_CONFIG
+INTERACTION_CONFIG
+TV_CONFIG
 ```
 
 Debug visualization is controlled by:
@@ -232,6 +266,10 @@ endless-rooms/
     |   `-- RoomBoundsCollider.js
     |-- debug/
     |   `-- DebugVisuals.js
+    |-- interactions/
+    |   `-- InteractionManager.js
+    |-- media/
+    |   `-- VideoScreen.js
     |-- portals/
     |   |-- Portal.js
     |   `-- PortalManager.js
@@ -269,6 +307,8 @@ The application is intentionally organized around small classes with narrow resp
 - `Renderer` owns WebGL renderer configuration and resize behavior.
 - `Camera` owns perspective camera setup and aspect updates.
 - `RoomManager` owns room registration, activation, and portal registration.
+- `InteractionManager` owns active-room raycast interactions.
+- `VideoScreen` owns video element and video texture lifecycle.
 - `PortalManager` owns portal lookup and connected-room counts.
 - `Portal` owns directional doorway metadata and trigger volume detection.
 - `Room` owns reusable room lifecycle, materials, geometry caching, and collision registration.
@@ -288,10 +328,10 @@ The application is intentionally organized around small classes with narrow resp
 
 Planned future steps:
 
-- Add the video texture system for the CRT television
-- Add video asset loading and lifecycle management
+- Add a TV channel/source selector
+- Add subtitles or on-screen TV status text
 - Add room-specific audio ambience
-- Add interaction prompts
+- Add richer interaction prompts
 - Add jump and crouch input
 - Add furniture colliders with more precise compound shapes
 - Add ramps, stairs, and platform grounding
@@ -302,7 +342,7 @@ Planned future steps:
 - Add VR support
 - Add performance profiling and asset streaming
 
-## Step 6 Verification
+## Step 7 Verification
 
 After running `npm run dev`, verify:
 
@@ -311,6 +351,10 @@ After running `npm run dev`, verify:
 - Mouse movement controls first-person look direction.
 - `W`, `A`, `S`, and `D` move the player smoothly.
 - Holding `Left Shift` increases movement speed.
+- Looking at the CRT screen or power button displays an interaction prompt.
+- Pressing `E` while looking at the CRT screen or power button turns the TV on and starts the local video.
+- Pressing `E` on the volume controls changes the video volume.
+- The TV pauses when leaving the room and resumes when returning while powered on.
 - Pressing `ESC` exits pointer lock and shows the overlay again.
 - The player remains grounded on the floor.
 - The HUD shows live `X`, `Y`, and `Z` coordinates.
@@ -323,6 +367,6 @@ After running `npm run dev`, verify:
 - The couch, television, entertainment center, coffee table, and side table block player movement.
 - Unimplemented lobby openings display `Coming Soon`.
 - The Tom & Jerry Room lighting feels warm and does not create harsh shadows.
-- The CRT television is visible and displays only a static placeholder screen.
+- The CRT television is visible and displays video after being powered on.
 - Solid walls still block movement.
 - Project builds successfully with `npm run build`.

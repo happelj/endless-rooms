@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { TOM_AND_JERRY_ROOM_CONFIG } from '../config/constants.js';
+import { TOM_AND_JERRY_ROOM_CONFIG, TV_CONFIG } from '../config/constants.js';
+import { VideoScreen } from '../media/VideoScreen.js';
 import { FurnitureBuilder } from './FurnitureBuilder.js';
 import { RectangularRoom } from './RectangularRoom.js';
 
@@ -95,6 +96,18 @@ export class TomAndJerryRoom extends RectangularRoom {
         metalness: 0,
         emissive: 0x1d3a3f,
         emissiveIntensity: 0.16,
+      }),
+      powerOff: this.createMaterial('CrtPowerOff', {
+        color: 0x4f1614,
+        roughness: 0.64,
+        metalness: 0.15,
+      }),
+      powerOn: this.createMaterial('CrtPowerOn', {
+        color: 0x2ed06e,
+        roughness: 0.42,
+        metalness: 0.1,
+        emissive: 0x1ce968,
+        emissiveIntensity: 0.7,
       }),
       bezel: this.createMaterial('CrtBezel', {
         color: 0x11100e,
@@ -200,13 +213,26 @@ export class TomAndJerryRoom extends RectangularRoom {
       receiveShadow: true,
     });
 
-    this.furniture.addBox({
+    const screenMesh = this.furniture.addBox({
       name: 'CrtTelevisionScreenPlaceholder',
       size: { x: 0.04, y: 0.58, z: 1.18 },
       position: { x: LAYOUT.television.x - 0.535, y: 1.4, z: LAYOUT.television.z - 0.16 },
       material: this.furnitureMaterials.screen,
       castShadow: false,
       receiveShadow: false,
+    });
+
+    this.television = new VideoScreen({
+      mesh: screenMesh,
+      offMaterial: this.furnitureMaterials.screen,
+      src: TV_CONFIG.video.src,
+      loop: TV_CONFIG.video.loop,
+      defaultVolume: TV_CONFIG.video.defaultVolume,
+      volumeStep: TV_CONFIG.video.volumeStep,
+    });
+    this.registerInteractable(screenMesh, {
+      getPrompt: () => this.getTelevisionPrompt('Power'),
+      onInteract: () => this.toggleTelevisionPower(),
     });
 
     this.furniture.addBox({
@@ -218,7 +244,7 @@ export class TomAndJerryRoom extends RectangularRoom {
     });
 
     for (const [index, z] of [0.92, 0.7].entries()) {
-      this.furniture.addCylinder({
+      const knob = this.furniture.addCylinder({
         name: `CrtTelevisionControlKnob:${index + 1}`,
         radiusTop: 0.08,
         height: 0.07,
@@ -228,7 +254,26 @@ export class TomAndJerryRoom extends RectangularRoom {
         material: this.furnitureMaterials.brass,
         receiveShadow: true,
       });
+      this.registerInteractable(knob, {
+        getPrompt: () => this.getTelevisionPrompt(index === 0 ? 'Volume Up' : 'Volume Down'),
+        onInteract: () => this.adjustTelevisionVolume(index === 0 ? 1 : -1),
+      });
     }
+
+    this.powerButton = this.furniture.addCylinder({
+      name: 'CrtTelevisionPowerButton',
+      radiusTop: 0.075,
+      height: 0.08,
+      radialSegments: 18,
+      position: { x: LAYOUT.television.x - 0.575, y: 0.91, z: 0.88 },
+      rotation: { x: 0, y: 0, z: Math.PI / 2 },
+      material: this.furnitureMaterials.powerOff,
+      receiveShadow: true,
+    });
+    this.registerInteractable(this.powerButton, {
+      getPrompt: () => this.getTelevisionPrompt('Power'),
+      onInteract: () => this.toggleTelevisionPower(),
+    });
 
     this.furniture.addBox({
       name: 'CrtTelevisionStand',
@@ -237,6 +282,35 @@ export class TomAndJerryRoom extends RectangularRoom {
       material: this.furnitureMaterials.darkWood,
       receiveShadow: true,
     });
+  }
+
+  toggleTelevisionPower() {
+    this.television.togglePower();
+    this.syncTelevisionControls();
+  }
+
+  adjustTelevisionVolume(direction) {
+    if (direction > 0) {
+      this.television.increaseVolume();
+    } else {
+      this.television.decreaseVolume();
+    }
+
+    this.syncTelevisionControls();
+  }
+
+  getTelevisionPrompt(action) {
+    return `${action} TV - ${this.television.getPowerLabel()} - Volume ${this.television.getVolumePercent()}%`;
+  }
+
+  syncTelevisionControls() {
+    if (!this.powerButton) {
+      return;
+    }
+
+    this.powerButton.material = this.television.isPowered
+      ? this.furnitureMaterials.powerOn
+      : this.furnitureMaterials.powerOff;
   }
 
   addCouch() {
@@ -427,5 +501,20 @@ export class TomAndJerryRoom extends RectangularRoom {
       default:
         throw new Error(`Unknown trim wall: ${wallName}`);
     }
+  }
+
+  activate() {
+    super.activate();
+    this.television?.resumeIfPowered();
+  }
+
+  deactivate() {
+    super.deactivate();
+    this.television?.pause();
+  }
+
+  dispose() {
+    this.television?.dispose();
+    super.dispose();
   }
 }

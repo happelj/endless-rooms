@@ -123,6 +123,18 @@ export class RoomManager {
     return Array.from(this.rooms.values());
   }
 
+  getActiveRoom() {
+    if (!this.activeRoomId) {
+      return null;
+    }
+
+    return this.getRequiredRoom(this.activeRoomId);
+  }
+
+  getActiveInteractables() {
+    return this.getActiveRoom()?.getInteractables() ?? [];
+  }
+
   getPortals() {
     return this.portalManager.getPortals();
   }

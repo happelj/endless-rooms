@@ -23,6 +23,7 @@ export class Hud {
       grounded: this.root.querySelector('[data-hud-grounded]'),
       verticalVelocity: this.root.querySelector('[data-hud-vertical-velocity]'),
     };
+    this.interactionPromptElement = this.root.querySelector('[data-interaction-prompt]');
   }
 
   createTemplate() {
@@ -79,6 +80,8 @@ export class Hud {
           </div>
         </dl>
       </section>
+
+      <div class="interaction-prompt" data-interaction-prompt hidden></div>
     `;
   }
 
@@ -99,6 +102,11 @@ export class Hud {
   updatePhysicsDebug({ grounded, verticalVelocity }) {
     this.physicsElements.grounded.textContent = grounded ? 'Yes' : 'No';
     this.physicsElements.verticalVelocity.textContent = this.formatCoordinate(verticalVelocity);
+  }
+
+  updateInteractionPrompt(text) {
+    this.interactionPromptElement.textContent = text;
+    this.interactionPromptElement.hidden = text.length === 0;
   }
 
   formatCoordinate(value) {

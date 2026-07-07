@@ -137,6 +137,30 @@ select {
   white-space: nowrap;
 }
 
+.interaction-prompt {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(96px, 14vh, 160px);
+  z-index: 3;
+  max-width: min(360px, calc(100vw - 40px));
+  transform: translateX(-50%);
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: rgb(8 12 17 / 0.74);
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.2);
+  color: #f7fbff;
+  font-size: 0.92rem;
+  line-height: 1.25;
+  text-align: center;
+  pointer-events: none;
+  backdrop-filter: blur(12px);
+}
+
+.interaction-prompt[hidden] {
+  display: none;
+}
+
 .start-overlay {
   position: absolute;
   inset: 0;

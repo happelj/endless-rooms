@@ -3,6 +3,7 @@ import { Camera } from './Camera.js';
 import { Renderer } from './Renderer.js';
 import { CollisionSystem } from '../collision/CollisionSystem.js';
 import { DebugVisuals } from '../debug/DebugVisuals.js';
+import { InteractionManager } from '../interactions/InteractionManager.js';
 import { Player } from '../player/Player.js';
 import { RoomManager } from '../rooms/RoomManager.js';
 import { Hud } from '../ui/Hud.js';
@@ -38,12 +39,19 @@ export class SceneManager {
       { collisionSystem: this.collisionSystem },
     );
     this.roomManager.setPlayer(this.player);
+    this.interactionManager = new InteractionManager(
+      this.camera.instance,
+      this.renderer.domElement,
+      this.roomManager,
+      this.hud,
+    );
     this.debugVisuals = DEBUG_CONFIG.showPhysicsBounds
       ? new DebugVisuals(this.scene, this.roomManager, this.player)
       : null;
 
     this.registerUpdateable(this.player);
     this.registerUpdateable(this.roomManager);
+    this.registerUpdateable(this.interactionManager);
     this.registerUpdateable(this.debugVisuals);
 
     this.handleResize = this.handleResize.bind(this);
@@ -109,6 +117,7 @@ export class SceneManager {
     }
 
     this.player.dispose();
+    this.interactionManager.dispose();
     this.debugVisuals?.dispose();
     this.roomManager.dispose();
     this.collisionSystem.dispose();
