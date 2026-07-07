@@ -75,7 +75,7 @@ export class RoomManager {
     room.deactivate();
   }
 
-  update() {
+  update(deltaTime) {
     if (!this.player || !this.activeRoomId) {
       return;
     }
@@ -86,7 +86,16 @@ export class RoomManager {
       this.transitionThroughPortal(portal);
     }
 
+    this.getActiveRoom()?.update?.(deltaTime, this.player);
     this.updateHud();
+  }
+
+  pauseActiveRoomMedia() {
+    this.getActiveRoom()?.pauseMedia?.();
+  }
+
+  resumeActiveRoomMedia() {
+    this.getActiveRoom()?.resumeMedia?.();
   }
 
   transitionThroughPortal(portal) {

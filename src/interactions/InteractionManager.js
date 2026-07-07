@@ -26,6 +26,12 @@ export class InteractionManager {
   }
 
   updateFocusedInteraction() {
+    if (document.pointerLockElement !== this.domElement) {
+      this.focusedInteraction = null;
+      this.hud.updateInteractionPrompt('');
+      return;
+    }
+
     const interaction = this.findFocusedInteraction();
     this.focusedInteraction = interaction;
 
@@ -80,6 +86,10 @@ export class InteractionManager {
   }
 
   handleKeyDown(event) {
+    if (document.pointerLockElement !== this.domElement) {
+      return;
+    }
+
     if (event.repeat || !this.isInteractionKey(event.code)) {
       return;
     }

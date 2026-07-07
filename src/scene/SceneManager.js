@@ -55,7 +55,12 @@ export class SceneManager {
     this.registerUpdateable(this.debugVisuals);
 
     this.handleResize = this.handleResize.bind(this);
+    this.handlePlayerLock = this.handlePlayerLock.bind(this);
+    this.handlePlayerUnlock = this.handlePlayerUnlock.bind(this);
     this.tick = this.tick.bind(this);
+
+    this.player.controls.addEventListener('lock', this.handlePlayerLock);
+    this.player.controls.addEventListener('unlock', this.handlePlayerUnlock);
   }
 
   start() {
@@ -85,6 +90,14 @@ export class SceneManager {
     this.camera.resize(this.renderer.aspectRatio);
   }
 
+  handlePlayerLock() {
+    this.roomManager.resumeActiveRoomMedia();
+  }
+
+  handlePlayerUnlock() {
+    this.roomManager.pauseActiveRoomMedia();
+  }
+
   tick(timestamp) {
     if (!this.isRunning) {
       return;
@@ -110,6 +123,8 @@ export class SceneManager {
   dispose() {
     this.isRunning = false;
     window.removeEventListener('resize', this.handleResize);
+    this.player.controls.removeEventListener('lock', this.handlePlayerLock);
+    this.player.controls.removeEventListener('unlock', this.handlePlayerUnlock);
 
     if (this.animationFrameId !== null) {
       window.cancelAnimationFrame(this.animationFrameId);

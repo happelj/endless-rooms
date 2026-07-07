@@ -162,6 +162,11 @@ export const TV_CONFIG = Object.freeze({
     defaultVolume: 0.45,
     volumeStep: 0.1,
   }),
+  spatialAudio: Object.freeze({
+    referenceDistance: 2,
+    maxDistance: 9,
+    minMultiplier: 0.18,
+  }),
 });
 
 export const LOBBY_ROOM_CONFIG = Object.freeze({
@@ -299,7 +304,7 @@ export const TOM_AND_JERRY_ROOM_CONFIG = Object.freeze({
   name: 'Tom & Jerry Room',
   origin: TOM_AND_JERRY_ROOM_ORIGIN,
   dimensions: TOM_AND_JERRY_ROOM_DIMENSIONS,
-  omittedWalls: Object.freeze([]),
+  omittedWalls: Object.freeze(['west']),
   floorSize: Object.freeze({
     x: TOM_AND_JERRY_ROOM_DIMENSIONS.width,
     z: TOM_AND_JERRY_ROOM_DIMENSIONS.length,

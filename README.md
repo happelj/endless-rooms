@@ -81,9 +81,10 @@ The CRT television in the Tom & Jerry Room now supports:
 - Power on/off
 - Looping local video playback
 - Audio playback after user interaction
-- Volume up/down controls
-- Automatic pause when leaving the room
-- Resume when returning while the TV is still powered on
+- `+` and `-` volume controls on the CRT control panel
+- Distance-based volume falloff as the player walks away from the TV
+- Automatic pause when leaving the room or pressing `ESC`
+- Resume when returning to the room or re-entering pointer lock while the TV is still powered on
 
 The interaction system uses a center-screen raycast against interactable meshes in the active room. This keeps TV controls reusable for future doors, props, switches, and room-specific objects.
 
@@ -353,8 +354,11 @@ After running `npm run dev`, verify:
 - Holding `Left Shift` increases movement speed.
 - Looking at the CRT screen or power button displays an interaction prompt.
 - Pressing `E` while looking at the CRT screen or power button turns the TV on and starts the local video.
-- Pressing `E` on the volume controls changes the video volume.
-- The TV pauses when leaving the room and resumes when returning while powered on.
+- Looking at the `+` control and pressing `E` increases TV volume.
+- Looking at the `-` control and pressing `E` decreases TV volume.
+- The TV volume gets quieter as the player moves farther from the television.
+- The TV pauses when leaving the room or pressing `ESC`.
+- The TV resumes when returning to the room or clicking to begin again while powered on.
 - Pressing `ESC` exits pointer lock and shows the overlay again.
 - The player remains grounded on the floor.
 - The HUD shows live `X`, `Y`, and `Z` coordinates.

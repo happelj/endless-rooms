@@ -9,10 +9,13 @@ const LAYOUT = Object.freeze({
   coffeeTable: Object.freeze({ x: 1.15, z: 0 }),
   sideTable: Object.freeze({ x: -2.8, z: -3.05 }),
   beanBag: Object.freeze({ x: -4.65, z: 4.55 }),
-  entertainmentCenter: Object.freeze({ x: 6.55, z: 0 }),
-  television: Object.freeze({ x: 6.02, z: 0 }),
+  entertainmentCenter: Object.freeze({ x: 6.48, z: 0 }),
+  television: Object.freeze({ x: 6.28, z: 0 }),
   floorLamp: Object.freeze({ x: -3.8, z: -3.75 }),
 });
+
+const SHARED_WALL_SURFACE_OFFSET = 0.018;
+const SHARED_WALL_SURFACE_DEPTH = 0.035;
 
 const WALL_ART = Object.freeze([
   Object.freeze({
@@ -42,6 +45,7 @@ export class TomAndJerryRoom extends RectangularRoom {
     this.furniture = new FurnitureBuilder(this);
     this.createFurnitureMaterials();
     this.addCrownMolding();
+    this.addSharedLobbyWallInterior();
     this.addAreaRug();
     this.addEntertainmentCenter();
     this.addCouch();
@@ -82,6 +86,13 @@ export class TomAndJerryRoom extends RectangularRoom {
         color: 0xc1934f,
         roughness: 0.48,
         metalness: 0.35,
+      }),
+      controlMark: this.createMaterial('CrtControlMark', {
+        color: 0xf1e2bf,
+        roughness: 0.52,
+        metalness: 0,
+        emissive: 0x3a2a16,
+        emissiveIntensity: 0.08,
       }),
       lampShade: this.createMaterial('LampShadeFabric', {
         color: 0xf2d49a,
@@ -155,6 +166,65 @@ export class TomAndJerryRoom extends RectangularRoom {
     }
   }
 
+  addSharedLobbyWallInterior() {
+    const { width, length, height } = this.config.dimensions;
+    const { height: openingHeight, width: openingWidth } = this.config.openings;
+    const halfLength = length / 2;
+    const halfOpening = openingWidth / 2;
+    const panelX = -width / 2 + SHARED_WALL_SURFACE_OFFSET;
+    const segmentLength = halfLength - halfOpening;
+
+    for (const z of [-(halfOpening + segmentLength / 2), halfOpening + segmentLength / 2]) {
+      this.furniture.addBox({
+        name: `TomAndJerrySharedWallInteriorPanel:${z}`,
+        size: { x: SHARED_WALL_SURFACE_DEPTH, y: height, z: segmentLength },
+        position: { x: panelX, y: height / 2, z },
+        material: this.wallMaterial,
+        castShadow: false,
+        receiveShadow: true,
+      });
+
+      this.furniture.addBox({
+        name: `TomAndJerrySharedWallBaseboard:${z}`,
+        size: { x: this.config.baseboard.depth, y: this.config.baseboard.height, z: segmentLength },
+        position: {
+          x: -width / 2 + this.config.baseboard.depth / 2,
+          y: this.config.baseboard.height / 2,
+          z,
+        },
+        material: this.trimMaterial,
+        castShadow: true,
+        receiveShadow: true,
+      });
+
+      this.furniture.addBox({
+        name: `TomAndJerrySharedWallCrown:${z}`,
+        size: { x: this.config.crownMolding.depth, y: this.config.crownMolding.height, z: segmentLength },
+        position: {
+          x: -width / 2 + this.config.crownMolding.depth / 2,
+          y: height - this.config.crownMolding.height / 2,
+          z,
+        },
+        material: this.trimMaterial,
+        castShadow: true,
+        receiveShadow: true,
+      });
+    }
+
+    this.furniture.addBox({
+      name: 'TomAndJerrySharedWallInteriorHeader',
+      size: { x: SHARED_WALL_SURFACE_DEPTH, y: height - openingHeight, z: openingWidth },
+      position: {
+        x: panelX,
+        y: openingHeight + (height - openingHeight) / 2,
+        z: 0,
+      },
+      material: this.wallMaterial,
+      castShadow: false,
+      receiveShadow: true,
+    });
+  }
+
   addAreaRug() {
     this.furniture.addBox({
       name: 'TomAndJerryRoomSmallRug',
@@ -169,7 +239,7 @@ export class TomAndJerryRoom extends RectangularRoom {
   addEntertainmentCenter() {
     this.furniture.addBox({
       name: 'EntertainmentCenterCabinet',
-      size: { x: 0.95, y: 0.72, z: 5.05 },
+      size: { x: 1.55, y: 0.72, z: 5.05 },
       position: { x: LAYOUT.entertainmentCenter.x, y: 0.36, z: LAYOUT.entertainmentCenter.z },
       material: this.furnitureMaterials.wood,
       receiveShadow: true,
@@ -178,7 +248,7 @@ export class TomAndJerryRoom extends RectangularRoom {
 
     this.furniture.addBox({
       name: 'EntertainmentCenterTopShelf',
-      size: { x: 0.98, y: 0.08, z: 5.2 },
+      size: { x: 1.65, y: 0.08, z: 5.2 },
       position: { x: LAYOUT.entertainmentCenter.x, y: 0.76, z: LAYOUT.entertainmentCenter.z },
       material: this.furnitureMaterials.darkWood,
       receiveShadow: true,
@@ -186,7 +256,7 @@ export class TomAndJerryRoom extends RectangularRoom {
 
     this.furniture.addBox({
       name: 'EntertainmentCenterLowerShelf',
-      size: { x: 0.86, y: 0.08, z: 4.55 },
+      size: { x: 1.38, y: 0.08, z: 4.55 },
       position: { x: LAYOUT.entertainmentCenter.x - 0.02, y: 0.38, z: LAYOUT.entertainmentCenter.z },
       material: this.furnitureMaterials.darkWood,
       receiveShadow: true,
@@ -229,9 +299,10 @@ export class TomAndJerryRoom extends RectangularRoom {
       loop: TV_CONFIG.video.loop,
       defaultVolume: TV_CONFIG.video.defaultVolume,
       volumeStep: TV_CONFIG.video.volumeStep,
+      spatialAudio: TV_CONFIG.spatialAudio,
     });
     this.registerInteractable(screenMesh, {
-      getPrompt: () => this.getTelevisionPrompt('Power'),
+      getPrompt: () => this.getTelevisionPowerPrompt(),
       onInteract: () => this.toggleTelevisionPower(),
     });
 
@@ -255,10 +326,13 @@ export class TomAndJerryRoom extends RectangularRoom {
         receiveShadow: true,
       });
       this.registerInteractable(knob, {
-        getPrompt: () => this.getTelevisionPrompt(index === 0 ? 'Volume Up' : 'Volume Down'),
+        getPrompt: () => this.getTelevisionVolumePrompt(index === 0 ? '+' : '-'),
         onInteract: () => this.adjustTelevisionVolume(index === 0 ? 1 : -1),
       });
     }
+
+    this.addControlMark('+', { y: 1.13, z: 1.13 });
+    this.addControlMark('-', { y: 0.95, z: 0.91 });
 
     this.powerButton = this.furniture.addCylinder({
       name: 'CrtTelevisionPowerButton',
@@ -271,17 +345,41 @@ export class TomAndJerryRoom extends RectangularRoom {
       receiveShadow: true,
     });
     this.registerInteractable(this.powerButton, {
-      getPrompt: () => this.getTelevisionPrompt('Power'),
+      getPrompt: () => this.getTelevisionPowerPrompt(),
       onInteract: () => this.toggleTelevisionPower(),
     });
 
     this.furniture.addBox({
       name: 'CrtTelevisionStand',
-      size: { x: 0.5, y: 0.16, z: 1.45 },
+      size: { x: 0.78, y: 0.16, z: 1.55 },
       position: { x: LAYOUT.television.x, y: 0.84, z: LAYOUT.television.z },
       material: this.furnitureMaterials.darkWood,
       receiveShadow: true,
     });
+  }
+
+  addControlMark(symbol, { y, z }) {
+    const x = LAYOUT.television.x - 0.59;
+
+    this.furniture.addBox({
+      name: `CrtTelevisionControlMark:${symbol}:horizontal`,
+      size: { x: 0.018, y: 0.026, z: 0.16 },
+      position: { x, y, z },
+      material: this.furnitureMaterials.controlMark,
+      castShadow: false,
+      receiveShadow: true,
+    });
+
+    if (symbol === '+') {
+      this.furniture.addBox({
+        name: 'CrtTelevisionControlMark:plus:vertical',
+        size: { x: 0.018, y: 0.16, z: 0.026 },
+        position: { x, y, z },
+        material: this.furnitureMaterials.controlMark,
+        castShadow: false,
+        receiveShadow: true,
+      });
+    }
   }
 
   toggleTelevisionPower() {
@@ -299,8 +397,13 @@ export class TomAndJerryRoom extends RectangularRoom {
     this.syncTelevisionControls();
   }
 
-  getTelevisionPrompt(action) {
-    return `${action} TV - ${this.television.getPowerLabel()} - Volume ${this.television.getVolumePercent()}%`;
+  getTelevisionPowerPrompt() {
+    return `Power TV - ${this.television.getPowerLabel()} - Volume ${this.television.getVolumePercent()}%`;
+  }
+
+  getTelevisionVolumePrompt(symbol) {
+    const direction = symbol === '+' ? 'Increase' : 'Decrease';
+    return `${symbol} ${direction} TV Volume - Set ${this.television.getVolumePercent()}%`;
   }
 
   syncTelevisionControls() {
@@ -503,14 +606,26 @@ export class TomAndJerryRoom extends RectangularRoom {
     }
   }
 
+  update(deltaTime, player) {
+    this.television?.updateSpatialVolume(player.position);
+  }
+
   activate() {
     super.activate();
-    this.television?.resumeIfPowered();
+    this.resumeMedia();
   }
 
   deactivate() {
     super.deactivate();
+    this.pauseMedia();
+  }
+
+  pauseMedia() {
     this.television?.pause();
+  }
+
+  resumeMedia() {
+    this.television?.resumeIfPowered();
   }
 
   dispose() {
