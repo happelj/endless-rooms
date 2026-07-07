@@ -1,8 +1,8 @@
 {
   "name": "endless-rooms",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
-  "description": "Step 2 first-person player controller for a browser-based exploration project.",
+  "description": "Step 3 lobby room shell for a browser-based first-person exploration project.",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",

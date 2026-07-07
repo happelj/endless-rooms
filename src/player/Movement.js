@@ -2,10 +2,13 @@ import * as THREE from 'three';
 import { PLAYER_CONFIG } from '../config/constants.js';
 
 export class Movement {
-  constructor(config = PLAYER_CONFIG.movement) {
+  constructor(config = PLAYER_CONFIG.movement, collisionSystem = null, body = PLAYER_CONFIG.body) {
     this.config = config;
+    this.collisionSystem = collisionSystem;
+    this.body = body;
     this.velocity = new THREE.Vector2();
     this.targetVelocity = new THREE.Vector2();
+    this.previousPosition = new THREE.Vector3();
   }
 
   update(deltaTime, input, controls) {
@@ -21,8 +24,40 @@ export class Movement {
     this.velocity.lerp(this.targetVelocity, this.getSmoothingFactor(deltaTime));
     this.trimVelocity();
 
-    controls.moveRight(this.velocity.x * deltaTime);
-    controls.moveForward(this.velocity.y * deltaTime);
+    this.move(controls, this.velocity.x * deltaTime, this.velocity.y * deltaTime);
+  }
+
+  move(controls, rightDistance, forwardDistance) {
+    if (!this.collisionSystem) {
+      controls.moveRight(rightDistance);
+      controls.moveForward(forwardDistance);
+      return;
+    }
+
+    const controlledObject = controls.object;
+
+    this.moveAxis(controlledObject, controls, rightDistance, 'right');
+    this.moveAxis(controlledObject, controls, forwardDistance, 'forward');
+  }
+
+  moveAxis(controlledObject, controls, distance, axis) {
+    if (distance === 0) {
+      return;
+    }
+
+    this.previousPosition.copy(controlledObject.position);
+
+    if (axis === 'right') {
+      controls.moveRight(distance);
+    } else {
+      controls.moveForward(distance);
+    }
+
+    this.collisionSystem.resolvePlayerPosition(
+      controlledObject.position,
+      this.previousPosition,
+      this.body,
+    );
   }
 
   getCurrentSpeed(input) {
@@ -50,4 +85,3 @@ export class Movement {
     this.targetVelocity.set(0, 0);
   }
 }
-

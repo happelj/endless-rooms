@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { Camera } from './Camera.js';
-import { Floor } from './Floor.js';
 import { Lighting } from './Lighting.js';
 import { Renderer } from './Renderer.js';
+import { CollisionSystem } from '../collision/CollisionSystem.js';
 import { Player } from '../player/Player.js';
+import { LobbyRoom } from '../rooms/LobbyRoom.js';
 import { Hud } from '../ui/Hud.js';
 import { SCENE_CONFIG } from '../config/constants.js';
 
@@ -26,10 +27,17 @@ export class SceneManager {
 
     this.renderer = new Renderer(this.shell);
     this.camera = new Camera(this.renderer.aspectRatio);
+    this.collisionSystem = new CollisionSystem();
     this.lighting = new Lighting(this.scene);
-    this.floor = new Floor(this.scene);
+    this.room = new LobbyRoom(this.scene, this.collisionSystem);
     this.hud = new Hud(this.shell);
-    this.player = new Player(this.camera.instance, this.renderer.domElement, this.shell, this.hud);
+    this.player = new Player(
+      this.camera.instance,
+      this.renderer.domElement,
+      this.shell,
+      this.hud,
+      { collisionSystem: this.collisionSystem },
+    );
 
     this.registerUpdateable(this.player);
 
@@ -96,7 +104,8 @@ export class SceneManager {
     }
 
     this.player.dispose();
-    this.floor.dispose();
+    this.room.dispose();
+    this.collisionSystem.dispose();
     this.lighting.dispose();
     this.renderer.dispose();
     this.hud.dispose();

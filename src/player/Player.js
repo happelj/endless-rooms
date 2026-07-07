@@ -5,12 +5,12 @@ import { Movement } from './Movement.js';
 import { StartOverlay } from '../ui/StartOverlay.js';
 
 export class Player {
-  constructor(camera, domElement, overlayContainer, hud) {
+  constructor(camera, domElement, overlayContainer, hud, { collisionSystem = null } = {}) {
     this.camera = camera;
     this.hud = hud;
     this.controls = new PointerLockControls(camera, domElement);
     this.input = new Input();
-    this.movement = new Movement();
+    this.movement = new Movement(PLAYER_CONFIG.movement, collisionSystem, PLAYER_CONFIG.body);
     this.startOverlay = new StartOverlay(overlayContainer);
 
     this.controls.pointerSpeed = PLAYER_CONFIG.pointer.speed;

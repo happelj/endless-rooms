@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LIGHTING_CONFIG } from '../config/constants.js';
+import { LIGHTING_CONFIG, ROOM_DIMENSIONS } from '../config/constants.js';
 
 export class Lighting {
   constructor(scene) {
@@ -9,10 +9,12 @@ export class Lighting {
 
     this.hemisphereLight = this.createHemisphereLight();
     this.directionalLight = this.createDirectionalLight();
+    this.ceilingPointLights = this.createCeilingPointLights();
 
     this.group.add(this.hemisphereLight);
     this.group.add(this.directionalLight);
     this.group.add(this.directionalLight.target);
+    this.group.add(...this.ceilingPointLights);
     this.scene.add(this.group);
   }
 
@@ -67,9 +69,33 @@ export class Lighting {
     return light;
   }
 
+  createCeilingPointLights() {
+    const { ceilingPointLights } = LIGHTING_CONFIG;
+    const y = ROOM_DIMENSIONS.height - ceilingPointLights.heightOffset;
+
+    return ceilingPointLights.positions.map((position, index) => {
+      const light = new THREE.PointLight(
+        ceilingPointLights.color,
+        ceilingPointLights.intensity,
+        ceilingPointLights.distance,
+        ceilingPointLights.decay,
+      );
+
+      light.name = `CeilingPointLight:${index + 1}`;
+      light.position.set(position.x, y, position.z);
+      light.castShadow = true;
+      light.shadow.mapSize.set(
+        ceilingPointLights.shadowMapSize,
+        ceilingPointLights.shadowMapSize,
+      );
+      light.shadow.bias = ceilingPointLights.shadowBias;
+
+      return light;
+    });
+  }
+
   dispose() {
     this.scene.remove(this.group);
     this.group.clear();
   }
 }
-
