@@ -2,13 +2,13 @@
 
 Endless Rooms is a browser-based first-person exploration project built with Three.js, Vite, ES modules, JavaScript, HTML5, and CSS3.
 
-This repository currently contains Step 8: Audio Ambience and Interaction Framework. The Tom & Jerry Room now has positional ambience, a reusable interaction system, and a more convincing powered-on CRT television.
+This repository currently contains Step 9: Aquarium Room. The lobby now connects to a premium aquarium exhibit with animated fish, a large built-in tank, positional water ambience, and interactable exhibit plaques.
 
 ## Current Step
 
-Version: 0.8
+Version: 0.9
 
-Step 8 includes:
+Step 9 includes:
 
 - Vite development setup
 - Three.js scene, perspective camera, and WebGL renderer
@@ -22,6 +22,7 @@ Step 8 includes:
 - Enclosed lobby hub
 - Connected Test Room
 - Connected Tom & Jerry Room
+- Connected Aquarium Room
 - Directional portal system
 - Room manager with room registration and activation
 - Raycast-based interaction manager
@@ -38,6 +39,13 @@ Step 8 includes:
 - Subtle HVAC ambience
 - CRT electrical and cabinet hum
 - Floor lamp buzz
+- Aquarium exhibit hall
+- Large built-in aquarium viewing window
+- Procedurally animated fish
+- Animated bubbles and subtle water motion
+- Caustic-like floor lighting approximation
+- Positional aquarium bubbling, pump, and room ambience
+- Interactable exhibit plaques with placeholder information panels
 - HUD room metadata with connected destination names
 - Contextual interaction prompt
 - Furniture collision for large room props
@@ -80,6 +88,39 @@ Open that URL in a browser to view the project.
 - Hold `Left Shift` to sprint.
 - Look at an interactable object and press `E` to use it.
 - Press `ESC` to unlock the mouse and show the start overlay again.
+
+## Step 9: Aquarium Room
+
+`src/rooms/AquariumRoom.js` creates the second major themed destination. It reuses `RectangularRoom` for the room shell, `FurnitureBuilder` for primitive exhibit construction, `RoomLabel` for plaque signage, `Interactable` for exhibit prompts, and the shared collision and audio systems.
+
+The Aquarium Room includes:
+
+- Polished exhibit floor
+- Painted walls and ceiling
+- Soft blue accent lighting
+- Benches
+- Exhibit plaques
+- Decorative plants
+- Architectural columns near the tank
+- Large floor-to-ceiling aquarium viewing window
+- Glass, water volume, rocky bottom, aquatic plants, bubbles, and reflections
+- Animated fish
+
+The lobby now has a functional Aquarium doorway on the west wall. The existing Test Room, Tom & Jerry Room, and future Library opening remain intact.
+
+## Fish Animation
+
+`src/rooms/aquarium/Fish.js` owns reusable fish behavior. Each fish is built from shared geometry and room-owned materials, then updated by `AquariumRoom`.
+
+Fish behavior includes:
+
+- Smooth delta-time movement
+- Randomized path variation
+- Gentle turning
+- Boundary avoidance within the tank volume
+- Lightweight tail and body animation
+
+The class is intentionally independent from `AquariumRoom` layout details so future tanks can reuse it with different bounds, materials, sizes, and swim speeds.
 
 ## Step 8: Audio Ambience and Interaction Framework
 
@@ -127,7 +168,7 @@ The interaction system uses active-room `Interactable` objects and a center-scre
 
 ## Audio System
 
-`AudioManager` currently generates lightweight procedural ambience through Web Audio. This avoids adding external audio files in Step 8 while preserving the architecture for future authored loops in `public/audio/`.
+`AudioManager` currently generates lightweight procedural ambience through Web Audio. This avoids adding external audio files while preserving the architecture for future authored loops in `public/audio/`.
 
 The manager supports:
 
@@ -139,6 +180,14 @@ The manager supports:
 
 Room classes configure their own audio through `configureAudio(audioManager)`. Future rooms can register room-specific audio without adding logic to `SceneManager`.
 
+The Aquarium Room registers:
+
+- Room ambience
+- Positional bubbling near the tank
+- Positional water pump hum near the tank system
+
+The bubbling and pump sources use panner settings that make them louder as the player approaches the viewing window.
+
 ## Interaction Prompts
 
 Interaction prompts appear only when:
@@ -148,6 +197,8 @@ Interaction prompts appear only when:
 - The center raycast is aimed at the interactable
 
 The TV screen and power button use `[E] Power TV...`. The CRT volume knobs use `[E] + Increase TV Volume...` and `[E] - Decrease TV Volume...`.
+
+Aquarium plaques use `[E] Read Exhibit` and open a HUD information panel. The panel currently shows placeholder copy, but the interaction path is ready for real educational content.
 
 ## Video Asset
 
@@ -183,6 +234,24 @@ The room includes:
 
 The television screen uses the local video asset when powered on and falls back to a dark placeholder material when powered off.
 
+## Aquarium Room
+
+The Aquarium Room is the first exhibit-style destination. It is placed west of the lobby and connected through:
+
+- `lobby-to-aquarium-room`
+- `aquarium-room-to-lobby`
+
+The room's focal point is a large built-in viewing window on the north side of the exhibit hall. The tank includes water volume, glass, rocks, aquatic plants, animated bubbles, animated fish, and subtle reflection/caustic effects.
+
+Collidable Aquarium Room objects include:
+
+- Aquarium viewing glass
+- Tank frame
+- Benches
+- Exhibit plaque bases
+- Decorative planters
+- Architectural columns
+
 ## Furniture Collision
 
 Large furniture pieces register AABB colliders through the same collision system used by the room shell.
@@ -199,15 +268,21 @@ The furniture is built with `FurnitureBuilder`, a small helper that keeps prop c
 
 ## Portal Additions
 
-The lobby now has two functional connected destinations:
+The lobby now has three functional connected destinations:
 
 - Test Room
 - Tom & Jerry Room
+- Aquarium Room
 
 The Tom & Jerry doorway uses a pair of directional portals:
 
 - `lobby-to-tom-and-jerry-room`
 - `tom-and-jerry-room-to-lobby`
+
+The Aquarium doorway uses:
+
+- `lobby-to-aquarium-room`
+- `aquarium-room-to-lobby`
 
 Both portals use continuous transitions, so walking through the doorway changes the active room without a fade or visible teleport. Unimplemented lobby destinations display `Coming Soon` on their doorway labels.
 
@@ -275,6 +350,7 @@ Important sections:
 ROOM_DIMENSIONS
 TEST_ROOM_DIMENSIONS
 TOM_AND_JERRY_ROOM_DIMENSIONS
+AQUARIUM_ROOM_DIMENSIONS
 PLAYER_CONFIG
 PORTAL_CONFIGS
 DEBUG_CONFIG
@@ -356,8 +432,11 @@ endless-rooms/
     |   |-- LobbyRoom.js
     |   |-- TestRoom.js
     |   |-- TomAndJerryRoom.js
+    |   |-- AquariumRoom.js
     |   |-- FurnitureBuilder.js
-    |   `-- RoomLabel.js
+    |   |-- RoomLabel.js
+    |   `-- aquarium/
+    |       `-- Fish.js
     |-- ui/
     |   |-- Hud.js
     |   `-- StartOverlay.js
@@ -383,13 +462,15 @@ The application is intentionally organized around small classes with narrow resp
 - `Room` owns reusable room lifecycle, materials, geometry caching, and collision registration.
 - `RectangularRoom` owns reusable rectangular room shell construction.
 - `TomAndJerryRoom` owns the themed room layout and room-specific props.
+- `AquariumRoom` owns the exhibit hall layout, tank construction, fish updates, plaque interactions, and aquarium ambience.
+- `Fish` owns reusable procedural swimming, wander steering, and boundary avoidance.
 - `FurnitureBuilder` owns reusable primitive furniture construction.
 - `CollisionSystem` owns collision registration, horizontal resolution, ground queries, and ceiling queries.
 - `Player` composes pointer lock, input, horizontal movement, physics, and HUD updates.
 - `Input` tracks keyboard state without knowing movement or physics rules.
 - `Movement` converts input into smooth delta-time horizontal camera movement.
 - `Physics` owns vertical movement, gravity, floor snapping, and grounded state.
-- `Hud` owns the overlay DOM, coordinates, room debug values, and physics debug values.
+- `Hud` owns the overlay DOM, coordinates, room debug values, physics debug values, interaction prompt, and exhibit information panel.
 - `DebugVisuals` owns optional visual helpers for physics and portal debugging.
 - `DebugVisuals` can also show interaction ranges when enabled.
 - `StartOverlay` owns the click-to-begin pointer lock UI.
@@ -398,8 +479,10 @@ The application is intentionally organized around small classes with narrow resp
 
 Planned future steps:
 
-- Add the Aquarium Room as the next themed destination
+- Add the Library Room as the next themed destination
 - Add authored ambient audio files
+- Add authored aquarium bubbling and pump loops
+- Add richer aquarium species data for plaques
 - Add a TV channel/source selector
 - Add subtitles or on-screen TV status text
 - Add richer object interactions
@@ -413,7 +496,7 @@ Planned future steps:
 - Add VR support
 - Add performance profiling and asset streaming
 
-## Step 8 Verification
+## Step 9 Verification
 
 After running `npm run dev`, verify:
 
@@ -444,6 +527,15 @@ After running `npm run dev`, verify:
 - Walking back through the doorway changes Current Room back to `Lobby`.
 - Walking through the Tom & Jerry doorway changes Current Room from `Lobby` to `Tom & Jerry Room`.
 - Walking back through the doorway changes Current Room back to `Lobby`.
+- Walking through the Aquarium doorway changes Current Room from `Lobby` to `Aquarium Room`.
+- Walking back through the Aquarium doorway changes Current Room back to `Lobby`.
+- Fish animate smoothly inside the aquarium tank.
+- Bubbles rise inside the tank.
+- The water volume and caustic-like lighting move subtly.
+- Aquarium bubbling and pump ambience become louder near the tank.
+- Looking at an exhibit plaque displays `[E] Read Exhibit`.
+- Pressing `E` near a plaque opens the placeholder exhibit information panel.
+- The Aquarium glass, benches, plaque bases, planters, and columns block movement.
 - The couch, television, entertainment center, coffee table, and side table block player movement.
 - Unimplemented lobby openings display `Coming Soon`.
 - The Tom & Jerry Room lighting feels warm and does not create harsh shadows.

@@ -31,6 +31,7 @@ export class InteractionManager {
     if (document.pointerLockElement !== this.domElement) {
       this.focusedInteraction = null;
       this.hud.updateInteractionPrompt('');
+      this.hud.hideInfoPanel();
       return;
     }
 

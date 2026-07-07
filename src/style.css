@@ -161,6 +161,44 @@ select {
   display: none;
 }
 
+.info-panel {
+  position: absolute;
+  left: clamp(16px, 2.4vw, 28px);
+  bottom: clamp(16px, 2.4vw, 28px);
+  z-index: 3;
+  display: grid;
+  gap: 8px;
+  width: min(380px, calc(100vw - 32px));
+  border: 1px solid rgb(179 227 255 / 0.22);
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: rgb(7 14 20 / 0.78);
+  box-shadow: 0 16px 36px rgb(0 0 0 / 0.24);
+  color: #f4fbff;
+  pointer-events: none;
+  backdrop-filter: blur(12px);
+}
+
+.info-panel[hidden] {
+  display: none;
+}
+
+.info-panel__title {
+  margin: 0;
+  color: #caeeff;
+  font-size: 0.98rem;
+  font-weight: 720;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.info-panel__body {
+  margin: 0;
+  color: #dbe8ee;
+  font-size: 0.88rem;
+  line-height: 1.42;
+}
+
 .start-overlay {
   position: absolute;
   inset: 0;
@@ -222,5 +260,12 @@ select {
 
   .hud-panel--status {
     bottom: 14px;
+  }
+
+  .info-panel {
+    top: 50%;
+    left: 14px;
+    bottom: auto;
+    transform: translateY(-50%);
   }
 }

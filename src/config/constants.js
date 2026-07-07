@@ -1,7 +1,7 @@
 export const APP_METADATA = Object.freeze({
   title: 'Endless Rooms',
-  version: '0.8',
-  stepLabel: 'Step 8 - Audio Ambience and Interactions',
+  version: '0.9',
+  stepLabel: 'Step 9 - Aquarium Room',
 });
 
 export const SCENE_CONFIG = Object.freeze({
@@ -84,10 +84,20 @@ export const TOM_AND_JERRY_ROOM_DIMENSIONS = Object.freeze({
   ceilingThickness: 0.22,
 });
 
+export const AQUARIUM_ROOM_DIMENSIONS = Object.freeze({
+  width: 18,
+  length: 15,
+  height: 4.6,
+  wallThickness: 0.35,
+  floorThickness: 0.18,
+  ceilingThickness: 0.22,
+});
+
 export const ROOM_IDS = Object.freeze({
   lobby: 'lobby',
   testRoom: 'test-room',
   tomAndJerry: 'tom-and-jerry-room',
+  aquarium: 'aquarium-room',
 });
 
 export const TEST_ROOM_ORIGIN = Object.freeze({
@@ -100,14 +110,21 @@ export const LOBBY_OPENING_CENTERS = Object.freeze({
   testRoom: 0,
   library: -4.6,
   tomAndJerry: 4.6,
+  aquarium: -4.6,
   yosemite: 0,
-  spaceStation: 0,
+  spaceStation: 4.6,
 });
 
 export const TOM_AND_JERRY_ROOM_ORIGIN = Object.freeze({
   x: ROOM_DIMENSIONS.width / 2 + ROOM_DIMENSIONS.wallThickness + TOM_AND_JERRY_ROOM_DIMENSIONS.width / 2,
   y: 0,
   z: LOBBY_OPENING_CENTERS.tomAndJerry,
+});
+
+export const AQUARIUM_ROOM_ORIGIN = Object.freeze({
+  x: -ROOM_DIMENSIONS.width / 2 - ROOM_DIMENSIONS.wallThickness - AQUARIUM_ROOM_DIMENSIONS.width / 2,
+  y: 0,
+  z: LOBBY_OPENING_CENTERS.aquarium,
 });
 
 export const PLAYER_CONFIG = Object.freeze({
@@ -237,6 +254,53 @@ export const AUDIO_CONFIG = Object.freeze({
       }),
     }),
   }),
+  aquarium: Object.freeze({
+    roomAmbience: Object.freeze({
+      id: 'aquarium-room-gallery-ambience',
+      kind: 'noise',
+      volume: 0.01,
+      position: Object.freeze({ x: 0, y: 2.5, z: 0 }),
+      panner: Object.freeze({
+        refDistance: 5,
+        maxDistance: 18,
+        rolloffFactor: 0.55,
+      }),
+      filter: Object.freeze({
+        type: 'lowpass',
+        frequency: 680,
+        q: 0.35,
+      }),
+    }),
+    tankBubbles: Object.freeze({
+      id: 'aquarium-room-tank-bubbles',
+      kind: 'noise',
+      volume: 0.018,
+      position: Object.freeze({ x: 0, y: 1.7, z: -5.7 }),
+      panner: Object.freeze({
+        refDistance: 1.6,
+        maxDistance: 10,
+        rolloffFactor: 1.55,
+      }),
+      filter: Object.freeze({
+        type: 'bandpass',
+        frequency: 920,
+        q: 0.85,
+      }),
+    }),
+    waterPump: Object.freeze({
+      id: 'aquarium-room-water-pump',
+      kind: 'oscillator',
+      waveform: 'sine',
+      frequency: 86,
+      volume: 0.0045,
+      position: Object.freeze({ x: 5.6, y: 1.1, z: -6.2 }),
+      panner: Object.freeze({
+        refDistance: 1.4,
+        maxDistance: 9,
+        rolloffFactor: 1.65,
+      }),
+    }),
+  }),
 });
 
 export const LOBBY_ROOM_CONFIG = Object.freeze({
@@ -282,6 +346,7 @@ export const LOBBY_ROOM_CONFIG = Object.freeze({
       Object.freeze({ id: 'library', label: 'Library', subtitle: 'Coming Soon', wall: 'east', center: LOBBY_OPENING_CENTERS.library }),
       Object.freeze({ id: ROOM_IDS.tomAndJerry, label: 'Tom & Jerry', wall: 'east', center: LOBBY_OPENING_CENTERS.tomAndJerry }),
       Object.freeze({ id: 'yosemite', label: 'Yosemite', subtitle: 'Coming Soon', wall: 'south', center: LOBBY_OPENING_CENTERS.yosemite }),
+      Object.freeze({ id: ROOM_IDS.aquarium, label: 'Aquarium', wall: 'west', center: LOBBY_OPENING_CENTERS.aquarium }),
       Object.freeze({ id: 'space-station', label: 'Space Station', subtitle: 'Coming Soon', wall: 'west', center: LOBBY_OPENING_CENTERS.spaceStation }),
     ]),
   }),
@@ -457,6 +522,91 @@ export const TOM_AND_JERRY_ROOM_CONFIG = Object.freeze({
   }),
 });
 
+export const AQUARIUM_ROOM_CONFIG = Object.freeze({
+  id: ROOM_IDS.aquarium,
+  name: 'Aquarium Room',
+  origin: AQUARIUM_ROOM_ORIGIN,
+  dimensions: AQUARIUM_ROOM_DIMENSIONS,
+  omittedWalls: Object.freeze(['east']),
+  floorSize: Object.freeze({
+    x: AQUARIUM_ROOM_DIMENSIONS.width,
+    z: AQUARIUM_ROOM_DIMENSIONS.length,
+  }),
+  materials: Object.freeze({
+    floor: Object.freeze({
+      color: 0x53616b,
+      roughness: 0.42,
+      metalness: 0.08,
+    }),
+    wall: Object.freeze({
+      color: 0xc9d8df,
+      roughness: 0.78,
+      metalness: 0,
+    }),
+    ceiling: Object.freeze({
+      color: 0xe9f1f2,
+      roughness: 0.86,
+      metalness: 0,
+    }),
+    trim: Object.freeze({
+      color: 0xf3f7f7,
+      roughness: 0.62,
+      metalness: 0,
+    }),
+  }),
+  baseboard: Object.freeze({
+    height: 0.18,
+    depth: 0.08,
+  }),
+  openings: Object.freeze({
+    width: 2.4,
+    height: 2.7,
+    labelWidth: 2.7,
+    labelHeight: 0.5,
+    labelElevation: 3.14,
+    labelInset: 0.12,
+    entries: Object.freeze([
+      Object.freeze({ id: ROOM_IDS.lobby, wall: 'east', center: 0 }),
+    ]),
+  }),
+  lighting: Object.freeze({
+    hemisphere: Object.freeze({
+      skyColor: 0xdff8ff,
+      groundColor: 0x163041,
+      intensity: 0.72,
+      position: Object.freeze({ x: 0, y: 16, z: 0 }),
+    }),
+    directional: Object.freeze({
+      color: 0xe7fbff,
+      intensity: 0.28,
+      position: Object.freeze({ x: -4, y: 8, z: 4 }),
+      target: Object.freeze({ x: 0, y: 1.4, z: -4 }),
+      shadowMapSize: 1024,
+      shadowCameraSize: 18,
+      shadowCameraNear: 1,
+      shadowCameraFar: 30,
+      shadowBias: -0.00016,
+    }),
+    ceilingPointLights: Object.freeze({
+      color: 0xaedfff,
+      intensity: 24,
+      distance: 9.5,
+      decay: 2,
+      heightOffset: 0.52,
+      castShadow: false,
+      shadowMapSize: 512,
+      shadowBias: -0.00024,
+      positions: Object.freeze([
+        Object.freeze({ x: -4.6, z: -2.4 }),
+        Object.freeze({ x: 0, z: -2.4 }),
+        Object.freeze({ x: 4.6, z: -2.4 }),
+        Object.freeze({ x: -4.6, z: 3.6 }),
+        Object.freeze({ x: 4.6, z: 3.6 }),
+      ]),
+    }),
+  }),
+});
+
 export const PORTAL_CONFIGS = Object.freeze([
   Object.freeze({
     id: 'lobby-to-test-room',
@@ -544,6 +694,58 @@ export const PORTAL_CONFIGS = Object.freeze([
         z: LOBBY_OPENING_CENTERS.tomAndJerry,
       }),
       size: Object.freeze({ x: 0.4, y: TOM_AND_JERRY_ROOM_CONFIG.openings.height, z: 2.05 }),
+    }),
+  }),
+  Object.freeze({
+    id: 'lobby-to-aquarium-room',
+    sourceRoom: ROOM_IDS.lobby,
+    destinationRoom: ROOM_IDS.aquarium,
+    continuous: true,
+    spawnPosition: Object.freeze({
+      x: AQUARIUM_ROOM_ORIGIN.x + AQUARIUM_ROOM_DIMENSIONS.width / 2 - 1.1,
+      y: PLAYER_CONFIG.body.eyeHeight,
+      z: AQUARIUM_ROOM_ORIGIN.z,
+    }),
+    spawnRotation: Object.freeze({ y: Math.PI / 2 }),
+    doorway: Object.freeze({
+      wall: 'west',
+      center: LOBBY_OPENING_CENTERS.aquarium,
+      width: LOBBY_ROOM_CONFIG.openings.width,
+      height: LOBBY_ROOM_CONFIG.openings.height,
+    }),
+    triggerVolume: Object.freeze({
+      center: Object.freeze({
+        x: -ROOM_DIMENSIONS.width / 2 - ROOM_DIMENSIONS.wallThickness - 0.45,
+        y: LOBBY_ROOM_CONFIG.openings.height / 2,
+        z: LOBBY_OPENING_CENTERS.aquarium,
+      }),
+      size: Object.freeze({ x: 0.4, y: LOBBY_ROOM_CONFIG.openings.height, z: 2.05 }),
+    }),
+  }),
+  Object.freeze({
+    id: 'aquarium-room-to-lobby',
+    sourceRoom: ROOM_IDS.aquarium,
+    destinationRoom: ROOM_IDS.lobby,
+    continuous: true,
+    spawnPosition: Object.freeze({
+      x: -ROOM_DIMENSIONS.width / 2 + 1.1,
+      y: PLAYER_CONFIG.body.eyeHeight,
+      z: LOBBY_OPENING_CENTERS.aquarium,
+    }),
+    spawnRotation: Object.freeze({ y: -Math.PI / 2 }),
+    doorway: Object.freeze({
+      wall: 'east',
+      center: 0,
+      width: AQUARIUM_ROOM_CONFIG.openings.width,
+      height: AQUARIUM_ROOM_CONFIG.openings.height,
+    }),
+    triggerVolume: Object.freeze({
+      center: Object.freeze({
+        x: -ROOM_DIMENSIONS.width / 2 + 0.45,
+        y: AQUARIUM_ROOM_CONFIG.openings.height / 2,
+        z: LOBBY_OPENING_CENTERS.aquarium,
+      }),
+      size: Object.freeze({ x: 0.4, y: AQUARIUM_ROOM_CONFIG.openings.height, z: 2.05 }),
     }),
   }),
 ]);

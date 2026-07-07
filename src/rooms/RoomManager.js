@@ -1,6 +1,7 @@
 import { PORTAL_CONFIGS, ROOM_MANAGER_CONFIG } from '../config/constants.js';
 import { Portal } from '../portals/Portal.js';
 import { PortalManager } from '../portals/PortalManager.js';
+import { AquariumRoom } from './AquariumRoom.js';
 import { LobbyRoom } from './LobbyRoom.js';
 import { TestRoom } from './TestRoom.js';
 import { TomAndJerryRoom } from './TomAndJerryRoom.js';
@@ -30,6 +31,7 @@ export class RoomManager {
     this.registerRoom(new LobbyRoom(this.scene, this.collisionSystem));
     this.registerRoom(new TestRoom(this.scene, this.collisionSystem));
     this.registerRoom(new TomAndJerryRoom(this.scene, this.collisionSystem));
+    this.registerRoom(new AquariumRoom(this.scene, this.collisionSystem));
   }
 
   registerRoom(room) {
@@ -78,7 +80,7 @@ export class RoomManager {
     room.deactivate();
   }
 
-  update(deltaTime) {
+  update(deltaTime, elapsedTime) {
     if (!this.player || !this.activeRoomId) {
       return;
     }
@@ -89,7 +91,7 @@ export class RoomManager {
       this.transitionThroughPortal(portal);
     }
 
-    this.getActiveRoom()?.update?.(deltaTime, this.player);
+    this.getActiveRoom()?.update?.(deltaTime, this.player, elapsedTime);
     this.updateHud();
   }
 

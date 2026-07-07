@@ -24,6 +24,9 @@ export class Hud {
       verticalVelocity: this.root.querySelector('[data-hud-vertical-velocity]'),
     };
     this.interactionPromptElement = this.root.querySelector('[data-interaction-prompt]');
+    this.infoPanelElement = this.root.querySelector('[data-info-panel]');
+    this.infoPanelTitleElement = this.root.querySelector('[data-info-panel-title]');
+    this.infoPanelBodyElement = this.root.querySelector('[data-info-panel-body]');
   }
 
   createTemplate() {
@@ -82,6 +85,11 @@ export class Hud {
       </section>
 
       <div class="interaction-prompt" data-interaction-prompt hidden></div>
+
+      <section class="info-panel" data-info-panel hidden aria-label="Exhibit information">
+        <h2 class="info-panel__title" data-info-panel-title></h2>
+        <p class="info-panel__body" data-info-panel-body></p>
+      </section>
     `;
   }
 
@@ -107,6 +115,16 @@ export class Hud {
   updateInteractionPrompt(text) {
     this.interactionPromptElement.textContent = text;
     this.interactionPromptElement.hidden = text.length === 0;
+  }
+
+  showInfoPanel({ title, body }) {
+    this.infoPanelTitleElement.textContent = title;
+    this.infoPanelBodyElement.textContent = body;
+    this.infoPanelElement.hidden = false;
+  }
+
+  hideInfoPanel() {
+    this.infoPanelElement.hidden = true;
   }
 
   formatCoordinate(value) {
