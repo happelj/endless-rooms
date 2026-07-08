@@ -506,6 +506,10 @@ select {
     touch-action: none;
   }
 
+  .mobile-controls {
+    z-index: 6;
+  }
+
   .hud-panel--title {
     top: calc(12px + env(safe-area-inset-top));
     left: calc(12px + env(safe-area-inset-left));
@@ -547,6 +551,43 @@ select {
 
   .interaction-prompt {
     bottom: calc(128px + env(safe-area-inset-bottom));
+  }
+
+  .info-panel {
+    right: calc(12px + env(safe-area-inset-right));
+    bottom: calc(136px + env(safe-area-inset-bottom));
+    left: calc(12px + env(safe-area-inset-left));
+    width: auto;
+    max-height: 34vh;
+    overflow: auto;
+  }
+
+  .content-panel {
+    place-items: start center;
+    padding:
+      calc(76px + env(safe-area-inset-top))
+      calc(14px + env(safe-area-inset-right))
+      calc(132px + env(safe-area-inset-bottom))
+      calc(14px + env(safe-area-inset-left));
+  }
+
+  .content-panel__surface {
+    width: min(520px, calc(100vw - 28px));
+    max-height: calc(100dvh - 216px);
+    padding: 16px;
+  }
+
+  .content-panel__title {
+    font-size: 1.22rem;
+  }
+
+  .content-panel__body {
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  .content-panel__visual {
+    min-height: 140px;
   }
 }
 
