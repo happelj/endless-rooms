@@ -55,6 +55,7 @@ export class SceneManager {
       this.roomManager,
       this.hud,
       this.contentManager,
+      this.player,
     );
     this.debugVisuals = this.shouldShowDebugVisuals()
       ? new DebugVisuals(this.scene, this.roomManager, this.player)
@@ -73,6 +74,8 @@ export class SceneManager {
 
     this.player.controls.addEventListener('lock', this.handlePlayerLock);
     this.player.controls.addEventListener('unlock', this.handlePlayerUnlock);
+    this.player.addEventListener('touchsessionstart', this.handlePlayerLock);
+    this.player.addEventListener('touchsessionend', this.handlePlayerUnlock);
   }
 
   start() {
@@ -144,6 +147,8 @@ export class SceneManager {
     window.removeEventListener('resize', this.handleResize);
     this.player.controls.removeEventListener('lock', this.handlePlayerLock);
     this.player.controls.removeEventListener('unlock', this.handlePlayerUnlock);
+    this.player.removeEventListener('touchsessionstart', this.handlePlayerLock);
+    this.player.removeEventListener('touchsessionend', this.handlePlayerUnlock);
 
     if (this.animationFrameId !== null) {
       window.cancelAnimationFrame(this.animationFrameId);

@@ -13,6 +13,7 @@ Step 13 includes:
 - Vite development setup
 - Three.js scene, perspective camera, and WebGL renderer
 - First-person Pointer Lock controls
+- Mobile touch controls for Android and iPhone browsers
 - WASD movement
 - Left Shift sprint
 - Smooth delta-time horizontal movement
@@ -85,6 +86,8 @@ Open that URL in a browser to view the project.
 
 ## Controls
 
+Desktop:
+
 - Click anywhere on the start overlay to begin.
 - Move the mouse to look around.
 - Press `W` to move forward.
@@ -95,6 +98,28 @@ Open that URL in a browser to view the project.
 - Look at an interactable object and press `E` to use it.
 - Press `E` while reading to close the Content Panel; `ESC` still unlocks the mouse.
 - Press `ESC` during normal play to unlock the mouse and show the start overlay again.
+
+Mobile:
+
+- Tap the start overlay to begin.
+- Use the left virtual joystick to move.
+- Drag on the right side of the screen to look around.
+- Hold `Shift` to sprint.
+- Tap `E` to use the focused interactable object.
+- Tap `Pause` to return to the start overlay and pause room media/audio.
+
+## Deployment
+
+The project includes `vercel.json` so Vercel can import the GitHub repository directly.
+
+Vercel settings:
+
+- Framework preset: `Vite`
+- Install command: `npm install`
+- Build command: `npm run build`
+- Output directory: `dist`
+
+For production, import `https://github.com/happelj/endless-rooms` in Vercel, select the `main` branch, and deploy. Vercel will build the static app from GitHub and publish a public URL.
 
 ## Step 13: The Forgotten Level
 
@@ -529,6 +554,7 @@ endless-rooms/
 |-- index.html
 |-- package.json
 |-- vite.config.js
+|-- vercel.json
 |-- README.md
 |-- public/
 |   |-- textures/
@@ -583,6 +609,7 @@ endless-rooms/
     |-- player/
     |   |-- Player.js
     |   |-- Input.js
+    |   |-- MobileControls.js
     |   |-- Movement.js
     |   `-- Physics.js
     |-- rooms/
@@ -653,13 +680,14 @@ The application is intentionally organized around small classes with narrow resp
 - `InteractionManager` owns active-room range filtering, raycast focus, and interaction triggering.
 - `FurnitureBuilder` owns reusable primitive furniture construction.
 - `CollisionSystem` owns collision registration, horizontal resolution, ground queries, and ceiling queries.
-- `Player` composes pointer lock, input, horizontal movement, physics, and HUD updates.
-- `Input` tracks keyboard state without knowing movement or physics rules.
+- `Player` composes pointer lock, touch session state, input, horizontal movement, physics, and HUD updates.
+- `Input` tracks keyboard and touch movement state without knowing movement or physics rules.
+- `MobileControls` owns the Android/iPhone touch joystick, look surface, sprint, interact, and pause controls.
 - `Movement` converts input into smooth delta-time horizontal camera movement.
 - `Physics` owns vertical movement, gravity, floor snapping, and grounded state.
 - `Hud` owns the overlay DOM, coordinates, room debug values, physics debug values, interaction prompt, and exhibit information panel.
 - `DebugVisuals` owns optional visual helpers for physics, portals, room bounds, and interaction ranges.
-- `StartOverlay` owns the click-to-begin pointer lock UI.
+- `StartOverlay` owns the click/tap-to-begin UI.
 
 ## Future Roadmap
 
@@ -738,6 +766,9 @@ After running `npm run dev`, verify:
 - Looking at the Space Station telescope shows `[E] Use Telescope`.
 - Pressing `E` near the telescope opens a starfield telescope view in the Content Panel.
 - Space Station consoles, telescope, cabinets, racks, and support columns block movement.
+- On Android or iPhone, tapping the start overlay begins touch play without Pointer Lock.
+- On Android or iPhone, the left virtual joystick moves the player and the right side of the screen controls look direction.
+- On Android or iPhone, `E`, `Shift`, and `Pause` touch buttons trigger interaction, sprint, and return-to-overlay behavior.
 - The granite landmark is immediately visible after entering from the Lobby portal.
 - Trees and trail geometry frame the landmark instead of blocking it.
 - Yosemite terrain is walkable and the player stays grounded on gentle elevation changes.

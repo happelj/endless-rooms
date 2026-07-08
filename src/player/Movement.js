@@ -12,7 +12,7 @@ export class Movement {
   }
 
   update(deltaTime, input, controls) {
-    if (!controls.isLocked) {
+    if (!controls.isLocked && !input.isTouchControlsEnabled()) {
       this.stop();
       return;
     }

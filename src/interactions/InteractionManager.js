@@ -4,13 +4,14 @@ import { INTERACTION_CONFIG } from '../config/constants.js';
 const SCREEN_CENTER = new THREE.Vector2(0, 0);
 
 export class InteractionManager {
-  constructor(camera, domElement, roomManager, hud, contentManager = null, config = INTERACTION_CONFIG) {
+  constructor(camera, domElement, roomManager, hud, contentManager = null, player = null, config = INTERACTION_CONFIG) {
     this.camera = camera;
     this.domElement = domElement;
     this.roomManager = roomManager;
     this.hud = hud;
     this.contentManager = contentManager;
     this.config = config;
+    this.player = player;
     this.raycaster = new THREE.Raycaster();
     this.raycaster.far = config.maxDistance;
     this.focusedInteraction = null;
@@ -19,9 +20,11 @@ export class InteractionManager {
 
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleClick = this.handleClick.bind(this);
+    this.handleInteractionRequested = this.handleInteractionRequested.bind(this);
 
     document.addEventListener('keydown', this.handleKeyDown);
     this.domElement.addEventListener('click', this.handleClick);
+    this.player?.addEventListener('interactionrequested', this.handleInteractionRequested);
   }
 
   update() {
@@ -35,7 +38,7 @@ export class InteractionManager {
       return;
     }
 
-    if (document.pointerLockElement !== this.domElement) {
+    if (!this.isInteractionSessionActive()) {
       this.focusedInteraction = null;
       this.hud.updateInteractionPrompt('');
       this.hud.hideInfoPanel();
@@ -130,12 +133,26 @@ export class InteractionManager {
     this.triggerFocusedInteraction(event);
   }
 
+  handleInteractionRequested(event) {
+    if (!this.player?.isTouchSessionActive) {
+      return;
+    }
+
+    if (this.contentManager?.isOpen()) {
+      event?.preventDefault?.();
+      this.contentManager.close();
+      return;
+    }
+
+    this.triggerFocusedInteraction(event);
+  }
+
   triggerFocusedInteraction(event) {
     if (!this.focusedInteraction) {
       return;
     }
 
-    event.preventDefault();
+    event?.preventDefault?.();
     this.focusedInteraction.interact({
       camera: this.camera,
       roomManager: this.roomManager,
@@ -148,9 +165,14 @@ export class InteractionManager {
     return this.config.keys.interact.includes(code);
   }
 
+  isInteractionSessionActive() {
+    return document.pointerLockElement === this.domElement || this.player?.isTouchSessionActive;
+  }
+
   dispose() {
     document.removeEventListener('keydown', this.handleKeyDown);
     this.domElement.removeEventListener('click', this.handleClick);
+    this.player?.removeEventListener('interactionrequested', this.handleInteractionRequested);
     this.hud.updateInteractionPrompt('');
   }
 }

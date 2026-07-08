@@ -217,6 +217,12 @@ export const PLAYER_CONFIG = Object.freeze({
     maxPolarAngle: Math.PI - 0.05,
     useRawMouseInput: false,
   }),
+  touch: Object.freeze({
+    coarsePointerQuery: '(pointer: coarse), (max-width: 900px)',
+    lookSensitivity: 0.0042,
+    joystickRadius: 54,
+    joystickDeadZone: 0.12,
+  }),
   movement: Object.freeze({
     walkSpeed: 4.4,
     sprintMultiplier: 1.75,
