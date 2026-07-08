@@ -711,7 +711,17 @@ export const TEST_ROOM_CONFIG = Object.freeze({
     labelInset: 0.12,
     entries: Object.freeze([
       Object.freeze({ id: ROOM_IDS.lobby, label: 'Lobby', wall: 'south', center: 0 }),
-      Object.freeze({ id: 'forgotten-level-secret-wall', wall: 'east', center: 3.4 }),
+    ]),
+  }),
+  secretEntrance: Object.freeze({
+    id: 'forgotten-level-secret-wall',
+    wall: 'east',
+    width: 2.4,
+    height: 2.7,
+    candidates: Object.freeze([
+      Object.freeze({ wall: 'east', center: -3.9 }),
+      Object.freeze({ wall: 'east', center: -0.6 }),
+      Object.freeze({ wall: 'east', center: 3.4 }),
     ]),
   }),
   lighting: Object.freeze({
@@ -1213,8 +1223,8 @@ export const FORGOTTEN_LEVEL_CONFIG = Object.freeze({
   }),
   procedural: Object.freeze({
     chunkSize: 10,
-    activeRadius: 2,
-    unloadRadius: 3,
+    activeRadius: 3,
+    unloadRadius: 5,
     baseSeed: 'forgotten-level',
     maxEntities: 5,
     normalEntityChance: 0.05,

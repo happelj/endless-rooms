@@ -105,11 +105,12 @@ The Test Room now includes:
 - A regular interactable light switch
 - A separate interactable `Black Light` switch
 - Hidden fluorescent writing that says `ENTER HERE`
-- A covered pass-through wall that is only passable when the main lights are off and the black light is on
+- A randomized covered pass-through wall that is visually indistinguishable from the rest of the room until the black light reveals it
 
 Secret entrance rules:
 
 - The Test Room starts with normal lights on.
+- The secret entrance location is selected from several possible wall positions each time the room is created.
 - Normal lights on means the black light cannot activate.
 - Turning normal lights back on automatically turns the black light off.
 - Fluorescent writing is visible only when normal lights are off and black light is on.
@@ -121,6 +122,7 @@ The Forgotten Level includes:
 - Seeded procedural generation through `ProceduralSeedManager`
 - Chunk streaming through `ChunkManager`
 - Stable active chunk radius and distant chunk unloading
+- Symmetric chunk exits so neighboring chunks agree on openings and the generated level keeps expanding as the player moves
 - Chunk variations such as hallways, empty rooms, office-like spaces, dead ends, intersections, looping corridors, rare large rooms, and impossible layouts
 - Randomized stains, props, ceiling panels, flicker states, and damage
 - Dim yellow atmosphere with room fog
@@ -130,7 +132,7 @@ The Forgotten Level includes:
 - Rare emergency-exit style escape locations
 - Difficulty scaling based on travel depth
 
-The original Test Room wall does not become a normal doorway. It stays visually disguised as a wall panel, and the hidden route is entered by walking through it only under the correct lighting conditions.
+The original Test Room wall does not become a normal doorway. It stays visually disguised as normal wall surface, and the hidden route is entered by walking through it only under the correct lighting conditions.
 
 ## Step 12: Space Station Room
 

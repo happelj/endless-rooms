@@ -6,20 +6,60 @@ import { FluorescentWritingReveal } from './test-room/FluorescentWritingReveal.j
 import { SecretWallEntrance } from './test-room/SecretWallEntrance.js';
 import { TestRoomLightSwitch } from './test-room/TestRoomLightSwitch.js';
 
-const SECRET_WALL = Object.freeze({
-  wall: 'east',
-  center: 3.4,
-  width: 2.4,
-  height: 2.7,
-});
-
 export class TestRoom extends RectangularRoom {
   constructor(scene, collisionSystem, config = TEST_ROOM_CONFIG) {
-    super(scene, collisionSystem, config);
+    super(scene, collisionSystem, TestRoom.createRuntimeConfig(config));
+  }
+
+  static createRuntimeConfig(config) {
+    const secretEntrance = TestRoom.selectSecretEntrance(config.secretEntrance);
+    const openings = Object.freeze({
+      ...config.openings,
+      entries: Object.freeze([
+        ...config.openings.entries,
+        Object.freeze({
+          id: secretEntrance.id,
+          wall: secretEntrance.wall,
+          center: secretEntrance.center,
+          width: secretEntrance.width,
+          height: secretEntrance.height,
+        }),
+      ]),
+    });
+
+    return Object.freeze({
+      ...config,
+      openings,
+      secretEntrance,
+    });
+  }
+
+  static selectSecretEntrance(secretConfig) {
+    const candidates = secretConfig.candidates;
+    const candidate = candidates[TestRoom.getRandomIndex(candidates.length)];
+
+    return Object.freeze({
+      id: secretConfig.id,
+      wall: candidate.wall,
+      center: candidate.center,
+      width: secretConfig.width,
+      height: secretConfig.height,
+    });
+  }
+
+  static getRandomIndex(length) {
+    if (globalThis.crypto?.getRandomValues) {
+      const value = new Uint32Array(1);
+      globalThis.crypto.getRandomValues(value);
+      return value[0] % length;
+    }
+
+    return Math.floor(Math.random() * length);
   }
 
   build() {
     super.build();
+    this.secretWall = this.config.secretEntrance;
     this.normalLights = Array.from(this.lights);
     this.normalLightsOn = true;
     this.blackLightOn = false;
@@ -75,10 +115,11 @@ export class TestRoom extends RectangularRoom {
   }
 
   addBlackLight() {
+    const secretWall = this.secretWall;
     const geometry = new THREE.CylinderGeometry(0.07, 0.07, 2.3, 18);
     const tube = new THREE.Mesh(geometry, this.secretMaterials.blackLightTube);
     tube.name = 'TestRoomBlackLightTube';
-    tube.position.set(0, this.config.dimensions.height - 0.34, SECRET_WALL.center);
+    tube.position.set(0, this.config.dimensions.height - 0.34, secretWall.center);
     tube.rotation.z = Math.PI / 2;
     tube.castShadow = false;
     tube.receiveShadow = false;
@@ -87,7 +128,7 @@ export class TestRoom extends RectangularRoom {
     this.blackLightFixture = tube;
     this.blackLight = new THREE.PointLight(0x9b55ff, 44, 13, 2);
     this.blackLight.name = 'TestRoomBlackLight';
-    this.blackLight.position.set(0, this.config.dimensions.height - 0.55, SECRET_WALL.center);
+    this.blackLight.position.set(0, this.config.dimensions.height - 0.55, secretWall.center);
     this.blackLight.castShadow = false;
     this.blackLight.visible = false;
     this.group.add(this.blackLight);
@@ -144,16 +185,18 @@ export class TestRoom extends RectangularRoom {
   }
 
   addSecretEntrance() {
+    const secretWall = this.secretWall;
     const { width } = this.config.dimensions;
 
     this.secretEntrance = new SecretWallEntrance({
       room: this,
       id: 'TestRoomForgottenLevelEntrance',
-      wall: SECRET_WALL.wall,
-      center: SECRET_WALL.center,
-      width: SECRET_WALL.width,
-      height: SECRET_WALL.height,
+      wall: secretWall.wall,
+      center: secretWall.center,
+      width: secretWall.width,
+      height: secretWall.height,
       material: this.wallMaterial,
+      trimMaterial: this.trimMaterial,
     });
 
     this.fluorescentWriting = new FluorescentWritingReveal({
@@ -161,9 +204,9 @@ export class TestRoom extends RectangularRoom {
       width: 2.04,
       height: 0.52,
       position: {
-        x: width / 2 - 0.09,
+        x: width / 2 - 0.03,
         y: 1.68,
-        z: SECRET_WALL.center,
+        z: secretWall.center,
       },
       rotationY: -Math.PI / 2,
     });
