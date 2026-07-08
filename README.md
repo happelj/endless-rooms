@@ -121,6 +121,20 @@ Vercel settings:
 
 For production, import `https://github.com/happelj/endless-rooms` in Vercel, select the `main` branch, and deploy. Vercel will build the static app from GitHub and publish a public URL.
 
+The local development copy may include large media files that are not suitable for direct deployment. `.vercelignore` excludes local-only build folders and the oversized local TV video so Vercel can deploy the application code cleanly.
+
+Production TV playback can be configured with an environment variable:
+
+```text
+VITE_TV_VIDEO_SRC=https://example.com/path/to/compressed-tv-video.mp4
+```
+
+If the environment variable is not set, the app uses the local development path:
+
+```text
+/videos/Tom-and-Jerry.mp4
+```
+
 ## Step 13: The Forgotten Level
 
 Step 13 adds a hidden Backrooms-style procedural area called `The Forgotten Level`. It is currently implemented through the Test Room so the mechanic can be validated before it is reused elsewhere.
@@ -532,6 +546,8 @@ public/videos/Tom-and-Jerry.mp4
 ```
 
 That file is intentionally ignored by Git because the current local MP4 is larger than GitHub's normal file-size limit. For GitHub-hosted playback, provide a compressed video under 100 MB, use Git LFS, or host the video from an allowed external asset source and update `TV_CONFIG.video.src` in `src/config/constants.js`.
+
+For Vercel production playback, prefer setting `VITE_TV_VIDEO_SRC` to a compressed HTTPS video URL. The app still defaults to `/videos/Tom-and-Jerry.mp4` during local development, so no local workflow changes are required.
 
 ## Build
 

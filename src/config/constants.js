@@ -246,9 +246,11 @@ export const INTERACTION_CONFIG = Object.freeze({
   }),
 });
 
+const TV_VIDEO_SRC = import.meta.env.VITE_TV_VIDEO_SRC || '/videos/Tom-and-Jerry.mp4';
+
 export const TV_CONFIG = Object.freeze({
   video: Object.freeze({
-    src: '/videos/Tom-and-Jerry.mp4',
+    src: TV_VIDEO_SRC,
     loop: true,
     defaultVolume: 0.45,
     volumeStep: 0.1,

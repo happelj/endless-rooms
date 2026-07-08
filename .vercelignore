@@ -1,0 +1,10 @@
+node_modules
+dist
+.git
+.agents
+.codex
+.vite
+
+# The local cartoon source file is intentionally not deployed because it exceeds
+# Vercel's per-file upload limit. Use a compressed hosted asset for production.
+public/videos/Tom-and-Jerry.mp4
