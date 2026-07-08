@@ -634,6 +634,7 @@ After running `npm run dev`, verify:
 - The HUD shows the current room name.
 - The HUD shows portal count, connected room count, and destination names.
 - Walking through the Test Room doorway changes Current Room from `Lobby` to `Test Room`.
+- The Test Room has a visible `Lobby` doorway on the return wall.
 - Walking back through the doorway changes Current Room back to `Lobby`.
 - Walking through the Tom & Jerry doorway changes Current Room from `Lobby` to `Tom & Jerry Room`.
 - Walking back through the doorway changes Current Room back to `Lobby`.

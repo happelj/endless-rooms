@@ -594,7 +594,6 @@ export const TEST_ROOM_CONFIG = Object.freeze({
   name: 'Test Room',
   origin: TEST_ROOM_ORIGIN,
   dimensions: TEST_ROOM_DIMENSIONS,
-  omittedWalls: Object.freeze(['south']),
   floorSize: Object.freeze({
     x: TEST_ROOM_DIMENSIONS.width,
     z: TEST_ROOM_DIMENSIONS.length,
@@ -632,7 +631,9 @@ export const TEST_ROOM_CONFIG = Object.freeze({
     labelHeight: 0.5,
     labelElevation: 3.14,
     labelInset: 0.12,
-    entries: Object.freeze([]),
+    entries: Object.freeze([
+      Object.freeze({ id: ROOM_IDS.lobby, label: 'Lobby', wall: 'south', center: 0 }),
+    ]),
   }),
   lighting: Object.freeze({
     hemisphere: Object.freeze({
