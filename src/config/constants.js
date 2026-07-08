@@ -246,7 +246,7 @@ export const INTERACTION_CONFIG = Object.freeze({
   }),
 });
 
-const TV_VIDEO_SRC = import.meta.env.VITE_TV_VIDEO_SRC || '/videos/Tom-and-Jerry.mp4';
+const TV_VIDEO_SRC = import.meta.env.VITE_TV_VIDEO_SRC || '/videos/tom-and-jerry-short.mp4';
 
 export const TV_CONFIG = Object.freeze({
   video: Object.freeze({

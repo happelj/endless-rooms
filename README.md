@@ -132,7 +132,7 @@ VITE_TV_VIDEO_SRC=https://example.com/path/to/compressed-tv-video.mp4
 If the environment variable is not set, the app uses the local development path:
 
 ```text
-/videos/Tom-and-Jerry.mp4
+/videos/tom-and-jerry-short.mp4
 ```
 
 ## Step 13: The Forgotten Level
@@ -537,17 +537,23 @@ DEBUG_CONFIG.showInteractionRanges
 
 Both flags default to `false`.
 
-## Video Asset
+## Video Assets
 
-The local runtime expects:
+The deployed TV video asset is:
+
+```text
+public/videos/tom-and-jerry-short.mp4
+```
+
+The original local source file is:
 
 ```text
 public/videos/Tom-and-Jerry.mp4
 ```
 
-That file is intentionally ignored by Git because the current local MP4 is larger than GitHub's normal file-size limit. For GitHub-hosted playback, provide a compressed video under 100 MB, use Git LFS, or host the video from an allowed external asset source and update `TV_CONFIG.video.src` in `src/config/constants.js`.
+The original source file is intentionally ignored by Git and Vercel because it is larger than GitHub and Vercel's normal file-size limits. The shorter MP4 stays under Vercel Hobby's 100 MB static upload limit and is used by default through `TV_CONFIG.video.src` in `src/config/constants.js`.
 
-For Vercel production playback, prefer setting `VITE_TV_VIDEO_SRC` to a compressed HTTPS video URL. The app still defaults to `/videos/Tom-and-Jerry.mp4` during local development, so no local workflow changes are required.
+For a different production video, set `VITE_TV_VIDEO_SRC` to a compressed HTTPS video URL.
 
 ## Build
 
