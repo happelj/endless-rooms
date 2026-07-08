@@ -2,13 +2,13 @@
 
 Endless Rooms is a browser-based first-person exploration project built with Three.js, Vite, ES modules, JavaScript, HTML5, and CSS3.
 
-This repository currently contains Step 12: Space Station Room. The lobby now connects to the Test Room, Tom & Jerry Room, Aquarium Room, Library Room, Yosemite Room, and Space Station Room. Step 12 introduces the first science-fiction destination, a reusable Room Theme system, animated display panels, and a lightweight orbital exterior.
+This repository currently contains Step 13: The Forgotten Level. The lobby connects to the Test Room, Tom & Jerry Room, Aquarium Room, Library Room, Yosemite Room, and Space Station Room. The Test Room now contains a hidden black-light secret entrance into a Backrooms-style procedural area called The Forgotten Level.
 
 ## Current Step
 
-Version: 1.2
+Version: 1.3
 
-Step 12 includes:
+Step 13 includes:
 
 - Vite development setup
 - Three.js scene, perspective camera, and WebGL renderer
@@ -26,6 +26,7 @@ Step 12 includes:
 - Connected Library Room
 - Connected Yosemite Room
 - Connected Space Station Room
+- Hidden Forgotten Level procedural area
 - Directional portal system
 - Room manager with room registration and activation
 - Reusable `RoomTheme` and `RoomThemeManager`
@@ -35,6 +36,10 @@ Step 12 includes:
 - Content Panel visual slots for reusable in-world views
 - Reusable animated display panels
 - Reusable orbital exterior backdrop
+- Reusable procedural seed manager
+- Chunk-based procedural generation
+- Procedural entity spawn manager
+- Procedural escape manager
 - Movement pause while reading content
 - Range-limited interaction prompts
 - Interactive CRT television with local video texture playback
@@ -45,6 +50,10 @@ Step 12 includes:
 - Library bookshelves, reading tables, chairs, lamps, fireplace, display books, plants, and artwork
 - Yosemite terrain, composed trail, sky, clouds, stylized granite landmark, trees, shrubs, wildflowers, boulders, logs, water, scenic overlook, trail markers, wildlife, and outdoor ambience
 - Space Station observation deck, telescope view, exterior planet view, star field, nebula, workstations, equipment racks, animated consoles, and station ambience
+- Test Room secret light switch puzzle with black light reveal
+- Hidden fluorescent `ENTER HERE` writing
+- Pass-through secret wall that opens only under black-light conditions
+- The Forgotten Level chunk streaming, seeded layouts, flickering lights, unsettling ambience, rare exits, and entity encounters
 - Collision for room shells, major furniture, exhibit props, terrain boundaries, trees, rocks, logs, trail markers, station consoles, support columns, cabinets, and equipment racks
 - HUD room metadata with connected destination names
 - Debug HUD for coordinates, grounded state, vertical velocity, room, portal count, and connected rooms
@@ -86,6 +95,42 @@ Open that URL in a browser to view the project.
 - Look at an interactable object and press `E` to use it.
 - Press `E` while reading to close the Content Panel; `ESC` still unlocks the mouse.
 - Press `ESC` during normal play to unlock the mouse and show the start overlay again.
+
+## Step 13: The Forgotten Level
+
+Step 13 adds a hidden Backrooms-style procedural area called `The Forgotten Level`. It is currently implemented through the Test Room so the mechanic can be validated before it is reused elsewhere.
+
+The Test Room now includes:
+
+- A regular interactable light switch
+- A separate interactable `Black Light` switch
+- Hidden fluorescent writing that says `ENTER HERE`
+- A covered pass-through wall that is only passable when the main lights are off and the black light is on
+
+Secret entrance rules:
+
+- The Test Room starts with normal lights on.
+- Normal lights on means the black light cannot activate.
+- Turning normal lights back on automatically turns the black light off.
+- Fluorescent writing is visible only when normal lights are off and black light is on.
+- The secret wall remains solid until the fluorescent writing is visible.
+- Walking through the revealed wall transitions into The Forgotten Level.
+
+The Forgotten Level includes:
+
+- Seeded procedural generation through `ProceduralSeedManager`
+- Chunk streaming through `ChunkManager`
+- Stable active chunk radius and distant chunk unloading
+- Chunk variations such as hallways, empty rooms, office-like spaces, dead ends, intersections, looping corridors, rare large rooms, and impossible layouts
+- Randomized stains, props, ceiling panels, flicker states, and damage
+- Dim yellow atmosphere with room fog
+- Buzzing fluorescent ambience and HVAC drone
+- Distant footsteps, entity calls, and occasional silence events
+- Rare entity encounters with idle, investigate, stalk, chase, and disappear states
+- Rare emergency-exit style escape locations
+- Difficulty scaling based on travel depth
+
+The original Test Room wall does not become a normal doorway. It stays visually disguised as a wall panel, and the hidden route is entered by walking through it only under the correct lighting conditions.
 
 ## Step 12: Space Station Room
 
@@ -500,6 +545,13 @@ endless-rooms/
     |   `-- DebugVisuals.js
     |-- displays/
     |   `-- AnimatedDisplayPanel.js
+    |-- forgotten/
+    |   |-- ChunkManager.js
+    |   |-- EntitySpawnManager.js
+    |   |-- EscapeManager.js
+    |   |-- ForgottenEntity.js
+    |   |-- ForgottenLevelGenerator.js
+    |   `-- ProceduralSeedManager.js
     |-- environment/
     |   |-- BirdFlock.js
     |   |-- GraniteLandmark.js
@@ -541,10 +593,16 @@ endless-rooms/
     |   |-- LibraryRoom.js
     |   |-- YosemiteRoom.js
     |   |-- SpaceStationRoom.js
+    |   |-- ForgottenLevelRoom.js
     |   |-- FurnitureBuilder.js
     |   |-- RoomLabel.js
-    |   `-- aquarium/
-    |       `-- Fish.js
+    |   |-- aquarium/
+    |   |   `-- Fish.js
+    |   `-- test-room/
+    |       |-- BlackLightSwitch.js
+    |       |-- FluorescentWritingReveal.js
+    |       |-- SecretWallEntrance.js
+    |       `-- TestRoomLightSwitch.js
     |-- ui/
     |   |-- ContentManager.js
     |   |-- ContentPanel.js
@@ -568,6 +626,14 @@ The application is intentionally organized around small classes with narrow resp
 - `Portal` owns directional doorway metadata and trigger volume detection.
 - `Room` owns reusable room lifecycle, active-room visibility, materials, geometry caching, interactables, ground colliders, and collision registration.
 - `RectangularRoom` owns reusable rectangular room shell construction.
+- `TestRoom` owns the current secret entrance puzzle and delegates switch, writing, and secret wall behavior to small feature classes.
+- `ForgottenLevelRoom` owns the hidden procedural area, active run seed, room atmosphere, and procedural subsystem composition.
+- `ProceduralSeedManager` owns deterministic seed generation and seeded random helpers.
+- `ForgottenLevelGenerator` owns chunk type, connection, danger, entity, and escape decisions.
+- `ChunkManager` owns active chunk streaming, chunk mesh construction, collider registration, flicker state, and distant chunk unloading.
+- `EntitySpawnManager` owns rare entity spawning and cleanup as chunks stream.
+- `ForgottenEntity` owns lightweight entity state behavior: idle, investigate, stalk, chase, and disappear.
+- `EscapeManager` owns rare escape trigger registration and exit detection.
 - `SpaceStationRoom` owns the orbital observation deck layout, display interactions, station ambience, and exterior view composition.
 - `AnimatedDisplayPanel` owns reusable in-world canvas display animation.
 - `OrbitalBackdrop` owns reusable planet, star field, nebula, and orbital drift visuals.
@@ -619,7 +685,7 @@ Planned future steps:
 - Add VR support
 - Add performance profiling and asset streaming
 
-## Step 12 Verification
+## Step 13 Verification
 
 After running `npm run dev`, verify:
 
@@ -636,6 +702,19 @@ After running `npm run dev`, verify:
 - Walking through the Test Room doorway changes Current Room from `Lobby` to `Test Room`.
 - The Test Room has a visible `Lobby` doorway on the return wall.
 - Walking back through the doorway changes Current Room back to `Lobby`.
+- In the Test Room, looking at the regular wall switch shows `[E] Toggle Main Lights`.
+- Interacting with the regular wall switch turns normal room lights off.
+- Looking at the `Black Light` switch shows `[E] Toggle Black Light`.
+- Trying the black light while normal lights are on shows a message telling the player to turn off the main lights first.
+- With normal lights off, activating the black light reveals fluorescent `ENTER HERE` writing.
+- The secret wall remains solid unless normal lights are off and the black light is on.
+- Walking through the revealed wall changes Current Room to `The Forgotten Level`.
+- The Forgotten Level generates chunks around the player and unloads distant chunks.
+- The Forgotten Level shows dim yellow rooms, flickering ceiling panels, stains, props, and varied hallway layouts.
+- The Forgotten Level plays subtle fluorescent/HVAC ambience after entering pointer lock.
+- Distant footsteps, silence events, and occasional entity sounds occur over time.
+- Rare entities may appear and change behavior as the player gets deeper.
+- Rare escape doors can return the player to the Lobby.
 - Walking through the Tom & Jerry doorway changes Current Room from `Lobby` to `Tom & Jerry Room`.
 - Walking back through the doorway changes Current Room back to `Lobby`.
 - Walking through the Aquarium doorway changes Current Room from `Lobby` to `Aquarium Room`.

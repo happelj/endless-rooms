@@ -1,8 +1,15 @@
-import { PORTAL_CONFIGS, ROOM_MANAGER_CONFIG } from '../config/constants.js';
+import {
+  PLAYER_CONFIG,
+  PORTAL_CONFIGS,
+  ROOM_DIMENSIONS,
+  ROOM_IDS,
+  ROOM_MANAGER_CONFIG,
+} from '../config/constants.js';
 import { Portal } from '../portals/Portal.js';
 import { PortalManager } from '../portals/PortalManager.js';
 import { RoomThemeManager } from '../themes/RoomThemeManager.js';
 import { AquariumRoom } from './AquariumRoom.js';
+import { ForgottenLevelRoom } from './ForgottenLevelRoom.js';
 import { LibraryRoom } from './LibraryRoom.js';
 import { LobbyRoom } from './LobbyRoom.js';
 import { SpaceStationRoom } from './SpaceStationRoom.js';
@@ -40,6 +47,7 @@ export class RoomManager {
     this.registerRoom(new LibraryRoom(this.scene, this.collisionSystem));
     this.registerRoom(new YosemiteRoom(this.scene, this.collisionSystem));
     this.registerRoom(new SpaceStationRoom(this.scene, this.collisionSystem));
+    this.registerRoom(new ForgottenLevelRoom(this.scene, this.collisionSystem));
   }
 
   registerRoom(room) {
@@ -100,7 +108,7 @@ export class RoomManager {
       this.transitionThroughPortal(portal);
     }
 
-    this.getActiveRoom()?.update?.(deltaTime, this.player, elapsedTime);
+    this.getActiveRoom()?.update?.(deltaTime, this.player, elapsedTime, this);
     this.updateHud();
   }
 
@@ -118,6 +126,27 @@ export class RoomManager {
     if (!portal.continuous) {
       this.player.setPose(portal.spawnPosition, portal.spawnRotation);
     }
+  }
+
+  enterForgottenLevel(seed = undefined) {
+    const forgottenLevel = this.getRequiredRoom(ROOM_IDS.forgottenLevel);
+    forgottenLevel.beginRun(seed);
+    this.activateRoom(ROOM_IDS.forgottenLevel);
+
+    const spawnPose = forgottenLevel.getSpawnPose();
+    this.player.setPose(spawnPose.position, spawnPose.rotation);
+  }
+
+  exitForgottenLevel() {
+    this.activateRoom(ROOM_IDS.lobby);
+    this.player.setPose(
+      {
+        x: 0,
+        y: PLAYER_CONFIG.body.eyeHeight,
+        z: -ROOM_DIMENSIONS.length / 2 + 1.7,
+      },
+      { y: Math.PI },
+    );
   }
 
   updateHud() {

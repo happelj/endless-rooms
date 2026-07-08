@@ -87,6 +87,11 @@ export class Room {
     this.registeredColliders.add(collider);
   }
 
+  removeCollider(collider) {
+    this.collisionSystem.removeCollider(collider);
+    this.registeredColliders.delete(collider);
+  }
+
   addBoundsCollider(collider) {
     this.collisionSystem.addBoundsCollider(collider);
     this.registeredBoundsColliders.add(collider);

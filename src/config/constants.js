@@ -1,7 +1,7 @@
 export const APP_METADATA = Object.freeze({
   title: 'Endless Rooms',
-  version: '1.2',
-  stepLabel: 'Step 12 - Space Station Room',
+  version: '1.3',
+  stepLabel: 'Step 13 - The Forgotten Level',
 });
 
 export const SCENE_CONFIG = Object.freeze({
@@ -120,6 +120,15 @@ export const SPACE_STATION_ROOM_DIMENSIONS = Object.freeze({
   ceilingThickness: 0.24,
 });
 
+export const FORGOTTEN_LEVEL_DIMENSIONS = Object.freeze({
+  width: 1800,
+  length: 1800,
+  height: 3.2,
+  wallThickness: 0.22,
+  floorThickness: 0.14,
+  ceilingThickness: 0.16,
+});
+
 export const ROOM_IDS = Object.freeze({
   lobby: 'lobby',
   testRoom: 'test-room',
@@ -128,6 +137,7 @@ export const ROOM_IDS = Object.freeze({
   library: 'library-room',
   yosemite: 'yosemite-room',
   spaceStation: 'space-station-room',
+  forgottenLevel: 'forgotten-level',
 });
 
 export const TEST_ROOM_ORIGIN = Object.freeze({
@@ -177,6 +187,12 @@ export const SPACE_STATION_ROOM_ORIGIN = Object.freeze({
   x: -ROOM_DIMENSIONS.width / 2 - ROOM_DIMENSIONS.wallThickness - SPACE_STATION_ROOM_DIMENSIONS.width / 2,
   y: 0,
   z: LOBBY_OPENING_CENTERS.spaceStation - SPACE_STATION_ROOM_DOOR_CENTER,
+});
+
+export const FORGOTTEN_LEVEL_ORIGIN = Object.freeze({
+  x: 0,
+  y: 0,
+  z: -260,
 });
 
 export const PLAYER_CONFIG = Object.freeze({
@@ -537,6 +553,68 @@ export const AUDIO_CONFIG = Object.freeze({
       }),
     }),
   }),
+  forgottenLevel: Object.freeze({
+    fluorescentBuzz: Object.freeze({
+      id: 'forgotten-level-fluorescent-buzz',
+      kind: 'oscillator',
+      waveform: 'sawtooth',
+      frequency: 58,
+      volume: 0.007,
+      position: Object.freeze({ x: 0, y: 2.5, z: 0 }),
+      panner: Object.freeze({
+        refDistance: 18,
+        maxDistance: 90,
+        rolloffFactor: 0.24,
+      }),
+    }),
+    hvacDrone: Object.freeze({
+      id: 'forgotten-level-hvac-drone',
+      kind: 'noise',
+      volume: 0.014,
+      position: Object.freeze({ x: 0, y: 2.8, z: -8 }),
+      panner: Object.freeze({
+        refDistance: 16,
+        maxDistance: 120,
+        rolloffFactor: 0.18,
+      }),
+      filter: Object.freeze({
+        type: 'lowpass',
+        frequency: 420,
+        q: 0.55,
+      }),
+    }),
+    distantSteps: Object.freeze({
+      id: 'forgotten-level-distant-steps',
+      kind: 'noise',
+      volume: 0.018,
+      durationSeconds: 0.28,
+      position: Object.freeze({ x: 7, y: 0.2, z: -12 }),
+      panner: Object.freeze({
+        refDistance: 2.5,
+        maxDistance: 38,
+        rolloffFactor: 1.2,
+      }),
+      filter: Object.freeze({
+        type: 'bandpass',
+        frequency: 260,
+        q: 0.9,
+      }),
+    }),
+    entityCall: Object.freeze({
+      id: 'forgotten-level-entity-call',
+      kind: 'oscillator',
+      waveform: 'triangle',
+      frequency: 82,
+      volume: 0.018,
+      durationSeconds: 0.7,
+      position: Object.freeze({ x: -9, y: 1.2, z: -16 }),
+      panner: Object.freeze({
+        refDistance: 3,
+        maxDistance: 44,
+        rolloffFactor: 1.1,
+      }),
+    }),
+  }),
 });
 
 export const LOBBY_ROOM_CONFIG = Object.freeze({
@@ -633,6 +711,7 @@ export const TEST_ROOM_CONFIG = Object.freeze({
     labelInset: 0.12,
     entries: Object.freeze([
       Object.freeze({ id: ROOM_IDS.lobby, label: 'Lobby', wall: 'south', center: 0 }),
+      Object.freeze({ id: 'forgotten-level-secret-wall', wall: 'east', center: 3.4 }),
     ]),
   }),
   lighting: Object.freeze({
@@ -1090,6 +1169,89 @@ export const SPACE_STATION_ROOM_CONFIG = Object.freeze({
         Object.freeze({ x: -3.6, z: 2.8 }),
         Object.freeze({ x: 3.6, z: 2.8 }),
       ]),
+    }),
+  }),
+});
+
+export const FORGOTTEN_LEVEL_CONFIG = Object.freeze({
+  id: ROOM_IDS.forgottenLevel,
+  name: 'The Forgotten Level',
+  origin: FORGOTTEN_LEVEL_ORIGIN,
+  dimensions: FORGOTTEN_LEVEL_DIMENSIONS,
+  theme: Object.freeze({
+    id: 'forgotten-level-theme',
+    name: 'The Forgotten Level',
+    ambientLightingProfile: Object.freeze({
+      mood: 'abandoned-fluorescent',
+      ambientColor: 0xbca25e,
+      accentColor: 0x7b5cff,
+      intensity: 0.34,
+    }),
+    accentColors: Object.freeze({
+      primary: 0xbda869,
+      secondary: 0x4a3f30,
+      warning: 0x8b2f27,
+    }),
+    ambienceProfile: Object.freeze({
+      id: 'forgotten-level-ambience',
+      intensity: 'unsettling',
+    }),
+    fog: Object.freeze({
+      enabled: true,
+      color: 0x2c2615,
+      near: 10,
+      far: 58,
+    }),
+    musicProfile: Object.freeze({
+      id: 'none',
+      enabled: false,
+    }),
+    environmentalPresets: Object.freeze({
+      backgroundColor: 0x17130b,
+      procedural: 'forgotten-level',
+    }),
+  }),
+  procedural: Object.freeze({
+    chunkSize: 10,
+    activeRadius: 2,
+    unloadRadius: 3,
+    baseSeed: 'forgotten-level',
+    maxEntities: 5,
+    normalEntityChance: 0.05,
+    escapeChance: 0.012,
+    deeperEscapePenalty: 0.00008,
+    deeperEntityBonus: 0.0035,
+  }),
+  materials: Object.freeze({
+    carpet: Object.freeze({
+      color: 0x7f7350,
+      roughness: 0.98,
+      metalness: 0,
+    }),
+    carpetDark: Object.freeze({
+      color: 0x5f5436,
+      roughness: 0.98,
+      metalness: 0,
+    }),
+    wall: Object.freeze({
+      color: 0xd0c77f,
+      roughness: 0.92,
+      metalness: 0,
+    }),
+    wallStained: Object.freeze({
+      color: 0x9f934f,
+      roughness: 0.96,
+      metalness: 0,
+    }),
+    ceiling: Object.freeze({
+      color: 0xb7aa69,
+      roughness: 0.9,
+      metalness: 0,
+    }),
+    trim: Object.freeze({
+      color: 0x756838,
+      roughness: 0.84,
+      metalness: 0,
     }),
   }),
 });
