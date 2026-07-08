@@ -22,6 +22,7 @@ export class Room {
     this.group = new THREE.Group();
     this.group.name = config.name;
     this.group.position.copy(this.origin);
+    this.group.visible = false;
     this.geometryCache = new Map();
     this.ownedGeometries = new Set();
     this.materials = new Map();
@@ -81,6 +82,7 @@ export class Room {
   }
 
   addCollider(collider) {
+    collider.setActive?.(this.isActive);
     this.collisionSystem.addCollider(collider);
     this.registeredColliders.add(collider);
   }
@@ -91,6 +93,7 @@ export class Room {
   }
 
   addGroundCollider(collider) {
+    collider.setActive?.(this.isActive);
     this.collisionSystem.addGroundCollider(collider);
     this.registeredGroundColliders.add(collider);
   }
@@ -138,6 +141,8 @@ export class Room {
 
   activate() {
     this.isActive = true;
+    this.group.visible = true;
+    this.setCollidersEnabled(true);
     this.setLightingEnabled(true);
 
     for (const collider of this.registeredBoundsColliders) {
@@ -147,6 +152,8 @@ export class Room {
 
   deactivate() {
     this.isActive = false;
+    this.group.visible = false;
+    this.setCollidersEnabled(false);
     this.setLightingEnabled(false);
 
     for (const collider of this.registeredBoundsColliders) {
@@ -157,6 +164,16 @@ export class Room {
   setLightingEnabled(enabled) {
     for (const light of this.lights) {
       light.visible = enabled;
+    }
+  }
+
+  setCollidersEnabled(enabled) {
+    for (const collider of this.registeredColliders) {
+      collider.setActive?.(enabled);
+    }
+
+    for (const collider of this.registeredGroundColliders) {
+      collider.setActive?.(enabled);
     }
   }
 

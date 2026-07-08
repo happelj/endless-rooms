@@ -655,7 +655,7 @@ export class YosemiteRoom extends Room {
       width: 1.3,
       height: 0.46,
       position: { x: plaquePosition.x, y: plaquePosition.y, z: plaquePosition.z - 0.055 },
-      rotationY: 0,
+      rotationY: Math.PI,
     });
 
     this.addLabel(label);
@@ -742,7 +742,7 @@ export class YosemiteRoom extends Room {
         width: 1.25,
         height: 0.44,
         position: { x: marker.position.x, y: groundY + 1.07, z: marker.position.z - 0.095 },
-        rotationY: 0,
+        rotationY: Math.PI,
       });
       this.addLabel(label);
 

@@ -32,6 +32,7 @@ Step 12 includes:
 - Raycast-based interaction manager
 - Reusable `Interactable` framework
 - Reusable `ContentPanel` and `ContentManager`
+- Content Panel visual slots for reusable in-world views
 - Reusable animated display panels
 - Reusable orbital exterior backdrop
 - Movement pause while reading content
@@ -43,7 +44,7 @@ Step 12 includes:
 - Aquarium fish, bubbles, water movement, and exhibit plaques
 - Library bookshelves, reading tables, chairs, lamps, fireplace, display books, plants, and artwork
 - Yosemite terrain, composed trail, sky, clouds, stylized granite landmark, trees, shrubs, wildflowers, boulders, logs, water, scenic overlook, trail markers, wildlife, and outdoor ambience
-- Space Station observation deck, exterior planet view, star field, nebula, workstations, equipment racks, animated consoles, and station ambience
+- Space Station observation deck, telescope view, exterior planet view, star field, nebula, workstations, equipment racks, animated consoles, and station ambience
 - Collision for room shells, major furniture, exhibit props, terrain boundaries, trees, rocks, logs, trail markers, station consoles, support columns, cabinets, and equipment racks
 - HUD room metadata with connected destination names
 - Debug HUD for coordinates, grounded state, vertical velocity, room, portal count, and connected rooms
@@ -102,6 +103,7 @@ The Space Station Room includes:
 - Slow orbital drift animation
 - Central command console
 - Side workstations
+- Observation telescope with a reusable starfield Content Panel view
 - Animated holographic-style display panels
 - Storage cabinets
 - Equipment racks
@@ -115,7 +117,7 @@ The room is connected through the lobby west wall with:
 - `lobby-to-space-station-room`
 - `space-station-room-to-lobby`
 
-The Space Station is spatially offset from the Aquarium Room so both west-side lobby destinations remain separate and do not overlap.
+The Space Station is spatially offset from the Aquarium Room so both west-side lobby destinations remain separate. Inactive rooms are hidden and their room-owned colliders are disabled, which prevents outdoor Yosemite scenery or collision from bleeding into the active station space.
 
 ## Room Theme System
 
@@ -564,7 +566,7 @@ The application is intentionally organized around small classes with narrow resp
 - `RoomTheme` normalizes room theme settings with defaults for lighting, accents, ambience, fog, music, and environmental presets.
 - `PortalManager` owns portal lookup and connected-room counts.
 - `Portal` owns directional doorway metadata and trigger volume detection.
-- `Room` owns reusable room lifecycle, materials, geometry caching, interactables, ground colliders, and collision registration.
+- `Room` owns reusable room lifecycle, active-room visibility, materials, geometry caching, interactables, ground colliders, and collision registration.
 - `RectangularRoom` owns reusable rectangular room shell construction.
 - `SpaceStationRoom` owns the orbital observation deck layout, display interactions, station ambience, and exterior view composition.
 - `AnimatedDisplayPanel` owns reusable in-world canvas display animation.
@@ -577,7 +579,7 @@ The application is intentionally organized around small classes with narrow resp
 - `Sky` owns reusable sky dome and cloud animation.
 - `VegetationFactory` owns reusable primitive outdoor props.
 - `ContentManager` owns reusable reading state and movement pause/resume.
-- `ContentPanel` owns reusable readable content UI.
+- `ContentPanel` owns reusable readable content UI and optional visual slots such as the telescope starfield.
 - `Interactable` owns reusable prompt, range, target, and callback metadata.
 - `InteractionManager` owns active-room range filtering, raycast focus, and interaction triggering.
 - `FurnitureBuilder` owns reusable primitive furniture construction.
@@ -647,17 +649,22 @@ After running `npm run dev`, verify:
 - Animated Space Station display panels update while the room is active.
 - The planet, stars, and nebula outside the observation windows drift subtly.
 - Space Station engine hum, HVAC, ventilation, and beeps remain subtle after entering pointer lock.
+- Yosemite grass, trees, and marker props do not render inside the Space Station.
 - Looking at Space Station consoles shows `[E] Access Console`.
 - Pressing `E` near a Space Station console opens the Content Panel.
-- Space Station consoles, cabinets, racks, and support columns block movement.
+- Looking at the Space Station telescope shows `[E] Use Telescope`.
+- Pressing `E` near the telescope opens a starfield telescope view in the Content Panel.
+- Space Station consoles, telescope, cabinets, racks, and support columns block movement.
 - The granite landmark is immediately visible after entering from the Lobby portal.
 - Trees and trail geometry frame the landmark instead of blocking it.
 - Yosemite terrain is walkable and the player stays grounded on gentle elevation changes.
 - The trail remains fully walkable from entry to the overlook.
 - Yosemite trees, cliffs, landmark collision, boulders, logs, overlook railings, and trail markers block movement.
 - Looking at a Yosemite trail marker shows `[E] Read Trail Marker`.
+- Yosemite trail marker text faces the readable side of each marker.
 - Pressing `E` near a trail marker opens the Content Panel.
 - Looking at the overlook plaque shows `[E] Read Trail Marker`.
+- Yosemite overlook plaque text faces the readable side of the plaque.
 - Pressing `E` near the overlook plaque opens the Content Panel.
 - Pressing `E` closes the Content Panel without leaving pointer lock.
 - Circling birds animate above the granite landmark.

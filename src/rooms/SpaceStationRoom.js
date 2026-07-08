@@ -32,6 +32,17 @@ const CONSOLE_CONTENT = Object.freeze({
       'Future displays can show mission logs, experiment data, crew notes, and discoveries collected across Endless Rooms.',
     ]),
   }),
+  telescope: Object.freeze({
+    title: 'Telescope View',
+    visual: Object.freeze({
+      kind: 'starfield',
+      label: 'Telescope view of distant stars',
+    }),
+    body: Object.freeze([
+      'A quiet field of distant stars fills the telescope view.',
+      'Future steps can connect this station instrument to astronomy lessons, discoveries, and live observation events.',
+    ]),
+  }),
 });
 
 export class SpaceStationRoom extends RectangularRoom {
@@ -53,6 +64,7 @@ export class SpaceStationRoom extends RectangularRoom {
     this.addCeilingPanels();
     this.addObservationWindows();
     this.addSupportBeams();
+    this.addObservationTelescope();
     this.addCommandConsole();
     this.addSideWorkstations();
     this.addStorageAndEquipment();
@@ -113,6 +125,12 @@ export class SpaceStationRoom extends RectangularRoom {
         color: 0xd9f8ff,
         transparent: true,
         opacity: 0.78,
+        toneMapped: false,
+      })),
+      lensGlass: this.trackMaterial('TelescopeLensGlass', new THREE.MeshBasicMaterial({
+        color: 0xa4ebff,
+        transparent: true,
+        opacity: 0.56,
         toneMapped: false,
       })),
     });
@@ -290,6 +308,104 @@ export class SpaceStationRoom extends RectangularRoom {
         receiveShadow: true,
       });
     }
+  }
+
+  addObservationTelescope() {
+    const telescopePosition = { x: -6.28, y: 1.5, z: 1.82 };
+
+    this.furniture.addCylinder({
+      name: 'SpaceStationTelescopeStand',
+      radiusTop: 0.055,
+      radiusBottom: 0.075,
+      height: 1.14,
+      position: { x: telescopePosition.x + 0.36, y: 0.62, z: telescopePosition.z },
+      material: this.stationMaterials.darkMetal,
+      radialSegments: 14,
+    });
+
+    const mount = this.furniture.addBox({
+      name: 'SpaceStationTelescopeMount',
+      size: { x: 0.36, y: 0.18, z: 0.34 },
+      position: { x: telescopePosition.x + 0.36, y: 1.2, z: telescopePosition.z },
+      material: this.stationMaterials.graphite,
+      castShadow: true,
+      receiveShadow: true,
+    });
+
+    const body = this.furniture.addCylinder({
+      name: 'SpaceStationObservationTelescope',
+      radiusTop: 0.24,
+      radiusBottom: 0.28,
+      height: 1.22,
+      position: telescopePosition,
+      material: this.stationMaterials.darkMetal,
+      radialSegments: 28,
+      rotation: { x: 0, y: 0, z: Math.PI / 2 },
+    });
+
+    this.furniture.addCylinder({
+      name: 'SpaceStationTelescopeFrontRim',
+      radiusTop: 0.31,
+      radiusBottom: 0.31,
+      height: 0.12,
+      position: { x: telescopePosition.x - 0.64, y: telescopePosition.y, z: telescopePosition.z },
+      material: this.stationMaterials.windowFrame,
+      radialSegments: 28,
+      rotation: { x: 0, y: 0, z: Math.PI / 2 },
+    });
+
+    const lens = this.furniture.addCylinder({
+      name: 'SpaceStationTelescopeLens',
+      radiusTop: 0.23,
+      radiusBottom: 0.23,
+      height: 0.035,
+      position: { x: telescopePosition.x - 0.71, y: telescopePosition.y, z: telescopePosition.z },
+      material: this.stationMaterials.lensGlass,
+      radialSegments: 28,
+      rotation: { x: 0, y: 0, z: Math.PI / 2 },
+      castShadow: false,
+      receiveShadow: false,
+    });
+
+    this.furniture.addCylinder({
+      name: 'SpaceStationTelescopeEyepiece',
+      radiusTop: 0.11,
+      radiusBottom: 0.13,
+      height: 0.28,
+      position: { x: telescopePosition.x + 0.7, y: telescopePosition.y - 0.02, z: telescopePosition.z },
+      material: this.stationMaterials.graphite,
+      radialSegments: 18,
+      rotation: { x: 0, y: 0, z: Math.PI / 2 },
+    });
+
+    for (const [index, leg] of [
+      { x: telescopePosition.x + 0.12, z: telescopePosition.z - 0.36, rotationY: -0.22 },
+      { x: telescopePosition.x + 0.56, z: telescopePosition.z, rotationY: 0 },
+      { x: telescopePosition.x + 0.12, z: telescopePosition.z + 0.36, rotationY: 0.22 },
+    ].entries()) {
+      this.addRotatedBox({
+        name: `SpaceStationTelescopeTripodLeg:${index + 1}`,
+        size: { x: 0.08, y: 0.82, z: 0.08 },
+        position: { x: leg.x, y: 0.45, z: leg.z },
+        rotationY: leg.rotationY,
+        material: this.stationMaterials.darkMetal,
+        castShadow: true,
+        receiveShadow: true,
+      });
+    }
+
+    this.addCollider(new AabbCollider({
+      name: 'SpaceStationTelescopeCollider',
+      center: this.toWorldPosition({ x: telescopePosition.x + 0.24, y: 0.82, z: telescopePosition.z }),
+      size: { x: 1.15, y: 1.44, z: 0.84 },
+    }));
+
+    this.registerInteractable([body, lens, mount], {
+      id: 'space-station-observation-telescope',
+      range: INTERACTION_RANGE,
+      prompt: 'Use Telescope',
+      onInteract: ({ contentManager }) => this.openTelescopeView(contentManager),
+    });
   }
 
   addCommandConsole() {
@@ -523,6 +639,14 @@ export class SpaceStationRoom extends RectangularRoom {
     contentManager?.open({
       title: content.title,
       body: content.body,
+    });
+  }
+
+  openTelescopeView(contentManager) {
+    contentManager?.open({
+      title: CONSOLE_CONTENT.telescope.title,
+      visual: CONSOLE_CONTENT.telescope.visual,
+      body: CONSOLE_CONTENT.telescope.body,
     });
   }
 
