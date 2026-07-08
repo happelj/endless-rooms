@@ -215,8 +215,25 @@ export class ForgottenLevelGenerator {
       return false;
     }
 
+    if (this.isGuaranteedEscape(x, z, depth)) {
+      return true;
+    }
+
     const chance = Math.max(0.002, this.config.escapeChance - depth * this.config.deeperEscapePenalty);
     return this.seedManager.random01(x, z, 59) < chance;
+  }
+
+  isGuaranteedEscape(x, z, depth) {
+    const firstDepth = this.config.firstGuaranteedExitDepth ?? 14;
+    const interval = this.config.guaranteedExitInterval ?? 18;
+
+    if (depth < firstDepth || (depth - firstDepth) % interval !== 0) {
+      return false;
+    }
+
+    // Keep guaranteed exits discoverable from the main generated corridors while
+    // still leaving most chunks governed by the rare random exit probability.
+    return x === 0 || z === 0;
   }
 
   getKey(x, z) {

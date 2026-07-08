@@ -9,8 +9,6 @@ export class SecretWallEntrance {
     center,
     width,
     height,
-    material,
-    trimMaterial,
     triggerDepth = 1.25,
   }) {
     this.room = room;
@@ -29,10 +27,6 @@ export class SecretWallEntrance {
       height,
     });
 
-    this.wallCover = this.createWallCover(material);
-    this.baseboardCover = this.createBaseboardCover(trimMaterial);
-    this.panel = this.wallCover;
-
     this.collider = new AabbCollider({
       name: `${id}:Collider`,
       center: this.room.toWorldPosition(this.getPanelPosition()),
@@ -41,42 +35,6 @@ export class SecretWallEntrance {
     this.room.addCollider(this.collider);
     this.triggerBox = this.createTriggerBox(triggerDepth);
     this.updateColliderState();
-  }
-
-  createWallCover(material) {
-    const { height: roomHeight } = this.room.config.dimensions;
-    const { height: baseboardHeight } = this.room.config.baseboard;
-    const coverHeight = roomHeight - baseboardHeight;
-    const geometry = new THREE.PlaneGeometry(this.getWallCoverSpan(), coverHeight);
-    const mesh = new THREE.Mesh(geometry, material);
-    const position = this.getInteriorCoverPosition(coverHeight, baseboardHeight);
-
-    mesh.name = `${this.id}:InvisibleWallCover`;
-    mesh.position.set(position.x, position.y, position.z);
-    mesh.rotation.y = -Math.PI / 2;
-    mesh.castShadow = false;
-    mesh.receiveShadow = true;
-    this.room.addMesh(mesh, { disposeGeometry: true });
-
-    return mesh;
-  }
-
-  createBaseboardCover(material) {
-    const { height, depth } = this.room.config.baseboard;
-    const { width } = this.room.config.dimensions;
-
-    return this.room.addBox({
-      name: `${this.id}:BaseboardCover`,
-      size: { x: depth, y: height, z: this.getWallCoverSpan() },
-      position: {
-        x: width / 2 - depth / 2,
-        y: height / 2,
-        z: 0,
-      },
-      material,
-      castShadow: false,
-      receiveShadow: true,
-    });
   }
 
   setRoomActive(isRoomActive) {
@@ -131,19 +89,5 @@ export class SecretWallEntrance {
       y: this.height / 2,
       z: this.center,
     };
-  }
-
-  getInteriorCoverPosition(coverHeight, baseboardHeight) {
-    const { width } = this.room.config.dimensions;
-
-    return {
-      x: width / 2 - 0.006,
-      y: baseboardHeight + coverHeight / 2,
-      z: 0,
-    };
-  }
-
-  getWallCoverSpan() {
-    return this.room.config.dimensions.length;
   }
 }

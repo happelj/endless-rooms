@@ -23,6 +23,7 @@ export class TestRoom extends RectangularRoom {
           center: secretEntrance.center,
           width: secretEntrance.width,
           height: secretEntrance.height,
+          hidden: true,
         }),
       ]),
     });
@@ -195,8 +196,6 @@ export class TestRoom extends RectangularRoom {
       center: secretWall.center,
       width: secretWall.width,
       height: secretWall.height,
-      material: this.wallMaterial,
-      trimMaterial: this.trimMaterial,
     });
 
     this.fluorescentWriting = new FluorescentWritingReveal({

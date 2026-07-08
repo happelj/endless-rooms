@@ -28,6 +28,7 @@ export class RoomManager {
     this.themeManager = new RoomThemeManager(scene);
     this.activeRoomId = null;
     this.player = null;
+    this.infoPanelTimeoutId = null;
 
     this.createRooms();
     this.createPortals();
@@ -164,6 +165,23 @@ export class RoomManager {
     });
   }
 
+  showTemporaryInfo({ title, body, durationMs = 2400 }) {
+    if (!this.hud) {
+      return;
+    }
+
+    if (this.infoPanelTimeoutId !== null) {
+      window.clearTimeout(this.infoPanelTimeoutId);
+      this.infoPanelTimeoutId = null;
+    }
+
+    this.hud.showInfoPanel({ title, body });
+    this.infoPanelTimeoutId = window.setTimeout(() => {
+      this.hud?.hideInfoPanel();
+      this.infoPanelTimeoutId = null;
+    }, durationMs);
+  }
+
   getConnectedDestinationNames(roomId) {
     const roomNames = Array.from(this.portalManager.getConnectedRooms(roomId))
       .map((connectedRoomId) => this.getRequiredRoom(connectedRoomId).name);
@@ -202,6 +220,11 @@ export class RoomManager {
   }
 
   dispose() {
+    if (this.infoPanelTimeoutId !== null) {
+      window.clearTimeout(this.infoPanelTimeoutId);
+      this.infoPanelTimeoutId = null;
+    }
+
     for (const room of this.rooms.values()) {
       room.dispose();
     }

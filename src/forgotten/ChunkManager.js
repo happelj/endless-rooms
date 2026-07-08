@@ -27,6 +27,7 @@ export class ChunkManager {
     }
 
     this.chunks.clear();
+    this.playerChunk = { x: 0, z: 0 };
   }
 
   getCurrentDepth() {

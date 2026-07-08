@@ -24,6 +24,8 @@ export class ForgottenLevelRoom extends Room {
     });
     this.currentSeed = null;
     this.nextEventTime = 7;
+    this.nextEntitySoundTime = 0;
+    this.captureCooldownUntil = 0;
     this.silenceUntil = 0;
     this.build();
   }
@@ -126,6 +128,8 @@ export class ForgottenLevelRoom extends Room {
     this.entitySpawnManager.reset();
     this.escapeManager.reset();
     this.nextEventTime = 7;
+    this.nextEntitySoundTime = 0;
+    this.captureCooldownUntil = 0;
     this.silenceUntil = 0;
     this.chunkManager.ensureChunksAroundPlayer();
 
@@ -153,6 +157,7 @@ export class ForgottenLevelRoom extends Room {
     const audioConfig = AUDIO_CONFIG.forgottenLevel;
     this.fluorescentBuzzAudio = this.createRoomAudioSource(audioManager, audioConfig.fluorescentBuzz);
     this.hvacDroneAudio = this.createRoomAudioSource(audioManager, audioConfig.hvacDrone);
+    this.eerieToneAudio = this.createRoomAudioSource(audioManager, audioConfig.eerieTone);
     this.roomAudioConfigured = true;
   }
 
@@ -175,12 +180,14 @@ export class ForgottenLevelRoom extends Room {
   update(deltaTime, player, elapsedTime = 0, roomManager = null) {
     this.updatePlayerLight(player);
     this.chunkManager.update(player.position, elapsedTime);
-    this.entitySpawnManager.update(
+    const entitySummary = this.entitySpawnManager.update(
       deltaTime,
       elapsedTime,
       player.position,
       this.chunkManager.getCurrentDepth(),
     );
+    this.updateEntityAudio(elapsedTime, entitySummary);
+    this.handleEntityCapture(entitySummary, player, roomManager, elapsedTime);
     this.escapeManager.update(player, roomManager);
     this.updateAtmosphereEvents(elapsedTime, player);
   }
@@ -202,24 +209,32 @@ export class ForgottenLevelRoom extends Room {
     if (this.silenceUntil > elapsedTime) {
       this.fluorescentBuzzAudio?.setVolume(0.001);
       this.hvacDroneAudio?.setVolume(0.002);
+      this.eerieToneAudio?.setVolume(0.001);
       return;
     }
 
     this.fluorescentBuzzAudio?.setVolume(AUDIO_CONFIG.forgottenLevel.fluorescentBuzz.volume);
     this.hvacDroneAudio?.setVolume(AUDIO_CONFIG.forgottenLevel.hvacDrone.volume);
+    this.eerieToneAudio?.setVolume(AUDIO_CONFIG.forgottenLevel.eerieTone.volume);
 
     if (elapsedTime < this.nextEventTime || this.audioManager?.context?.state !== 'running') {
       return;
     }
 
     const depth = this.chunkManager.getCurrentDepth();
-    const playEntityCall = depth > 6 && Math.sin(elapsedTime * 0.37 + depth) > 0.65;
+    const eventRoll = Math.sin(elapsedTime * 0.31 + depth * 1.7);
+    const playLightFlicker = eventRoll > 0.74;
+    const playEntityCall = !playLightFlicker && depth > 6 && Math.sin(elapsedTime * 0.37 + depth) > 0.65;
     const soundConfig = playEntityCall
       ? AUDIO_CONFIG.forgottenLevel.entityCall
-      : AUDIO_CONFIG.forgottenLevel.distantSteps;
+      : playLightFlicker
+        ? AUDIO_CONFIG.forgottenLevel.lightFlicker
+        : AUDIO_CONFIG.forgottenLevel.distantSteps;
     const offset = playEntityCall
       ? { x: -12 - depth * 0.12, y: 1.2, z: -18 }
-      : { x: 8, y: 0.2, z: -10 - depth * 0.08 };
+      : playLightFlicker
+        ? { x: Math.sin(elapsedTime * 1.3) * 4, y: 1.0, z: Math.cos(elapsedTime * 1.1) * 5 }
+        : { x: 8, y: 0.2, z: -10 - depth * 0.08 };
 
     this.audioManager.playSoundEffect({
       ...soundConfig,
@@ -236,6 +251,70 @@ export class ForgottenLevelRoom extends Room {
     }
 
     this.nextEventTime = elapsedTime + 5 + Math.max(0, 12 - depth * 0.16);
+  }
+
+  updateEntityAudio(elapsedTime, entitySummary) {
+    if (
+      !entitySummary?.nearestEntity
+      || entitySummary.nearestDistance > 28
+      || elapsedTime < this.nextEntitySoundTime
+      || this.audioManager?.context?.state !== 'running'
+    ) {
+      return;
+    }
+
+    const isChasing = entitySummary.chasingCount > 0;
+    const soundConfig = isChasing
+      ? AUDIO_CONFIG.forgottenLevel.entityCall
+      : AUDIO_CONFIG.forgottenLevel.distantSteps;
+    const proximity = Math.max(0, 1 - entitySummary.nearestDistance / 28);
+
+    this.audioManager.playSoundEffect({
+      ...soundConfig,
+      id: `${soundConfig.id}:entity:${Math.floor(elapsedTime * 10)}`,
+      volume: soundConfig.volume + proximity * (isChasing ? 0.05 : 0.026),
+      position: {
+        x: entitySummary.nearestWorldPosition.x,
+        y: entitySummary.nearestWorldPosition.y + 1.1,
+        z: entitySummary.nearestWorldPosition.z,
+      },
+    });
+
+    this.nextEntitySoundTime = elapsedTime + (isChasing ? 0.95 : 1.75);
+  }
+
+  handleEntityCapture(entitySummary, player, roomManager, elapsedTime) {
+    if (
+      !entitySummary?.caught
+      || elapsedTime < this.captureCooldownUntil
+    ) {
+      return;
+    }
+
+    this.captureCooldownUntil = elapsedTime + 4;
+
+    if (this.audioManager?.context?.state === 'running') {
+      this.audioManager.playSoundEffect({
+        ...AUDIO_CONFIG.forgottenLevel.entityCall,
+        id: `forgotten-level-capture:${Math.floor(elapsedTime * 10)}`,
+        volume: 0.085,
+        durationSeconds: 1.1,
+        position: {
+          x: player.position.x,
+          y: player.position.y,
+          z: player.position.z,
+        },
+      });
+    }
+
+    const newSeed = this.beginRun();
+    const spawnPose = this.getSpawnPose();
+    player.setPose(spawnPose.position, spawnPose.rotation);
+    roomManager?.showTemporaryInfo?.({
+      title: 'You were found',
+      body: `The halls rearranged themselves. New seed: ${newSeed}`,
+      durationMs: 2600,
+    });
   }
 
   dispose() {

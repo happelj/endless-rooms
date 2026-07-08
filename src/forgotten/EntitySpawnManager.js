@@ -47,10 +47,39 @@ export class EntitySpawnManager {
   update(deltaTime, elapsedTime, playerWorldPosition, depth) {
     const playerLocalPosition = playerWorldPosition.clone().sub(this.room.origin);
     const danger = Math.min(1, depth / 70);
+    const summary = {
+      caught: false,
+      chasingCount: 0,
+      nearestDistance: Infinity,
+      nearestEntity: null,
+      nearestWorldPosition: null,
+    };
 
     for (const entity of this.entities.values()) {
       entity.update(deltaTime, elapsedTime, playerLocalPosition, danger);
+
+      if (!entity.isActiveThreat()) {
+        continue;
+      }
+
+      const distance = entity.getDistanceTo(playerLocalPosition);
+
+      if (entity.isChasing()) {
+        summary.chasingCount += 1;
+      }
+
+      if (distance < summary.nearestDistance) {
+        summary.nearestDistance = distance;
+        summary.nearestEntity = entity;
+        summary.nearestWorldPosition = entity.group.position.clone().add(this.room.origin);
+      }
+
+      if (distance <= this.config.captureDistance) {
+        summary.caught = true;
+      }
     }
+
+    return summary;
   }
 
   reset() {

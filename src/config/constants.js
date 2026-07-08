@@ -121,8 +121,8 @@ export const SPACE_STATION_ROOM_DIMENSIONS = Object.freeze({
 });
 
 export const FORGOTTEN_LEVEL_DIMENSIONS = Object.freeze({
-  width: 1800,
-  length: 1800,
+  width: 20000,
+  length: 20000,
   height: 3.2,
   wallThickness: 0.22,
   floorThickness: 0.14,
@@ -559,7 +559,7 @@ export const AUDIO_CONFIG = Object.freeze({
       kind: 'oscillator',
       waveform: 'sawtooth',
       frequency: 58,
-      volume: 0.007,
+      volume: 0.018,
       position: Object.freeze({ x: 0, y: 2.5, z: 0 }),
       panner: Object.freeze({
         refDistance: 18,
@@ -570,7 +570,7 @@ export const AUDIO_CONFIG = Object.freeze({
     hvacDrone: Object.freeze({
       id: 'forgotten-level-hvac-drone',
       kind: 'noise',
-      volume: 0.014,
+      volume: 0.026,
       position: Object.freeze({ x: 0, y: 2.8, z: -8 }),
       panner: Object.freeze({
         refDistance: 16,
@@ -583,10 +583,40 @@ export const AUDIO_CONFIG = Object.freeze({
         q: 0.55,
       }),
     }),
+    eerieTone: Object.freeze({
+      id: 'forgotten-level-eerie-tone',
+      kind: 'oscillator',
+      waveform: 'triangle',
+      frequency: 39,
+      volume: 0.011,
+      position: Object.freeze({ x: 0, y: 2.1, z: 0 }),
+      panner: Object.freeze({
+        refDistance: 22,
+        maxDistance: 140,
+        rolloffFactor: 0.16,
+      }),
+    }),
+    lightFlicker: Object.freeze({
+      id: 'forgotten-level-light-flicker',
+      kind: 'noise',
+      volume: 0.026,
+      durationSeconds: 0.16,
+      position: Object.freeze({ x: 0, y: 2.7, z: 0 }),
+      panner: Object.freeze({
+        refDistance: 3,
+        maxDistance: 22,
+        rolloffFactor: 1.3,
+      }),
+      filter: Object.freeze({
+        type: 'bandpass',
+        frequency: 980,
+        q: 1.1,
+      }),
+    }),
     distantSteps: Object.freeze({
       id: 'forgotten-level-distant-steps',
       kind: 'noise',
-      volume: 0.018,
+      volume: 0.034,
       durationSeconds: 0.28,
       position: Object.freeze({ x: 7, y: 0.2, z: -12 }),
       panner: Object.freeze({
@@ -605,7 +635,7 @@ export const AUDIO_CONFIG = Object.freeze({
       kind: 'oscillator',
       waveform: 'triangle',
       frequency: 82,
-      volume: 0.018,
+      volume: 0.04,
       durationSeconds: 0.7,
       position: Object.freeze({ x: -9, y: 1.2, z: -16 }),
       panner: Object.freeze({
@@ -1223,10 +1253,13 @@ export const FORGOTTEN_LEVEL_CONFIG = Object.freeze({
   }),
   procedural: Object.freeze({
     chunkSize: 10,
-    activeRadius: 3,
-    unloadRadius: 5,
+    activeRadius: 4,
+    unloadRadius: 7,
     baseSeed: 'forgotten-level',
     maxEntities: 5,
+    captureDistance: 1.25,
+    firstGuaranteedExitDepth: 14,
+    guaranteedExitInterval: 18,
     normalEntityChance: 0.05,
     escapeChance: 0.012,
     deeperEscapePenalty: 0.00008,

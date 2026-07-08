@@ -49,6 +49,22 @@ export class ForgottenEntity {
     this.move(deltaTime);
   }
 
+  getState() {
+    return this.state;
+  }
+
+  getDistanceTo(position) {
+    return this.group.position.distanceTo(position);
+  }
+
+  isActiveThreat() {
+    return this.state !== ENTITY_STATES.disappear && this.group.visible;
+  }
+
+  isChasing() {
+    return this.state === ENTITY_STATES.chase;
+  }
+
   updateState(distance, danger) {
     if (this.state === ENTITY_STATES.disappear) {
       return;

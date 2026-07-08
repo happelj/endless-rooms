@@ -105,7 +105,7 @@ The Test Room now includes:
 - A regular interactable light switch
 - A separate interactable `Black Light` switch
 - Hidden fluorescent writing that says `ENTER HERE`
-- A randomized covered pass-through wall that is visually indistinguishable from the rest of the room until the black light reveals it
+- A randomized pass-through wall that is visually indistinguishable from the rest of the room until the black light reveals it
 
 Secret entrance rules:
 
@@ -126,13 +126,14 @@ The Forgotten Level includes:
 - Chunk variations such as hallways, empty rooms, office-like spaces, dead ends, intersections, looping corridors, rare large rooms, and impossible layouts
 - Randomized stains, props, ceiling panels, flicker states, and damage
 - Dim yellow atmosphere with room fog
-- Buzzing fluorescent ambience and HVAC drone
-- Distant footsteps, entity calls, and occasional silence events
+- Buzzing fluorescent ambience, HVAC drone, eerie tone, and short flicker sounds
+- Distant footsteps, positional entity calls, and occasional silence events
 - Rare entity encounters with idle, investigate, stalk, chase, and disappear states
-- Rare emergency-exit style escape locations
+- Rare emergency-exit style escape locations, plus deterministic milestone exits so each run remains escapable
+- Entity capture behavior that reshuffles the run and returns the player to the Forgotten Level start
 - Difficulty scaling based on travel depth
 
-The original Test Room wall does not become a normal doorway. It stays visually disguised as normal wall surface, and the hidden route is entered by walking through it only under the correct lighting conditions.
+The original Test Room wall does not become a normal doorway and no cover mesh is added over it. It stays visually disguised as normal wall surface, and the hidden route is entered by walking through it only under the correct lighting conditions.
 
 ## Step 12: Space Station Room
 
