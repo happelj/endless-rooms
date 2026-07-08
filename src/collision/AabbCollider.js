@@ -1,14 +1,19 @@
 import * as THREE from 'three';
 
 export class AabbCollider {
-  constructor({ name = 'AabbCollider', center, size }) {
+  constructor({ name = 'AabbCollider', center, size, isActive = true }) {
     this.name = name;
     this.center = new THREE.Vector3(center.x, center.y, center.z);
     this.size = new THREE.Vector3(size.x, size.y, size.z);
     this.min = new THREE.Vector3();
     this.max = new THREE.Vector3();
+    this.isActive = isActive;
 
     this.updateBounds();
+  }
+
+  setActive(isActive) {
+    this.isActive = isActive;
   }
 
   updateBounds() {

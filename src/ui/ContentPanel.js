@@ -23,9 +23,12 @@ export class ContentPanel {
     `;
   }
 
-  show({ title, body, footer = 'Press E to close. ESC unlocks the mouse.' }) {
+  show({ title, body, footer = 'Press E to close. ESC unlocks the mouse.', visual = null }) {
     this.titleElement.textContent = title;
-    this.bodyElement.replaceChildren(...this.createBodyNodes(body));
+    this.bodyElement.replaceChildren(
+      ...this.createVisualNodes(visual),
+      ...this.createBodyNodes(body),
+    );
     this.footerElement.textContent = footer;
     this.root.hidden = false;
   }
@@ -42,6 +45,20 @@ export class ContentPanel {
       element.textContent = paragraph;
       return element;
     });
+  }
+
+  createVisualNodes(visual) {
+    if (!visual) {
+      return [];
+    }
+
+    const config = typeof visual === 'string' ? { kind: visual } : visual;
+    const element = document.createElement('div');
+    element.className = `content-panel__visual content-panel__visual--${config.kind}`;
+    element.setAttribute('aria-label', config.label ?? 'Visual content');
+    element.setAttribute('role', 'img');
+
+    return [element];
   }
 
   dispose() {

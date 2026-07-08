@@ -1,11 +1,21 @@
-import { PORTAL_CONFIGS, ROOM_MANAGER_CONFIG } from '../config/constants.js';
+import {
+  PLAYER_CONFIG,
+  PORTAL_CONFIGS,
+  ROOM_DIMENSIONS,
+  ROOM_IDS,
+  ROOM_MANAGER_CONFIG,
+} from '../config/constants.js';
 import { Portal } from '../portals/Portal.js';
 import { PortalManager } from '../portals/PortalManager.js';
+import { RoomThemeManager } from '../themes/RoomThemeManager.js';
 import { AquariumRoom } from './AquariumRoom.js';
+import { ForgottenLevelRoom } from './ForgottenLevelRoom.js';
 import { LibraryRoom } from './LibraryRoom.js';
 import { LobbyRoom } from './LobbyRoom.js';
+import { SpaceStationRoom } from './SpaceStationRoom.js';
 import { TestRoom } from './TestRoom.js';
 import { TomAndJerryRoom } from './TomAndJerryRoom.js';
+import { YosemiteRoom } from './YosemiteRoom.js';
 
 export class RoomManager {
   constructor(scene, collisionSystem, hud, audioManager = null) {
@@ -15,8 +25,10 @@ export class RoomManager {
     this.audioManager = audioManager;
     this.rooms = new Map();
     this.portalManager = new PortalManager();
+    this.themeManager = new RoomThemeManager(scene);
     this.activeRoomId = null;
     this.player = null;
+    this.infoPanelTimeoutId = null;
 
     this.createRooms();
     this.createPortals();
@@ -34,6 +46,9 @@ export class RoomManager {
     this.registerRoom(new TomAndJerryRoom(this.scene, this.collisionSystem));
     this.registerRoom(new AquariumRoom(this.scene, this.collisionSystem));
     this.registerRoom(new LibraryRoom(this.scene, this.collisionSystem));
+    this.registerRoom(new YosemiteRoom(this.scene, this.collisionSystem));
+    this.registerRoom(new SpaceStationRoom(this.scene, this.collisionSystem));
+    this.registerRoom(new ForgottenLevelRoom(this.scene, this.collisionSystem));
   }
 
   registerRoom(room) {
@@ -71,6 +86,7 @@ export class RoomManager {
     }
 
     const room = this.getRequiredRoom(roomId);
+    this.themeManager.applyTheme(room.getTheme());
     room.activate();
     this.activeRoomId = roomId;
     this.audioManager?.setActiveRoom(roomId);
@@ -93,7 +109,7 @@ export class RoomManager {
       this.transitionThroughPortal(portal);
     }
 
-    this.getActiveRoom()?.update?.(deltaTime, this.player, elapsedTime);
+    this.getActiveRoom()?.update?.(deltaTime, this.player, elapsedTime, this);
     this.updateHud();
   }
 
@@ -113,6 +129,27 @@ export class RoomManager {
     }
   }
 
+  enterForgottenLevel(seed = undefined) {
+    const forgottenLevel = this.getRequiredRoom(ROOM_IDS.forgottenLevel);
+    forgottenLevel.beginRun(seed);
+    this.activateRoom(ROOM_IDS.forgottenLevel);
+
+    const spawnPose = forgottenLevel.getSpawnPose();
+    this.player.setPose(spawnPose.position, spawnPose.rotation);
+  }
+
+  exitForgottenLevel() {
+    this.activateRoom(ROOM_IDS.lobby);
+    this.player.setPose(
+      {
+        x: 0,
+        y: PLAYER_CONFIG.body.eyeHeight,
+        z: -ROOM_DIMENSIONS.length / 2 + 1.7,
+      },
+      { y: Math.PI },
+    );
+  }
+
   updateHud() {
     if (!this.hud || !this.activeRoomId) {
       return;
@@ -126,6 +163,23 @@ export class RoomManager {
       connectedRooms: this.portalManager.getConnectedRoomCount(this.activeRoomId),
       connectedDestinations: this.getConnectedDestinationNames(this.activeRoomId),
     });
+  }
+
+  showTemporaryInfo({ title, body, durationMs = 2400 }) {
+    if (!this.hud) {
+      return;
+    }
+
+    if (this.infoPanelTimeoutId !== null) {
+      window.clearTimeout(this.infoPanelTimeoutId);
+      this.infoPanelTimeoutId = null;
+    }
+
+    this.hud.showInfoPanel({ title, body });
+    this.infoPanelTimeoutId = window.setTimeout(() => {
+      this.hud?.hideInfoPanel();
+      this.infoPanelTimeoutId = null;
+    }, durationMs);
   }
 
   getConnectedDestinationNames(roomId) {
@@ -166,11 +220,17 @@ export class RoomManager {
   }
 
   dispose() {
+    if (this.infoPanelTimeoutId !== null) {
+      window.clearTimeout(this.infoPanelTimeoutId);
+      this.infoPanelTimeoutId = null;
+    }
+
     for (const room of this.rooms.values()) {
       room.dispose();
     }
 
     this.portalManager.dispose();
+    this.themeManager.dispose();
     this.rooms.clear();
     this.activeRoomId = null;
     this.player = null;

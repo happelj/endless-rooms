@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { AabbCollider } from '../collision/AabbCollider.js';
 import { RoomBoundsCollider } from '../collision/RoomBoundsCollider.js';
 import { Room } from './Room.js';
 import { RoomLabel } from './RoomLabel.js';
@@ -96,9 +97,10 @@ export class RectangularRoom extends Room {
   }
 
   addWall(wallName) {
-    const fullHeightSegments = this.getSolidSegments(wallName);
+    const visibleSegments = this.getSolidSegments(wallName, { includeHidden: false });
+    const colliderSegments = this.getSolidSegments(wallName, { includeHidden: true });
 
-    for (const segment of fullHeightSegments) {
+    for (const segment of visibleSegments) {
       this.addWallSegment({
         wallName,
         name: `${this.name}Wall:${wallName}:segment`,
@@ -106,10 +108,22 @@ export class RectangularRoom extends Room {
         spanLength: segment.end - segment.start,
         height: this.config.dimensions.height,
         centerY: this.config.dimensions.height / 2,
+        collider: false,
       });
     }
 
-    for (const opening of this.getOpeningsForWall(wallName)) {
+    for (const segment of colliderSegments) {
+      this.addWallColliderSegment({
+        wallName,
+        name: `${this.name}Wall:${wallName}:collider`,
+        centerAlongSpan: (segment.start + segment.end) / 2,
+        spanLength: segment.end - segment.start,
+        height: this.config.dimensions.height,
+        centerY: this.config.dimensions.height / 2,
+      });
+    }
+
+    for (const opening of this.getOpeningsForWall(wallName, { includeHidden: false })) {
       this.addOpeningHeader(wallName, opening);
     }
   }
@@ -127,7 +141,7 @@ export class RectangularRoom extends Room {
     });
   }
 
-  addWallSegment({ wallName, name, centerAlongSpan, spanLength, height, centerY }) {
+  addWallSegment({ wallName, name, centerAlongSpan, spanLength, height, centerY, collider = true }) {
     this.addBox({
       name,
       size: this.getWallSegmentSize(wallName, spanLength, height),
@@ -135,13 +149,21 @@ export class RectangularRoom extends Room {
       material: this.wallMaterial,
       castShadow: true,
       receiveShadow: true,
-      collider: true,
+      collider,
     });
+  }
+
+  addWallColliderSegment({ wallName, name, centerAlongSpan, spanLength, height, centerY }) {
+    this.addCollider(new AabbCollider({
+      name: `${name}Collider`,
+      center: this.toWorldPosition(this.getWallSegmentPosition(wallName, centerAlongSpan, centerY)),
+      size: this.getWallSegmentSize(wallName, spanLength, height),
+    }));
   }
 
   addBaseboards() {
     for (const wallName of this.getEnabledWalls()) {
-      for (const segment of this.getSolidSegments(wallName)) {
+      for (const segment of this.getSolidSegments(wallName, { includeHidden: false })) {
         this.addBaseboardSegment(wallName, segment);
       }
     }
@@ -162,7 +184,7 @@ export class RectangularRoom extends Room {
 
   addOpeningLabels() {
     for (const opening of this.config.openings.entries) {
-      if (!opening.label) {
+      if (opening.hidden || !opening.label) {
         continue;
       }
 
@@ -244,16 +266,16 @@ export class RectangularRoom extends Room {
     return WALL_NAMES.filter((wallName) => !omittedWalls.has(wallName));
   }
 
-  getOpeningsForWall(wallName) {
+  getOpeningsForWall(wallName, { includeHidden = true } = {}) {
     return this.config.openings.entries
-      .filter((opening) => opening.wall === wallName)
+      .filter((opening) => opening.wall === wallName && (includeHidden || !opening.hidden))
       .sort((a, b) => a.center - b.center);
   }
 
-  getSolidSegments(wallName) {
+  getSolidSegments(wallName, { includeHidden = true } = {}) {
     const spanLength = this.getWallSpanLength(wallName);
     const halfSpan = spanLength / 2;
-    const openings = this.getOpeningsForWall(wallName);
+    const openings = this.getOpeningsForWall(wallName, { includeHidden });
     const segments = [];
     let cursor = -halfSpan;
 

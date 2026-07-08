@@ -52,6 +52,7 @@ export class AudioManager {
 
     source.connect(this.masterGain);
     source.start();
+    source.setRoomActive(true);
     window.setTimeout(() => source.dispose(), (config.durationSeconds ?? 2) * 1000);
 
     return source;

@@ -10,6 +10,7 @@ export class StartOverlay extends EventTarget {
     this.root.type = 'button';
     this.root.setAttribute('aria-label', 'Click anywhere to begin');
     this.root.innerHTML = this.createTemplate();
+    this.promptElement = this.root.querySelector('[data-start-overlay-prompt]');
 
     this.handleClick = this.handleClick.bind(this);
     this.root.addEventListener('click', this.handleClick);
@@ -20,9 +21,14 @@ export class StartOverlay extends EventTarget {
     return `
       <span class="start-overlay__content">
         <span class="start-overlay__title">${APP_METADATA.title.toUpperCase()}</span>
-        <span class="start-overlay__prompt">Click anywhere to begin.</span>
+        <span class="start-overlay__prompt" data-start-overlay-prompt>Click anywhere to begin.</span>
       </span>
     `;
+  }
+
+  setPrompt(prompt) {
+    this.promptElement.textContent = prompt;
+    this.root.setAttribute('aria-label', prompt);
   }
 
   show() {
@@ -42,4 +48,3 @@ export class StartOverlay extends EventTarget {
     this.root.remove();
   }
 }
-

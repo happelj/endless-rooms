@@ -41,7 +41,7 @@ export class CollisionSystem {
     const maxY = minY + body.height;
 
     for (const collider of this.colliders) {
-      if (collider.intersectsVerticalRange(minY, maxY)) {
+      if (collider.isActive !== false && collider.intersectsVerticalRange(minY, maxY)) {
         collider.resolveHorizontalCircle(position, body.radius, previousPosition);
       }
     }

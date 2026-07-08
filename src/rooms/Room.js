@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { AabbCollider } from '../collision/AabbCollider.js';
 import { Interactable } from '../interactions/Interactable.js';
+import { RoomTheme } from '../themes/RoomTheme.js';
 
 const DEFAULT_ORIGIN = Object.freeze({ x: 0, y: 0, z: 0 });
 
@@ -11,6 +12,7 @@ export class Room {
     this.config = config;
     this.id = config.id;
     this.name = config.name;
+    this.theme = RoomTheme.from(config.theme ?? { id: `${this.id}-default-theme`, name: `${this.name} Default Theme` });
     this.origin = new THREE.Vector3(
       config.origin?.x ?? DEFAULT_ORIGIN.x,
       config.origin?.y ?? DEFAULT_ORIGIN.y,
@@ -20,11 +22,13 @@ export class Room {
     this.group = new THREE.Group();
     this.group.name = config.name;
     this.group.position.copy(this.origin);
+    this.group.visible = false;
     this.geometryCache = new Map();
     this.ownedGeometries = new Set();
     this.materials = new Map();
     this.registeredColliders = new Set();
     this.registeredBoundsColliders = new Set();
+    this.registeredGroundColliders = new Set();
     this.interactables = new Set();
     this.labels = new Set();
     this.lights = new Set();
@@ -78,8 +82,14 @@ export class Room {
   }
 
   addCollider(collider) {
+    collider.setActive?.(this.isActive);
     this.collisionSystem.addCollider(collider);
     this.registeredColliders.add(collider);
+  }
+
+  removeCollider(collider) {
+    this.collisionSystem.removeCollider(collider);
+    this.registeredColliders.delete(collider);
   }
 
   addBoundsCollider(collider) {
@@ -87,8 +97,15 @@ export class Room {
     this.registeredBoundsColliders.add(collider);
   }
 
+  addGroundCollider(collider) {
+    collider.setActive?.(this.isActive);
+    this.collisionSystem.addGroundCollider(collider);
+    this.registeredGroundColliders.add(collider);
+  }
+
   addLight(light) {
     this.lights.add(light);
+    light.visible = this.isActive;
     this.group.add(light);
   }
 
@@ -123,8 +140,15 @@ export class Room {
     return Array.from(this.interactables);
   }
 
+  getTheme() {
+    return this.theme;
+  }
+
   activate() {
     this.isActive = true;
+    this.group.visible = true;
+    this.setCollidersEnabled(true);
+    this.setLightingEnabled(true);
 
     for (const collider of this.registeredBoundsColliders) {
       collider.setActive(true);
@@ -133,9 +157,28 @@ export class Room {
 
   deactivate() {
     this.isActive = false;
+    this.group.visible = false;
+    this.setCollidersEnabled(false);
+    this.setLightingEnabled(false);
 
     for (const collider of this.registeredBoundsColliders) {
       collider.setActive(false);
+    }
+  }
+
+  setLightingEnabled(enabled) {
+    for (const light of this.lights) {
+      light.visible = enabled;
+    }
+  }
+
+  setCollidersEnabled(enabled) {
+    for (const collider of this.registeredColliders) {
+      collider.setActive?.(enabled);
+    }
+
+    for (const collider of this.registeredGroundColliders) {
+      collider.setActive?.(enabled);
     }
   }
 
@@ -170,6 +213,10 @@ export class Room {
       this.collisionSystem.removeBoundsCollider(collider);
     }
 
+    for (const collider of this.registeredGroundColliders) {
+      this.collisionSystem.removeGroundCollider(collider);
+    }
+
     for (const label of this.labels) {
       label.dispose();
     }
@@ -195,6 +242,7 @@ export class Room {
 
     this.registeredColliders.clear();
     this.registeredBoundsColliders.clear();
+    this.registeredGroundColliders.clear();
     this.interactables.clear();
     this.labels.clear();
     this.lights.clear();

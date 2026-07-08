@@ -1,7 +1,7 @@
 export const APP_METADATA = Object.freeze({
   title: 'Endless Rooms',
-  version: '1.0',
-  stepLabel: 'Step 10 - Library Room',
+  version: '1.3',
+  stepLabel: 'Step 13 - The Forgotten Level',
 });
 
 export const SCENE_CONFIG = Object.freeze({
@@ -102,12 +102,42 @@ export const LIBRARY_ROOM_DIMENSIONS = Object.freeze({
   ceilingThickness: 0.22,
 });
 
+export const YOSEMITE_ROOM_DIMENSIONS = Object.freeze({
+  width: 34,
+  length: 38,
+  height: 18,
+  wallThickness: 0.35,
+  floorThickness: 0.18,
+  ceilingThickness: 0.22,
+});
+
+export const SPACE_STATION_ROOM_DIMENSIONS = Object.freeze({
+  width: 16,
+  length: 13,
+  height: 4.8,
+  wallThickness: 0.32,
+  floorThickness: 0.2,
+  ceilingThickness: 0.24,
+});
+
+export const FORGOTTEN_LEVEL_DIMENSIONS = Object.freeze({
+  width: 20000,
+  length: 20000,
+  height: 3.2,
+  wallThickness: 0.22,
+  floorThickness: 0.14,
+  ceilingThickness: 0.16,
+});
+
 export const ROOM_IDS = Object.freeze({
   lobby: 'lobby',
   testRoom: 'test-room',
   tomAndJerry: 'tom-and-jerry-room',
   aquarium: 'aquarium-room',
   library: 'library-room',
+  yosemite: 'yosemite-room',
+  spaceStation: 'space-station-room',
+  forgottenLevel: 'forgotten-level',
 });
 
 export const TEST_ROOM_ORIGIN = Object.freeze({
@@ -145,6 +175,26 @@ export const LIBRARY_ROOM_ORIGIN = Object.freeze({
   z: LOBBY_OPENING_CENTERS.library - LIBRARY_ROOM_DOOR_CENTER,
 });
 
+export const YOSEMITE_ROOM_ORIGIN = Object.freeze({
+  x: 0,
+  y: 0,
+  z: ROOM_DIMENSIONS.length / 2 + ROOM_DIMENSIONS.wallThickness + YOSEMITE_ROOM_DIMENSIONS.length / 2,
+});
+
+export const SPACE_STATION_ROOM_DOOR_CENTER = -5;
+
+export const SPACE_STATION_ROOM_ORIGIN = Object.freeze({
+  x: -ROOM_DIMENSIONS.width / 2 - ROOM_DIMENSIONS.wallThickness - SPACE_STATION_ROOM_DIMENSIONS.width / 2,
+  y: 0,
+  z: LOBBY_OPENING_CENTERS.spaceStation - SPACE_STATION_ROOM_DOOR_CENTER,
+});
+
+export const FORGOTTEN_LEVEL_ORIGIN = Object.freeze({
+  x: 0,
+  y: 0,
+  z: -260,
+});
+
 export const PLAYER_CONFIG = Object.freeze({
   spawnPosition: Object.freeze({ x: 0, y: 1.7, z: 0 }),
   lookAt: Object.freeze({ x: 0, y: 1.6, z: -ROOM_DIMENSIONS.length / 2 }),
@@ -166,6 +216,12 @@ export const PLAYER_CONFIG = Object.freeze({
     minPolarAngle: 0.05,
     maxPolarAngle: Math.PI - 0.05,
     useRawMouseInput: false,
+  }),
+  touch: Object.freeze({
+    coarsePointerQuery: '(pointer: coarse), (max-width: 900px)',
+    lookSensitivity: 0.0042,
+    joystickRadius: 54,
+    joystickDeadZone: 0.12,
   }),
   movement: Object.freeze({
     walkSpeed: 4.4,
@@ -379,6 +435,222 @@ export const AUDIO_CONFIG = Object.freeze({
       }),
     }),
   }),
+  yosemite: Object.freeze({
+    wind: Object.freeze({
+      id: 'yosemite-room-wind',
+      kind: 'noise',
+      volume: 0.012,
+      position: Object.freeze({ x: 0, y: 6.5, z: 3 }),
+      panner: Object.freeze({
+        refDistance: 9,
+        maxDistance: 42,
+        rolloffFactor: 0.35,
+      }),
+      filter: Object.freeze({
+        type: 'lowpass',
+        frequency: 760,
+        q: 0.4,
+      }),
+    }),
+    overlookWind: Object.freeze({
+      id: 'yosemite-room-overlook-wind',
+      kind: 'noise',
+      volume: 0.018,
+      position: Object.freeze({ x: 0.8, y: 2.4, z: 14.4 }),
+      panner: Object.freeze({
+        refDistance: 2.8,
+        maxDistance: 20,
+        rolloffFactor: 1.05,
+      }),
+      filter: Object.freeze({
+        type: 'bandpass',
+        frequency: 820,
+        q: 0.55,
+      }),
+    }),
+    birds: Object.freeze({
+      id: 'yosemite-room-birds',
+      kind: 'oscillator',
+      waveform: 'sine',
+      frequency: 720,
+      volume: 0.0018,
+      position: Object.freeze({ x: -8.5, y: 5.5, z: 6 }),
+      panner: Object.freeze({
+        refDistance: 4,
+        maxDistance: 26,
+        rolloffFactor: 0.8,
+      }),
+    }),
+    water: Object.freeze({
+      id: 'yosemite-room-distant-water',
+      kind: 'noise',
+      volume: 0.011,
+      position: Object.freeze({ x: 8, y: 0.6, z: 9 }),
+      panner: Object.freeze({
+        refDistance: 2.4,
+        maxDistance: 18,
+        rolloffFactor: 1.25,
+      }),
+      filter: Object.freeze({
+        type: 'bandpass',
+        frequency: 620,
+        q: 0.8,
+      }),
+    }),
+  }),
+  spaceStation: Object.freeze({
+    engineHum: Object.freeze({
+      id: 'space-station-engine-hum',
+      kind: 'oscillator',
+      waveform: 'sine',
+      frequency: 48,
+      volume: 0.006,
+      position: Object.freeze({ x: -3.5, y: 1.1, z: 1.6 }),
+      panner: Object.freeze({
+        refDistance: 5,
+        maxDistance: 22,
+        rolloffFactor: 0.5,
+      }),
+    }),
+    hvac: Object.freeze({
+      id: 'space-station-hvac',
+      kind: 'noise',
+      volume: 0.011,
+      position: Object.freeze({ x: 0, y: 4.15, z: 0 }),
+      panner: Object.freeze({
+        refDistance: 5,
+        maxDistance: 18,
+        rolloffFactor: 0.55,
+      }),
+      filter: Object.freeze({
+        type: 'lowpass',
+        frequency: 680,
+        q: 0.38,
+      }),
+    }),
+    ventilation: Object.freeze({
+      id: 'space-station-ventilation',
+      kind: 'noise',
+      volume: 0.008,
+      position: Object.freeze({ x: 5.6, y: 3.5, z: -1.8 }),
+      panner: Object.freeze({
+        refDistance: 2.4,
+        maxDistance: 12,
+        rolloffFactor: 1.1,
+      }),
+      filter: Object.freeze({
+        type: 'bandpass',
+        frequency: 520,
+        q: 0.72,
+      }),
+    }),
+    beeps: Object.freeze({
+      id: 'space-station-console-beep',
+      kind: 'oscillator',
+      waveform: 'sine',
+      frequency: 920,
+      volume: 0.012,
+      durationSeconds: 0.18,
+      position: Object.freeze({ x: -0.8, y: 1.15, z: -0.25 }),
+      panner: Object.freeze({
+        refDistance: 1.4,
+        maxDistance: 8,
+        rolloffFactor: 1.45,
+      }),
+    }),
+  }),
+  forgottenLevel: Object.freeze({
+    fluorescentBuzz: Object.freeze({
+      id: 'forgotten-level-fluorescent-buzz',
+      kind: 'oscillator',
+      waveform: 'sawtooth',
+      frequency: 58,
+      volume: 0.018,
+      position: Object.freeze({ x: 0, y: 2.5, z: 0 }),
+      panner: Object.freeze({
+        refDistance: 18,
+        maxDistance: 90,
+        rolloffFactor: 0.24,
+      }),
+    }),
+    hvacDrone: Object.freeze({
+      id: 'forgotten-level-hvac-drone',
+      kind: 'noise',
+      volume: 0.026,
+      position: Object.freeze({ x: 0, y: 2.8, z: -8 }),
+      panner: Object.freeze({
+        refDistance: 16,
+        maxDistance: 120,
+        rolloffFactor: 0.18,
+      }),
+      filter: Object.freeze({
+        type: 'lowpass',
+        frequency: 420,
+        q: 0.55,
+      }),
+    }),
+    eerieTone: Object.freeze({
+      id: 'forgotten-level-eerie-tone',
+      kind: 'oscillator',
+      waveform: 'triangle',
+      frequency: 39,
+      volume: 0.011,
+      position: Object.freeze({ x: 0, y: 2.1, z: 0 }),
+      panner: Object.freeze({
+        refDistance: 22,
+        maxDistance: 140,
+        rolloffFactor: 0.16,
+      }),
+    }),
+    lightFlicker: Object.freeze({
+      id: 'forgotten-level-light-flicker',
+      kind: 'noise',
+      volume: 0.026,
+      durationSeconds: 0.16,
+      position: Object.freeze({ x: 0, y: 2.7, z: 0 }),
+      panner: Object.freeze({
+        refDistance: 3,
+        maxDistance: 22,
+        rolloffFactor: 1.3,
+      }),
+      filter: Object.freeze({
+        type: 'bandpass',
+        frequency: 980,
+        q: 1.1,
+      }),
+    }),
+    distantSteps: Object.freeze({
+      id: 'forgotten-level-distant-steps',
+      kind: 'noise',
+      volume: 0.034,
+      durationSeconds: 0.28,
+      position: Object.freeze({ x: 7, y: 0.2, z: -12 }),
+      panner: Object.freeze({
+        refDistance: 2.5,
+        maxDistance: 38,
+        rolloffFactor: 1.2,
+      }),
+      filter: Object.freeze({
+        type: 'bandpass',
+        frequency: 260,
+        q: 0.9,
+      }),
+    }),
+    entityCall: Object.freeze({
+      id: 'forgotten-level-entity-call',
+      kind: 'oscillator',
+      waveform: 'triangle',
+      frequency: 82,
+      volume: 0.04,
+      durationSeconds: 0.7,
+      position: Object.freeze({ x: -9, y: 1.2, z: -16 }),
+      panner: Object.freeze({
+        refDistance: 3,
+        maxDistance: 44,
+        rolloffFactor: 1.1,
+      }),
+    }),
+  }),
 });
 
 export const LOBBY_ROOM_CONFIG = Object.freeze({
@@ -423,9 +695,9 @@ export const LOBBY_ROOM_CONFIG = Object.freeze({
       Object.freeze({ id: ROOM_IDS.testRoom, label: 'Test Room', wall: 'north', center: LOBBY_OPENING_CENTERS.testRoom, isMain: true }),
       Object.freeze({ id: ROOM_IDS.library, label: 'Library', wall: 'east', center: LOBBY_OPENING_CENTERS.library }),
       Object.freeze({ id: ROOM_IDS.tomAndJerry, label: 'Tom & Jerry', wall: 'east', center: LOBBY_OPENING_CENTERS.tomAndJerry }),
-      Object.freeze({ id: 'yosemite', label: 'Yosemite', subtitle: 'Coming Soon', wall: 'south', center: LOBBY_OPENING_CENTERS.yosemite }),
+      Object.freeze({ id: ROOM_IDS.yosemite, label: 'Yosemite', wall: 'south', center: LOBBY_OPENING_CENTERS.yosemite }),
       Object.freeze({ id: ROOM_IDS.aquarium, label: 'Aquarium', wall: 'west', center: LOBBY_OPENING_CENTERS.aquarium }),
-      Object.freeze({ id: 'space-station', label: 'Space Station', subtitle: 'Coming Soon', wall: 'west', center: LOBBY_OPENING_CENTERS.spaceStation }),
+      Object.freeze({ id: ROOM_IDS.spaceStation, label: 'Space Station', wall: 'west', center: LOBBY_OPENING_CENTERS.spaceStation }),
     ]),
   }),
   lighting: LIGHTING_CONFIG,
@@ -436,7 +708,6 @@ export const TEST_ROOM_CONFIG = Object.freeze({
   name: 'Test Room',
   origin: TEST_ROOM_ORIGIN,
   dimensions: TEST_ROOM_DIMENSIONS,
-  omittedWalls: Object.freeze(['south']),
   floorSize: Object.freeze({
     x: TEST_ROOM_DIMENSIONS.width,
     z: TEST_ROOM_DIMENSIONS.length,
@@ -474,7 +745,20 @@ export const TEST_ROOM_CONFIG = Object.freeze({
     labelHeight: 0.5,
     labelElevation: 3.14,
     labelInset: 0.12,
-    entries: Object.freeze([]),
+    entries: Object.freeze([
+      Object.freeze({ id: ROOM_IDS.lobby, label: 'Lobby', wall: 'south', center: 0 }),
+    ]),
+  }),
+  secretEntrance: Object.freeze({
+    id: 'forgotten-level-secret-wall',
+    wall: 'east',
+    width: 2.4,
+    height: 2.7,
+    candidates: Object.freeze([
+      Object.freeze({ wall: 'east', center: -3.9 }),
+      Object.freeze({ wall: 'east', center: -0.6 }),
+      Object.freeze({ wall: 'east', center: 3.4 }),
+    ]),
   }),
   lighting: Object.freeze({
     hemisphere: Object.freeze({
@@ -773,6 +1057,254 @@ export const LIBRARY_ROOM_CONFIG = Object.freeze({
   }),
 });
 
+export const YOSEMITE_ROOM_CONFIG = Object.freeze({
+  id: ROOM_IDS.yosemite,
+  name: 'Yosemite Room',
+  origin: YOSEMITE_ROOM_ORIGIN,
+  dimensions: YOSEMITE_ROOM_DIMENSIONS,
+  openings: Object.freeze({
+    width: 2.4,
+    height: 2.7,
+    entries: Object.freeze([
+      Object.freeze({ id: ROOM_IDS.lobby, wall: 'north', center: 0 }),
+    ]),
+  }),
+  terrain: Object.freeze({
+    segmentsX: 58,
+    segmentsZ: 66,
+  }),
+  atmosphere: Object.freeze({
+    fogColor: 0xb8d4e5,
+    fogNear: 16,
+    fogFar: 68,
+    backgroundColor: 0xa8cbe1,
+    hazeColor: 0xc7e3f2,
+    hazeOpacity: 0.14,
+  }),
+  lighting: Object.freeze({
+    hemisphere: Object.freeze({
+      skyColor: 0xd5efff,
+      groundColor: 0x425d37,
+      intensity: 0.74,
+      position: Object.freeze({ x: 0, y: 22, z: 0 }),
+    }),
+    sun: Object.freeze({
+      color: 0xffe2aa,
+      intensity: 2.35,
+      position: Object.freeze({ x: -13, y: 19, z: -8 }),
+      target: Object.freeze({ x: 1.2, y: 3.8, z: 14.2 }),
+      shadowMapSize: 2048,
+      shadowCameraSize: 46,
+      shadowCameraNear: 1,
+      shadowCameraFar: 70,
+      shadowBias: -0.00018,
+    }),
+  }),
+});
+
+export const SPACE_STATION_ROOM_CONFIG = Object.freeze({
+  id: ROOM_IDS.spaceStation,
+  name: 'Space Station Room',
+  origin: SPACE_STATION_ROOM_ORIGIN,
+  dimensions: SPACE_STATION_ROOM_DIMENSIONS,
+  omittedWalls: Object.freeze(['west']),
+  floorSize: Object.freeze({
+    x: SPACE_STATION_ROOM_DIMENSIONS.width,
+    z: SPACE_STATION_ROOM_DIMENSIONS.length,
+  }),
+  theme: Object.freeze({
+    id: 'space-station-theme',
+    name: 'Orbital Research Station',
+    ambientLightingProfile: Object.freeze({
+      mood: 'cool-orbital',
+      ambientColor: 0xd9f5ff,
+      accentColor: 0x54c8ff,
+      intensity: 0.82,
+    }),
+    accentColors: Object.freeze({
+      primary: 0x64d8ff,
+      secondary: 0x9fffcf,
+      warning: 0xffcf70,
+    }),
+    ambienceProfile: Object.freeze({
+      id: 'space-station-ambience',
+      intensity: 'subtle',
+    }),
+    fog: Object.freeze({
+      enabled: true,
+      color: 0x071321,
+      near: 18,
+      far: 72,
+    }),
+    musicProfile: Object.freeze({
+      id: 'none',
+      enabled: false,
+    }),
+    environmentalPresets: Object.freeze({
+      backgroundColor: 0x050914,
+      exterior: 'orbital-observation',
+    }),
+  }),
+  materials: Object.freeze({
+    floor: Object.freeze({
+      color: 0x3f4d58,
+      roughness: 0.42,
+      metalness: 0.32,
+    }),
+    wall: Object.freeze({
+      color: 0x9aa8b1,
+      roughness: 0.5,
+      metalness: 0.16,
+    }),
+    ceiling: Object.freeze({
+      color: 0x74828c,
+      roughness: 0.48,
+      metalness: 0.2,
+    }),
+    trim: Object.freeze({
+      color: 0xd7e2e8,
+      roughness: 0.36,
+      metalness: 0.28,
+    }),
+  }),
+  baseboard: Object.freeze({
+    height: 0.14,
+    depth: 0.08,
+  }),
+  openings: Object.freeze({
+    width: 2.4,
+    height: 2.7,
+    labelWidth: 2.7,
+    labelHeight: 0.5,
+    labelElevation: 3.14,
+    labelInset: 0.12,
+    entries: Object.freeze([
+      Object.freeze({ id: ROOM_IDS.lobby, wall: 'east', center: SPACE_STATION_ROOM_DOOR_CENTER }),
+    ]),
+  }),
+  lighting: Object.freeze({
+    hemisphere: Object.freeze({
+      skyColor: 0xe5f8ff,
+      groundColor: 0x172633,
+      intensity: 0.44,
+      position: Object.freeze({ x: 0, y: 14, z: 0 }),
+    }),
+    directional: Object.freeze({
+      color: 0xd9f7ff,
+      intensity: 0.26,
+      position: Object.freeze({ x: -7, y: 5.5, z: 0 }),
+      target: Object.freeze({ x: 0, y: 1.6, z: 0 }),
+      shadowMapSize: 1024,
+      shadowCameraSize: 18,
+      shadowCameraNear: 1,
+      shadowCameraFar: 30,
+      shadowBias: -0.00016,
+    }),
+    ceilingPointLights: Object.freeze({
+      color: 0xc8f3ff,
+      intensity: 20,
+      distance: 8,
+      decay: 2,
+      heightOffset: 0.46,
+      castShadow: false,
+      shadowMapSize: 512,
+      shadowBias: -0.00024,
+      positions: Object.freeze([
+        Object.freeze({ x: -3.6, z: -3.6 }),
+        Object.freeze({ x: 3.6, z: -3.6 }),
+        Object.freeze({ x: -3.6, z: 2.8 }),
+        Object.freeze({ x: 3.6, z: 2.8 }),
+      ]),
+    }),
+  }),
+});
+
+export const FORGOTTEN_LEVEL_CONFIG = Object.freeze({
+  id: ROOM_IDS.forgottenLevel,
+  name: 'The Forgotten Level',
+  origin: FORGOTTEN_LEVEL_ORIGIN,
+  dimensions: FORGOTTEN_LEVEL_DIMENSIONS,
+  theme: Object.freeze({
+    id: 'forgotten-level-theme',
+    name: 'The Forgotten Level',
+    ambientLightingProfile: Object.freeze({
+      mood: 'abandoned-fluorescent',
+      ambientColor: 0xbca25e,
+      accentColor: 0x7b5cff,
+      intensity: 0.34,
+    }),
+    accentColors: Object.freeze({
+      primary: 0xbda869,
+      secondary: 0x4a3f30,
+      warning: 0x8b2f27,
+    }),
+    ambienceProfile: Object.freeze({
+      id: 'forgotten-level-ambience',
+      intensity: 'unsettling',
+    }),
+    fog: Object.freeze({
+      enabled: true,
+      color: 0x2c2615,
+      near: 10,
+      far: 58,
+    }),
+    musicProfile: Object.freeze({
+      id: 'none',
+      enabled: false,
+    }),
+    environmentalPresets: Object.freeze({
+      backgroundColor: 0x17130b,
+      procedural: 'forgotten-level',
+    }),
+  }),
+  procedural: Object.freeze({
+    chunkSize: 10,
+    activeRadius: 4,
+    unloadRadius: 7,
+    baseSeed: 'forgotten-level',
+    maxEntities: 5,
+    captureDistance: 1.25,
+    firstGuaranteedExitDepth: 14,
+    guaranteedExitInterval: 18,
+    normalEntityChance: 0.05,
+    escapeChance: 0.012,
+    deeperEscapePenalty: 0.00008,
+    deeperEntityBonus: 0.0035,
+  }),
+  materials: Object.freeze({
+    carpet: Object.freeze({
+      color: 0x7f7350,
+      roughness: 0.98,
+      metalness: 0,
+    }),
+    carpetDark: Object.freeze({
+      color: 0x5f5436,
+      roughness: 0.98,
+      metalness: 0,
+    }),
+    wall: Object.freeze({
+      color: 0xd0c77f,
+      roughness: 0.92,
+      metalness: 0,
+    }),
+    wallStained: Object.freeze({
+      color: 0x9f934f,
+      roughness: 0.96,
+      metalness: 0,
+    }),
+    ceiling: Object.freeze({
+      color: 0xb7aa69,
+      roughness: 0.9,
+      metalness: 0,
+    }),
+    trim: Object.freeze({
+      color: 0x756838,
+      roughness: 0.84,
+      metalness: 0,
+    }),
+  }),
+});
+
 export const PORTAL_CONFIGS = Object.freeze([
   Object.freeze({
     id: 'lobby-to-test-room',
@@ -964,6 +1496,110 @@ export const PORTAL_CONFIGS = Object.freeze([
         z: LOBBY_OPENING_CENTERS.library,
       }),
       size: Object.freeze({ x: 0.4, y: LIBRARY_ROOM_CONFIG.openings.height, z: 2.05 }),
+    }),
+  }),
+  Object.freeze({
+    id: 'lobby-to-yosemite-room',
+    sourceRoom: ROOM_IDS.lobby,
+    destinationRoom: ROOM_IDS.yosemite,
+    continuous: true,
+    spawnPosition: Object.freeze({
+      x: 0,
+      y: PLAYER_CONFIG.body.eyeHeight,
+      z: YOSEMITE_ROOM_ORIGIN.z - YOSEMITE_ROOM_DIMENSIONS.length / 2 + 1.1,
+    }),
+    spawnRotation: Object.freeze({ y: 0 }),
+    doorway: Object.freeze({
+      wall: 'south',
+      center: LOBBY_OPENING_CENTERS.yosemite,
+      width: LOBBY_ROOM_CONFIG.openings.width,
+      height: LOBBY_ROOM_CONFIG.openings.height,
+    }),
+    triggerVolume: Object.freeze({
+      center: Object.freeze({
+        x: LOBBY_OPENING_CENTERS.yosemite,
+        y: LOBBY_ROOM_CONFIG.openings.height / 2,
+        z: ROOM_DIMENSIONS.length / 2 + ROOM_DIMENSIONS.wallThickness + 0.45,
+      }),
+      size: Object.freeze({ x: 2.05, y: LOBBY_ROOM_CONFIG.openings.height, z: 0.4 }),
+    }),
+  }),
+  Object.freeze({
+    id: 'yosemite-room-to-lobby',
+    sourceRoom: ROOM_IDS.yosemite,
+    destinationRoom: ROOM_IDS.lobby,
+    continuous: true,
+    spawnPosition: Object.freeze({
+      x: 0,
+      y: PLAYER_CONFIG.body.eyeHeight,
+      z: ROOM_DIMENSIONS.length / 2 - 1.1,
+    }),
+    spawnRotation: Object.freeze({ y: Math.PI }),
+    doorway: Object.freeze({
+      wall: 'north',
+      center: 0,
+      width: YOSEMITE_ROOM_CONFIG.openings.width,
+      height: YOSEMITE_ROOM_CONFIG.openings.height,
+    }),
+    triggerVolume: Object.freeze({
+      center: Object.freeze({
+        x: LOBBY_OPENING_CENTERS.yosemite,
+        y: YOSEMITE_ROOM_CONFIG.openings.height / 2,
+        z: ROOM_DIMENSIONS.length / 2 + 0.18,
+      }),
+      size: Object.freeze({ x: 2.05, y: YOSEMITE_ROOM_CONFIG.openings.height, z: 0.46 }),
+    }),
+  }),
+  Object.freeze({
+    id: 'lobby-to-space-station-room',
+    sourceRoom: ROOM_IDS.lobby,
+    destinationRoom: ROOM_IDS.spaceStation,
+    continuous: true,
+    spawnPosition: Object.freeze({
+      x: SPACE_STATION_ROOM_ORIGIN.x + SPACE_STATION_ROOM_DIMENSIONS.width / 2 - 1.1,
+      y: PLAYER_CONFIG.body.eyeHeight,
+      z: LOBBY_OPENING_CENTERS.spaceStation,
+    }),
+    spawnRotation: Object.freeze({ y: Math.PI / 2 }),
+    doorway: Object.freeze({
+      wall: 'west',
+      center: LOBBY_OPENING_CENTERS.spaceStation,
+      width: LOBBY_ROOM_CONFIG.openings.width,
+      height: LOBBY_ROOM_CONFIG.openings.height,
+    }),
+    triggerVolume: Object.freeze({
+      center: Object.freeze({
+        x: -ROOM_DIMENSIONS.width / 2 - ROOM_DIMENSIONS.wallThickness - 0.45,
+        y: LOBBY_ROOM_CONFIG.openings.height / 2,
+        z: LOBBY_OPENING_CENTERS.spaceStation,
+      }),
+      size: Object.freeze({ x: 0.4, y: LOBBY_ROOM_CONFIG.openings.height, z: 2.05 }),
+    }),
+  }),
+  Object.freeze({
+    id: 'space-station-room-to-lobby',
+    sourceRoom: ROOM_IDS.spaceStation,
+    destinationRoom: ROOM_IDS.lobby,
+    continuous: true,
+    spawnPosition: Object.freeze({
+      x: -ROOM_DIMENSIONS.width / 2 + 1.1,
+      y: PLAYER_CONFIG.body.eyeHeight,
+      z: LOBBY_OPENING_CENTERS.spaceStation,
+    }),
+    spawnRotation: Object.freeze({ y: -Math.PI / 2 }),
+    doorway: Object.freeze({
+      wall: 'east',
+      center: SPACE_STATION_ROOM_DOOR_CENTER,
+      width: SPACE_STATION_ROOM_CONFIG.openings.width,
+      height: SPACE_STATION_ROOM_CONFIG.openings.height,
+    }),
+    triggerVolume: Object.freeze({
+      center: Object.freeze({
+        x: -ROOM_DIMENSIONS.width / 2 + 0.45,
+        y: SPACE_STATION_ROOM_CONFIG.openings.height / 2,
+        z: LOBBY_OPENING_CENTERS.spaceStation,
+      }),
+      size: Object.freeze({ x: 0.4, y: SPACE_STATION_ROOM_CONFIG.openings.height, z: 2.05 }),
     }),
   }),
 ]);
