@@ -19,6 +19,14 @@ const TANK = Object.freeze({
     size: Object.freeze({ x: 11.9, y: 2.95, z: 1.55 }),
     position: Object.freeze({ x: 0, y: 2.15, z: -6.12 }),
   }),
+  enclosure: Object.freeze({
+    sideSize: Object.freeze({ x: 0.32, y: 3.42, z: 1.86 }),
+    backSize: Object.freeze({ x: 13.15, y: 3.42, z: 0.32 }),
+    centerY: 2.12,
+    centerZ: -6.08,
+    backZ: -6.94,
+    sideX: 6.6,
+  }),
   bounds: Object.freeze({
     min: Object.freeze({ x: -5.45, y: 0.95, z: -6.82 }),
     max: Object.freeze({ x: 5.45, y: 3.36, z: -5.54 }),
@@ -296,7 +304,7 @@ export class AquariumRoom extends RectangularRoom {
   }
 
   addTankFrame() {
-    const { glass } = TANK;
+    const { enclosure, glass } = TANK;
     const frameMaterial = this.aquariumMaterials.tankFrame;
 
     this.furniture.addBox({
@@ -332,6 +340,28 @@ export class AquariumRoom extends RectangularRoom {
         collider: true,
       });
     }
+
+    for (const x of [-enclosure.sideX, enclosure.sideX]) {
+      this.furniture.addBox({
+        name: `AquariumTankSideEnclosure:${x}`,
+        size: enclosure.sideSize,
+        position: { x, y: enclosure.centerY, z: enclosure.centerZ },
+        material: frameMaterial,
+        castShadow: true,
+        receiveShadow: true,
+        collider: true,
+      });
+    }
+
+    this.furniture.addBox({
+      name: 'AquariumTankBackEnclosure',
+      size: enclosure.backSize,
+      position: { x: 0, y: enclosure.centerY, z: enclosure.backZ },
+      material: frameMaterial,
+      castShadow: true,
+      receiveShadow: true,
+      collider: true,
+    });
   }
 
   addWaterVolume() {

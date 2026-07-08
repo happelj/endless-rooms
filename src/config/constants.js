@@ -1,7 +1,7 @@
 export const APP_METADATA = Object.freeze({
   title: 'Endless Rooms',
-  version: '0.9',
-  stepLabel: 'Step 9 - Aquarium Room',
+  version: '1.0',
+  stepLabel: 'Step 10 - Library Room',
 });
 
 export const SCENE_CONFIG = Object.freeze({
@@ -93,11 +93,21 @@ export const AQUARIUM_ROOM_DIMENSIONS = Object.freeze({
   ceilingThickness: 0.22,
 });
 
+export const LIBRARY_ROOM_DIMENSIONS = Object.freeze({
+  width: 15,
+  length: 10,
+  height: 4.3,
+  wallThickness: 0.35,
+  floorThickness: 0.18,
+  ceilingThickness: 0.22,
+});
+
 export const ROOM_IDS = Object.freeze({
   lobby: 'lobby',
   testRoom: 'test-room',
   tomAndJerry: 'tom-and-jerry-room',
   aquarium: 'aquarium-room',
+  library: 'library-room',
 });
 
 export const TEST_ROOM_ORIGIN = Object.freeze({
@@ -125,6 +135,14 @@ export const AQUARIUM_ROOM_ORIGIN = Object.freeze({
   x: -ROOM_DIMENSIONS.width / 2 - ROOM_DIMENSIONS.wallThickness - AQUARIUM_ROOM_DIMENSIONS.width / 2,
   y: 0,
   z: LOBBY_OPENING_CENTERS.aquarium,
+});
+
+export const LIBRARY_ROOM_DOOR_CENTER = LIBRARY_ROOM_DIMENSIONS.length / 2 - 1.4;
+
+export const LIBRARY_ROOM_ORIGIN = Object.freeze({
+  x: ROOM_DIMENSIONS.width / 2 + ROOM_DIMENSIONS.wallThickness + LIBRARY_ROOM_DIMENSIONS.width / 2,
+  y: 0,
+  z: LOBBY_OPENING_CENTERS.library - LIBRARY_ROOM_DOOR_CENTER,
 });
 
 export const PLAYER_CONFIG = Object.freeze({
@@ -301,6 +319,66 @@ export const AUDIO_CONFIG = Object.freeze({
       }),
     }),
   }),
+  library: Object.freeze({
+    hvac: Object.freeze({
+      id: 'library-room-hvac',
+      kind: 'noise',
+      volume: 0.008,
+      position: Object.freeze({ x: 0, y: 3.2, z: 0 }),
+      panner: Object.freeze({
+        refDistance: 5,
+        maxDistance: 17,
+        rolloffFactor: 0.55,
+      }),
+      filter: Object.freeze({
+        type: 'lowpass',
+        frequency: 560,
+        q: 0.4,
+      }),
+    }),
+    pageTurns: Object.freeze({
+      id: 'library-room-page-turns',
+      kind: 'noise',
+      volume: 0.0045,
+      position: Object.freeze({ x: 0.2, y: 1.35, z: 0.4 }),
+      panner: Object.freeze({
+        refDistance: 2.1,
+        maxDistance: 9,
+        rolloffFactor: 1.2,
+      }),
+      filter: Object.freeze({
+        type: 'bandpass',
+        frequency: 1380,
+        q: 1.1,
+      }),
+    }),
+    chairCreaks: Object.freeze({
+      id: 'library-room-chair-creaks',
+      kind: 'oscillator',
+      waveform: 'triangle',
+      frequency: 92,
+      volume: 0.002,
+      position: Object.freeze({ x: -2.9, y: 0.8, z: 0.9 }),
+      panner: Object.freeze({
+        refDistance: 1.5,
+        maxDistance: 7.5,
+        rolloffFactor: 1.35,
+      }),
+    }),
+    lampBuzz: Object.freeze({
+      id: 'library-room-lamp-buzz',
+      kind: 'oscillator',
+      waveform: 'sine',
+      frequency: 120,
+      volume: 0.0018,
+      position: Object.freeze({ x: 3.5, y: 1.35, z: 2.2 }),
+      panner: Object.freeze({
+        refDistance: 1,
+        maxDistance: 6,
+        rolloffFactor: 1.6,
+      }),
+    }),
+  }),
 });
 
 export const LOBBY_ROOM_CONFIG = Object.freeze({
@@ -343,7 +421,7 @@ export const LOBBY_ROOM_CONFIG = Object.freeze({
     labelInset: 0.12,
     entries: Object.freeze([
       Object.freeze({ id: ROOM_IDS.testRoom, label: 'Test Room', wall: 'north', center: LOBBY_OPENING_CENTERS.testRoom, isMain: true }),
-      Object.freeze({ id: 'library', label: 'Library', subtitle: 'Coming Soon', wall: 'east', center: LOBBY_OPENING_CENTERS.library }),
+      Object.freeze({ id: ROOM_IDS.library, label: 'Library', wall: 'east', center: LOBBY_OPENING_CENTERS.library }),
       Object.freeze({ id: ROOM_IDS.tomAndJerry, label: 'Tom & Jerry', wall: 'east', center: LOBBY_OPENING_CENTERS.tomAndJerry }),
       Object.freeze({ id: 'yosemite', label: 'Yosemite', subtitle: 'Coming Soon', wall: 'south', center: LOBBY_OPENING_CENTERS.yosemite }),
       Object.freeze({ id: ROOM_IDS.aquarium, label: 'Aquarium', wall: 'west', center: LOBBY_OPENING_CENTERS.aquarium }),
@@ -607,6 +685,94 @@ export const AQUARIUM_ROOM_CONFIG = Object.freeze({
   }),
 });
 
+export const LIBRARY_ROOM_CONFIG = Object.freeze({
+  id: ROOM_IDS.library,
+  name: 'Library Room',
+  origin: LIBRARY_ROOM_ORIGIN,
+  dimensions: LIBRARY_ROOM_DIMENSIONS,
+  omittedWalls: Object.freeze(['west']),
+  floorSize: Object.freeze({
+    x: LIBRARY_ROOM_DIMENSIONS.width,
+    z: LIBRARY_ROOM_DIMENSIONS.length,
+  }),
+  materials: Object.freeze({
+    floor: Object.freeze({
+      color: 0x6b4d3a,
+      roughness: 0.88,
+      metalness: 0,
+    }),
+    wall: Object.freeze({
+      color: 0xd9c7aa,
+      roughness: 0.84,
+      metalness: 0,
+    }),
+    ceiling: Object.freeze({
+      color: 0xf1e8d8,
+      roughness: 0.9,
+      metalness: 0,
+    }),
+    trim: Object.freeze({
+      color: 0xf5ead8,
+      roughness: 0.7,
+      metalness: 0,
+    }),
+  }),
+  baseboard: Object.freeze({
+    height: 0.18,
+    depth: 0.08,
+  }),
+  crownMolding: Object.freeze({
+    height: 0.14,
+    depth: 0.1,
+  }),
+  openings: Object.freeze({
+    width: 2.4,
+    height: 2.7,
+    labelWidth: 2.7,
+    labelHeight: 0.5,
+    labelElevation: 3.14,
+    labelInset: 0.12,
+    entries: Object.freeze([
+      Object.freeze({ id: ROOM_IDS.lobby, wall: 'west', center: LIBRARY_ROOM_DOOR_CENTER }),
+    ]),
+  }),
+  lighting: Object.freeze({
+    hemisphere: Object.freeze({
+      skyColor: 0xfff4df,
+      groundColor: 0x463423,
+      intensity: 0.5,
+      position: Object.freeze({ x: 0, y: 14, z: 0 }),
+    }),
+    directional: Object.freeze({
+      color: 0xffddb0,
+      intensity: 0.2,
+      position: Object.freeze({ x: -3, y: 8, z: 4 }),
+      target: Object.freeze({ x: 0, y: 1.3, z: 0 }),
+      shadowMapSize: 1024,
+      shadowCameraSize: 16,
+      shadowCameraNear: 1,
+      shadowCameraFar: 28,
+      shadowBias: -0.00016,
+    }),
+    ceilingPointLights: Object.freeze({
+      color: 0xffc77b,
+      intensity: 24,
+      distance: 8,
+      decay: 2,
+      heightOffset: 0.52,
+      castShadow: false,
+      shadowMapSize: 512,
+      shadowBias: -0.00024,
+      positions: Object.freeze([
+        Object.freeze({ x: -3.8, z: -2.8 }),
+        Object.freeze({ x: 3.8, z: -2.8 }),
+        Object.freeze({ x: -3.8, z: 2.4 }),
+        Object.freeze({ x: 3.8, z: 2.4 }),
+      ]),
+    }),
+  }),
+});
+
 export const PORTAL_CONFIGS = Object.freeze([
   Object.freeze({
     id: 'lobby-to-test-room',
@@ -746,6 +912,58 @@ export const PORTAL_CONFIGS = Object.freeze([
         z: LOBBY_OPENING_CENTERS.aquarium,
       }),
       size: Object.freeze({ x: 0.4, y: AQUARIUM_ROOM_CONFIG.openings.height, z: 2.05 }),
+    }),
+  }),
+  Object.freeze({
+    id: 'lobby-to-library-room',
+    sourceRoom: ROOM_IDS.lobby,
+    destinationRoom: ROOM_IDS.library,
+    continuous: true,
+    spawnPosition: Object.freeze({
+      x: LIBRARY_ROOM_ORIGIN.x - LIBRARY_ROOM_DIMENSIONS.width / 2 + 1.1,
+      y: PLAYER_CONFIG.body.eyeHeight,
+      z: LOBBY_OPENING_CENTERS.library,
+    }),
+    spawnRotation: Object.freeze({ y: -Math.PI / 2 }),
+    doorway: Object.freeze({
+      wall: 'east',
+      center: LOBBY_OPENING_CENTERS.library,
+      width: LOBBY_ROOM_CONFIG.openings.width,
+      height: LOBBY_ROOM_CONFIG.openings.height,
+    }),
+    triggerVolume: Object.freeze({
+      center: Object.freeze({
+        x: ROOM_DIMENSIONS.width / 2 + ROOM_DIMENSIONS.wallThickness + 0.45,
+        y: LOBBY_ROOM_CONFIG.openings.height / 2,
+        z: LOBBY_OPENING_CENTERS.library,
+      }),
+      size: Object.freeze({ x: 0.4, y: LOBBY_ROOM_CONFIG.openings.height, z: 2.05 }),
+    }),
+  }),
+  Object.freeze({
+    id: 'library-room-to-lobby',
+    sourceRoom: ROOM_IDS.library,
+    destinationRoom: ROOM_IDS.lobby,
+    continuous: true,
+    spawnPosition: Object.freeze({
+      x: ROOM_DIMENSIONS.width / 2 - 1.1,
+      y: PLAYER_CONFIG.body.eyeHeight,
+      z: LOBBY_OPENING_CENTERS.library,
+    }),
+    spawnRotation: Object.freeze({ y: Math.PI / 2 }),
+    doorway: Object.freeze({
+      wall: 'west',
+      center: LIBRARY_ROOM_DOOR_CENTER,
+      width: LIBRARY_ROOM_CONFIG.openings.width,
+      height: LIBRARY_ROOM_CONFIG.openings.height,
+    }),
+    triggerVolume: Object.freeze({
+      center: Object.freeze({
+        x: ROOM_DIMENSIONS.width / 2 - 0.45,
+        y: LIBRARY_ROOM_CONFIG.openings.height / 2,
+        z: LOBBY_OPENING_CENTERS.library,
+      }),
+      size: Object.freeze({ x: 0.4, y: LIBRARY_ROOM_CONFIG.openings.height, z: 2.05 }),
     }),
   }),
 ]);

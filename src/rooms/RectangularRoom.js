@@ -332,6 +332,31 @@ export class RectangularRoom extends Room {
     }
   }
 
+  getTrimSegmentSize(wallName, spanLength, height, depth) {
+    if (this.isNorthSouthWall(wallName)) {
+      return { x: spanLength, y: height, z: depth };
+    }
+
+    return { x: depth, y: height, z: spanLength };
+  }
+
+  getTrimSegmentPosition(wallName, centerAlongSpan, centerY, depth) {
+    const { width, length } = this.config.dimensions;
+
+    switch (wallName) {
+      case 'north':
+        return { x: centerAlongSpan, y: centerY, z: -length / 2 + depth / 2 };
+      case 'south':
+        return { x: centerAlongSpan, y: centerY, z: length / 2 - depth / 2 };
+      case 'east':
+        return { x: width / 2 - depth / 2, y: centerY, z: centerAlongSpan };
+      case 'west':
+        return { x: -width / 2 + depth / 2, y: centerY, z: centerAlongSpan };
+      default:
+        throw new Error(`Unknown trim wall: ${wallName}`);
+    }
+  }
+
   getLabelPosition(opening) {
     const { width, length } = this.config.dimensions;
     const { labelElevation, labelInset } = this.config.openings;
