@@ -1,8 +1,8 @@
 {
   "name": "endless-rooms",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
-  "description": "Step 11 Yosemite Room for a browser-based first-person exploration project.",
+  "description": "Step 11.1 Yosemite landmark scenic overhaul for a browser-based first-person exploration project.",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",

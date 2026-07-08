@@ -1,7 +1,7 @@
 export const APP_METADATA = Object.freeze({
   title: 'Endless Rooms',
-  version: '1.1',
-  stepLabel: 'Step 11 - Yosemite Room',
+  version: '1.1.1',
+  stepLabel: 'Step 11.1 - Yosemite Landmark',
 });
 
 export const SCENE_CONFIG = Object.freeze({
@@ -410,6 +410,22 @@ export const AUDIO_CONFIG = Object.freeze({
         type: 'lowpass',
         frequency: 760,
         q: 0.4,
+      }),
+    }),
+    overlookWind: Object.freeze({
+      id: 'yosemite-room-overlook-wind',
+      kind: 'noise',
+      volume: 0.018,
+      position: Object.freeze({ x: 0.8, y: 2.4, z: 14.4 }),
+      panner: Object.freeze({
+        refDistance: 2.8,
+        maxDistance: 20,
+        rolloffFactor: 1.05,
+      }),
+      filter: Object.freeze({
+        type: 'bandpass',
+        frequency: 820,
+        q: 0.55,
       }),
     }),
     birds: Object.freeze({
@@ -849,21 +865,29 @@ export const YOSEMITE_ROOM_CONFIG = Object.freeze({
     ]),
   }),
   terrain: Object.freeze({
-    segmentsX: 50,
-    segmentsZ: 58,
+    segmentsX: 58,
+    segmentsZ: 66,
+  }),
+  atmosphere: Object.freeze({
+    fogColor: 0xb8d4e5,
+    fogNear: 16,
+    fogFar: 68,
+    backgroundColor: 0xa8cbe1,
+    hazeColor: 0xc7e3f2,
+    hazeOpacity: 0.14,
   }),
   lighting: Object.freeze({
     hemisphere: Object.freeze({
-      skyColor: 0xcfefff,
-      groundColor: 0x47623b,
-      intensity: 0.82,
+      skyColor: 0xd5efff,
+      groundColor: 0x425d37,
+      intensity: 0.74,
       position: Object.freeze({ x: 0, y: 22, z: 0 }),
     }),
     sun: Object.freeze({
-      color: 0xfff0cc,
-      intensity: 2.1,
-      position: Object.freeze({ x: -11, y: 18, z: 9 }),
-      target: Object.freeze({ x: 0, y: 0.5, z: 8 }),
+      color: 0xffe2aa,
+      intensity: 2.35,
+      position: Object.freeze({ x: -13, y: 19, z: -8 }),
+      target: Object.freeze({ x: 1.2, y: 3.8, z: 14.2 }),
       shadowMapSize: 2048,
       shadowCameraSize: 46,
       shadowCameraNear: 1,

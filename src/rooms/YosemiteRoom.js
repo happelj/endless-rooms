@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import { AabbCollider } from '../collision/AabbCollider.js';
+import { BirdFlock } from '../environment/BirdFlock.js';
+import { GraniteLandmark } from '../environment/GraniteLandmark.js';
 import { RoomBoundsCollider } from '../collision/RoomBoundsCollider.js';
 import { Sky } from '../environment/Sky.js';
 import { Terrain } from '../environment/Terrain.js';
@@ -9,6 +12,21 @@ import { RoomLabel } from './RoomLabel.js';
 
 const TRAIL_MARKER_RANGE = 2.5;
 const OUTDOOR_BOUNDARY_MARGIN = 0.08;
+const TRAIL_WIDTH = 2.5;
+const TRAIL_SEGMENT_LENGTH = 2.65;
+const TRAIL_START_Z = -16.6;
+const TRAIL_END_Z = 14.5;
+const OVERLOOK_Z = 14.1;
+
+const OVERLOOK_MARKER = Object.freeze({
+  id: 'granite-overlook',
+  title: 'Granite Overlook',
+  position: Object.freeze({ x: 0.85, z: 13.9 }),
+  body: Object.freeze([
+    'Placeholder trail marker.',
+    'Future content can describe granite formation, erosion, sunlight, weathering, and scenic observation points.',
+  ]),
+});
 
 const TRAIL_MARKERS = Object.freeze([
   Object.freeze({
@@ -32,7 +50,7 @@ const TRAIL_MARKERS = Object.freeze([
   Object.freeze({
     id: 'water-edge',
     title: 'Water Edge',
-    position: Object.freeze({ x: 7.1, z: 9.4 }),
+    position: Object.freeze({ x: 7.2, z: 8.2 }),
     body: Object.freeze([
       'Placeholder trail note.',
       'Future versions can use this marker for stream ecology, soundscape notes, and photo references.',
@@ -41,18 +59,19 @@ const TRAIL_MARKERS = Object.freeze([
 ]);
 
 const TREE_LAYOUT = Object.freeze([
-  Object.freeze({ x: -11.8, z: -12.2, height: 4.6, radius: 0.17 }),
-  Object.freeze({ x: -8.7, z: -7.8, height: 4.1, radius: 0.16 }),
-  Object.freeze({ x: -12.9, z: -2.2, height: 5.0, radius: 0.18 }),
-  Object.freeze({ x: -9.6, z: 6.4, height: 4.4, radius: 0.16 }),
-  Object.freeze({ x: -13.2, z: 12.2, height: 5.2, radius: 0.2 }),
-  Object.freeze({ x: 11.2, z: -13.5, height: 4.7, radius: 0.18 }),
-  Object.freeze({ x: 8.2, z: -7.4, height: 4.0, radius: 0.15 }),
-  Object.freeze({ x: 12.6, z: -1.5, height: 5.1, radius: 0.19 }),
-  Object.freeze({ x: 9.4, z: 5.4, height: 4.2, radius: 0.16 }),
-  Object.freeze({ x: 13.0, z: 12.6, height: 5.3, radius: 0.2 }),
-  Object.freeze({ x: -5.5, z: 14.2, height: 4.0, radius: 0.16 }),
-  Object.freeze({ x: 4.4, z: 15.0, height: 4.5, radius: 0.17 }),
+  Object.freeze({ x: -11.8, z: -13.5, height: 5.2, radius: 0.19 }),
+  Object.freeze({ x: -7.5, z: -12.1, height: 4.6, radius: 0.17 }),
+  Object.freeze({ x: -12.9, z: -5.8, height: 5.4, radius: 0.19 }),
+  Object.freeze({ x: -9.2, z: -1.8, height: 4.8, radius: 0.17 }),
+  Object.freeze({ x: -12.5, z: 5.8, height: 5.6, radius: 0.2 }),
+  Object.freeze({ x: -10.4, z: 11.6, height: 4.9, radius: 0.18 }),
+  Object.freeze({ x: 10.9, z: -13.8, height: 5.1, radius: 0.19 }),
+  Object.freeze({ x: 7.7, z: -9.4, height: 4.5, radius: 0.16 }),
+  Object.freeze({ x: 12.8, z: -3.3, height: 5.7, radius: 0.2 }),
+  Object.freeze({ x: 9.8, z: 4.8, height: 4.8, radius: 0.17 }),
+  Object.freeze({ x: 12.2, z: 11.5, height: 5.4, radius: 0.2 }),
+  Object.freeze({ x: -6.0, z: 15.4, height: 4.1, radius: 0.16 }),
+  Object.freeze({ x: 5.7, z: 15.5, height: 4.3, radius: 0.17 }),
 ]);
 
 const BOULDER_LAYOUT = Object.freeze([
@@ -64,9 +83,20 @@ const BOULDER_LAYOUT = Object.freeze([
 ]);
 
 const LOG_LAYOUT = Object.freeze([
-  Object.freeze({ x: -3.3, z: -2.4, length: 2.6, rotationY: 0.72 }),
-  Object.freeze({ x: 6.6, z: 4.2, length: 3.1, rotationY: -0.5 }),
-  Object.freeze({ x: -7.2, z: 8.6, length: 2.7, rotationY: 1.15 }),
+  Object.freeze({ x: -3.6, z: -3.3, length: 2.6, rotationY: 0.72 }),
+  Object.freeze({ x: 6.7, z: 3.4, length: 3.1, rotationY: -0.5 }),
+  Object.freeze({ x: -7.4, z: 8.5, length: 2.7, rotationY: 1.15 }),
+]);
+
+const SMALL_STONE_LAYOUT = Object.freeze([
+  Object.freeze({ x: -2.4, z: -12.4, radius: 0.13 }),
+  Object.freeze({ x: 2.1, z: -10.7, radius: 0.1 }),
+  Object.freeze({ x: -3.5, z: -7.2, radius: 0.16 }),
+  Object.freeze({ x: 3.6, z: -1.6, radius: 0.12 }),
+  Object.freeze({ x: -3.8, z: 3.1, radius: 0.11 }),
+  Object.freeze({ x: 2.7, z: 6.8, radius: 0.15 }),
+  Object.freeze({ x: -2.2, z: 10.9, radius: 0.12 }),
+  Object.freeze({ x: 3.3, z: 12.8, radius: 0.14 }),
 ]);
 
 export class YosemiteRoom extends Room {
@@ -74,6 +104,8 @@ export class YosemiteRoom extends Room {
     super(scene, collisionSystem, config);
     this.cloudTime = 0;
     this.streamStrips = [];
+    this.previousFog = undefined;
+    this.previousBackground = undefined;
     this.build();
   }
 
@@ -82,12 +114,17 @@ export class YosemiteRoom extends Room {
     this.addBounds();
     this.addTerrain();
     this.addSky();
+    this.addAtmosphere();
     this.addLighting();
     this.addTrail();
     this.addGraniteCliffs();
+    this.addGraniteLandmark();
     this.addWater();
     this.addVegetation();
+    this.addForegroundDetails();
+    this.addScenicOverlook();
     this.addTrailMarkers();
+    this.addWildlife();
   }
 
   createMaterials() {
@@ -107,10 +144,25 @@ export class YosemiteRoom extends Room {
         roughness: 0.86,
         metalness: 0.02,
       }),
+      graniteLight: this.createMaterial('SunlitGraniteFace', {
+        color: 0xb7b4a8,
+        roughness: 0.84,
+        metalness: 0.02,
+      }),
       graniteDark: this.createMaterial('GraniteShadow', {
         color: 0x6e726d,
         roughness: 0.9,
         metalness: 0.01,
+      }),
+      graniteCrease: this.createMaterial('GraniteCrease', {
+        color: 0x5e625f,
+        roughness: 0.94,
+        metalness: 0,
+      }),
+      wood: this.createMaterial('OverlookWood', {
+        color: 0x6a462d,
+        roughness: 0.82,
+        metalness: 0,
       }),
       bark: this.createMaterial('PineBark', {
         color: 0x4a3325,
@@ -157,6 +209,14 @@ export class YosemiteRoom extends Room {
         roughness: 0.7,
         metalness: 0,
       }),
+      bird: this.trackMaterial('DistantBirds', new THREE.MeshBasicMaterial({
+        color: 0x263035,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.82,
+        depthWrite: false,
+        toneMapped: false,
+      })),
       cloud: this.trackMaterial('Clouds', new THREE.MeshBasicMaterial({
         color: 0xffffff,
         transparent: true,
@@ -164,7 +224,15 @@ export class YosemiteRoom extends Room {
         depthWrite: false,
         toneMapped: false,
       })),
-      water: this.trackMaterial('MountainWater', new THREE.MeshPhysicalMaterial({
+      haze: this.trackMaterial('BlueAtmosphericHaze', new THREE.MeshBasicMaterial({
+        color: this.config.atmosphere.hazeColor,
+        transparent: true,
+        opacity: this.config.atmosphere.hazeOpacity,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        toneMapped: false,
+      })),
+      water: this.trackMaterial('MountainWater', new THREE.MeshStandardMaterial({
         color: 0x83c7dc,
         roughness: 0.08,
         metalness: 0,
@@ -232,16 +300,31 @@ export class YosemiteRoom extends Room {
       + Math.sin(x * 0.22) * 0.16
       + Math.cos(z * 0.17) * 0.14
       + Math.sin((x + z) * 0.09) * 0.12;
+    const landmarkMound = Math.exp(-(((x - 0.6) ** 2) / 92 + ((z - 15.5) ** 2) / 18)) * 0.55;
     const trailCenter = this.getTrailCenterX(z);
     const trailDistance = Math.abs(x - trailCenter);
-    const trailBlend = THREE.MathUtils.clamp(1 - trailDistance / 2.45, 0, 1);
-    const trailHeight = 0.18 + Math.sin(z * 0.13) * 0.06;
+    const trailBlend = THREE.MathUtils.clamp(1 - trailDistance / 2.65, 0, 1);
+    const downhill = THREE.MathUtils.smoothstep(z, -16.5, -8.5);
+    const overlookRise = THREE.MathUtils.smoothstep(z, 5.5, 14.8);
+    const trailHeight = 0.12
+      - downhill * 0.08
+      + overlookRise * 0.46
+      + Math.sin(z * 0.14) * 0.035;
 
-    return Math.max(0.08, THREE.MathUtils.lerp(rawHill, trailHeight, trailBlend * 0.82));
+    return Math.max(0.04, THREE.MathUtils.lerp(rawHill + landmarkMound, trailHeight, trailBlend * 0.86));
   }
 
   getTrailCenterX(z) {
-    return Math.sin((z + 9) * 0.19) * 2.15 + Math.sin(z * 0.075) * 1.05;
+    const curve = Math.sin((z + 11.5) * 0.18) * 1.45
+      + Math.sin((z - 2) * 0.32) * 0.55;
+    const entryPull = 1 - THREE.MathUtils.smoothstep(z, -16.8, -11.8);
+    const landmarkPull = THREE.MathUtils.smoothstep(z, 7.5, 15.5);
+
+    return THREE.MathUtils.lerp(
+      THREE.MathUtils.lerp(curve, 0, entryPull * 0.95),
+      0.75,
+      landmarkPull * 0.82,
+    );
   }
 
   getTerrainY(x, z, offset = 0) {
@@ -254,6 +337,17 @@ export class YosemiteRoom extends Room {
       skyColor: 0x8fc9ff,
     });
     this.group.add(this.sky.group);
+  }
+
+  addAtmosphere() {
+    const geometry = new THREE.PlaneGeometry(32, 13.5);
+    const haze = new THREE.Mesh(geometry, this.yosemiteMaterials.haze);
+    haze.name = 'YosemiteDistanceHaze';
+    haze.position.set(0, 6.6, 11.2);
+    haze.renderOrder = 1;
+    haze.castShadow = false;
+    haze.receiveShadow = false;
+    this.addMesh(haze, { disposeGeometry: true });
   }
 
   addLighting() {
@@ -282,21 +376,22 @@ export class YosemiteRoom extends Room {
   }
 
   addTrail() {
-    for (let z = -15; z <= 15; z += 2.4) {
-      const x = this.getTrailCenterX(z);
+    this.trailGeometry = new THREE.BoxGeometry(TRAIL_WIDTH, 0.035, TRAIL_SEGMENT_LENGTH);
+    this.ownedGeometries.add(this.trailGeometry);
 
-      this.addBox({
-        name: `YosemiteTrailSegment:${z.toFixed(1)}`,
-        size: { x: 2.35, y: 0.035, z: 2.8 },
-        position: {
-          x,
-          y: this.getTerrainY(x, z, 0.024),
-          z,
-        },
-        material: this.yosemiteMaterials.trail,
-        castShadow: false,
-        receiveShadow: true,
-      });
+    for (let z = TRAIL_START_Z; z <= TRAIL_END_Z; z += TRAIL_SEGMENT_LENGTH * 0.76) {
+      const x = this.getTrailCenterX(z);
+      const previousX = this.getTrailCenterX(z - 0.6);
+      const nextX = this.getTrailCenterX(z + 0.6);
+      const angle = Math.atan2(nextX - previousX, 1.2);
+      const trail = new THREE.Mesh(this.trailGeometry, this.yosemiteMaterials.trail);
+
+      trail.name = `YosemiteTrailSegment:${z.toFixed(1)}`;
+      trail.position.set(x, this.getTerrainY(x, z, 0.026), z);
+      trail.rotation.y = angle;
+      trail.castShadow = false;
+      trail.receiveShadow = true;
+      this.group.add(trail);
     }
   }
 
@@ -322,14 +417,43 @@ export class YosemiteRoom extends Room {
     });
 
     this.addBox({
-      name: 'YosemiteFarGraniteWall',
-      size: { x: 29, y: 12.2, z: 3.2 },
-      position: { x: 0, y: 6.0, z: 17.4 },
-      material: this.yosemiteMaterials.granite,
+      name: 'YosemiteFarGraniteRidge',
+      size: { x: 31, y: 5.6, z: 2.4 },
+      position: { x: 0, y: 2.8, z: 18.0 },
+      material: this.yosemiteMaterials.graniteDark,
       castShadow: true,
       receiveShadow: true,
       collider: true,
     });
+  }
+
+  addGraniteLandmark() {
+    const position = {
+      x: 0.8,
+      y: this.getTerrainY(0.8, 15.7, 0.04),
+      z: 15.6,
+    };
+
+    this.graniteLandmark = new GraniteLandmark({
+      name: 'YosemiteHalfDomeInspiredLandmark',
+      position,
+      materials: {
+        granite: this.yosemiteMaterials.granite,
+        graniteLight: this.yosemiteMaterials.graniteLight,
+        graniteShadow: this.yosemiteMaterials.graniteDark,
+        graniteCrease: this.yosemiteMaterials.graniteCrease,
+      },
+    });
+
+    this.group.add(this.graniteLandmark.group);
+
+    for (const [index, box] of this.graniteLandmark.getCollisionBoxes().entries()) {
+      this.addCollider(new AabbCollider({
+        name: `YosemiteGraniteLandmarkCollider:${index + 1}`,
+        center: this.toWorldPosition(box.center),
+        size: box.size,
+      }));
+    }
   }
 
   addWater() {
@@ -415,12 +539,140 @@ export class YosemiteRoom extends Room {
     this.addLowVegetation();
   }
 
+  addForegroundDetails() {
+    for (const [index, stone] of SMALL_STONE_LAYOUT.entries()) {
+      const geometry = new THREE.SphereGeometry(stone.radius, 10, 6);
+      const mesh = new THREE.Mesh(geometry, this.yosemiteMaterials.rock);
+      mesh.name = `YosemiteTrailStone:${index + 1}`;
+      mesh.position.set(stone.x, this.getTerrainY(stone.x, stone.z, stone.radius * 0.45), stone.z);
+      mesh.scale.set(1.4, 0.5, 1);
+      mesh.rotation.y = index * 0.73;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      this.addMesh(mesh, { disposeGeometry: true });
+    }
+  }
+
+  addScenicOverlook() {
+    const center = {
+      x: this.getTrailCenterX(OVERLOOK_Z),
+      z: OVERLOOK_Z,
+    };
+    const groundY = this.getTerrainY(center.x, center.z);
+    const platformY = groundY + 0.065;
+
+    this.addBox({
+      name: 'YosemiteOverlookPlatform',
+      size: { x: 4.6, y: 0.12, z: 2.35 },
+      position: { x: center.x, y: platformY, z: center.z },
+      material: this.yosemiteMaterials.wood,
+      castShadow: true,
+      receiveShadow: true,
+    });
+
+    for (let index = 0; index < 6; index += 1) {
+      const plankX = center.x - 1.85 + index * 0.74;
+      this.addBox({
+        name: `YosemiteOverlookDeckPlank:${index + 1}`,
+        size: { x: 0.58, y: 0.035, z: 2.25 },
+        position: { x: plankX, y: platformY + 0.078, z: center.z },
+        material: this.yosemiteMaterials.wood,
+        castShadow: false,
+        receiveShadow: true,
+      });
+    }
+
+    this.addOverlookRailing(center, groundY);
+    this.addOverlookPlaque(center, groundY);
+  }
+
+  addOverlookRailing(center, groundY) {
+    const postPositions = [
+      { x: center.x - 2.12, z: center.z - 0.95 },
+      { x: center.x - 2.12, z: center.z + 0.95 },
+      { x: center.x, z: center.z + 1.03 },
+      { x: center.x + 2.12, z: center.z + 0.95 },
+      { x: center.x + 2.12, z: center.z - 0.95 },
+    ];
+
+    for (const [index, post] of postPositions.entries()) {
+      this.addBox({
+        name: `YosemiteOverlookRailingPost:${index + 1}`,
+        size: { x: 0.14, y: 1.02, z: 0.14 },
+        position: { x: post.x, y: groundY + 0.57, z: post.z },
+        material: this.yosemiteMaterials.wood,
+        castShadow: true,
+        receiveShadow: true,
+        collider: true,
+      });
+    }
+
+    for (const rail of [
+      { name: 'Back', size: { x: 4.38, y: 0.12, z: 0.14 }, position: { x: center.x, y: groundY + 1.02, z: center.z + 1.03 } },
+      { name: 'Left', size: { x: 0.14, y: 0.12, z: 2.05 }, position: { x: center.x - 2.12, y: groundY + 1.02, z: center.z } },
+      { name: 'Right', size: { x: 0.14, y: 0.12, z: 2.05 }, position: { x: center.x + 2.12, y: groundY + 1.02, z: center.z } },
+    ]) {
+      this.addBox({
+        name: `YosemiteOverlookRailing:${rail.name}`,
+        size: rail.size,
+        position: rail.position,
+        material: this.yosemiteMaterials.wood,
+        castShadow: true,
+        receiveShadow: true,
+        collider: true,
+      });
+    }
+  }
+
+  addOverlookPlaque(center, groundY) {
+    const plaquePosition = {
+      x: center.x + 1.25,
+      y: groundY + 0.98,
+      z: center.z - 0.68,
+    };
+
+    this.addBox({
+      name: 'YosemiteOverlookPlaquePost',
+      size: { x: 0.1, y: 0.68, z: 0.1 },
+      position: { x: plaquePosition.x, y: groundY + 0.54, z: plaquePosition.z },
+      material: this.yosemiteMaterials.markerPost,
+      castShadow: true,
+      receiveShadow: true,
+    });
+
+    const plaque = this.addBox({
+      name: 'YosemiteOverlookPlaqueFace',
+      size: { x: 1.26, y: 0.46, z: 0.08 },
+      position: plaquePosition,
+      material: this.yosemiteMaterials.markerFace,
+      castShadow: true,
+      receiveShadow: true,
+    });
+
+    const label = new RoomLabel({
+      text: OVERLOOK_MARKER.title,
+      subtitle: 'Read Trail Marker',
+      width: 1.3,
+      height: 0.46,
+      position: { x: plaquePosition.x, y: plaquePosition.y, z: plaquePosition.z - 0.055 },
+      rotationY: 0,
+    });
+
+    this.addLabel(label);
+    this.registerInteractable([plaque, label.mesh], {
+      id: `yosemite-marker-${OVERLOOK_MARKER.id}`,
+      range: TRAIL_MARKER_RANGE,
+      prompt: 'Read Trail Marker',
+      onInteract: ({ contentManager }) => this.openTrailMarker(contentManager, OVERLOOK_MARKER),
+    });
+  }
+
   addLowVegetation() {
     const shrubs = [
       { x: -6.8, z: -5.2 },
       { x: 5.2, z: -10.8 },
       { x: -2.7, z: 7.8 },
-      { x: 3.8, z: 12.5 },
+      { x: 3.8, z: 11.5 },
       { x: -11.0, z: 3.6 },
     ];
 
@@ -445,6 +697,20 @@ export class YosemiteRoom extends Room {
         colorMaterial: material,
       });
     }
+  }
+
+  addWildlife() {
+    this.birdFlock = new BirdFlock({
+      name: 'YosemiteLandmarkBirdFlock',
+      center: { x: 0.9, y: 11.2, z: 15.1 },
+      count: 7,
+      radiusX: 4.2,
+      radiusZ: 1.65,
+      heightVariation: 0.62,
+      speed: 0.18,
+      material: this.yosemiteMaterials.bird,
+    });
+    this.group.add(this.birdFlock.group);
   }
 
   addTrailMarkers() {
@@ -505,6 +771,7 @@ export class YosemiteRoom extends Room {
 
     const audioConfig = AUDIO_CONFIG.yosemite;
     this.windAudio = this.createRoomAudioSource(audioManager, audioConfig.wind);
+    this.overlookWindAudio = this.createRoomAudioSource(audioManager, audioConfig.overlookWind);
     this.birdsAudio = this.createRoomAudioSource(audioManager, audioConfig.birds);
     this.waterAudio = this.createRoomAudioSource(audioManager, audioConfig.water);
     this.roomAudioConfigured = true;
@@ -521,6 +788,7 @@ export class YosemiteRoom extends Room {
   update(deltaTime, player, elapsedTime = 0) {
     this.cloudTime += deltaTime;
     this.sky?.update(elapsedTime);
+    this.birdFlock?.update(elapsedTime);
     this.updateWater(elapsedTime);
   }
 
@@ -535,16 +803,47 @@ export class YosemiteRoom extends Room {
   activate() {
     super.activate();
     this.terrain?.setActive(true);
+    this.applyAtmosphere();
   }
 
   deactivate() {
     super.deactivate();
     this.terrain?.setActive(false);
+    this.clearAtmosphere();
+  }
+
+  applyAtmosphere() {
+    if (this.previousFog !== undefined) {
+      return;
+    }
+
+    this.previousFog = this.scene.fog;
+    this.previousBackground = this.scene.background;
+    this.scene.fog = new THREE.Fog(
+      this.config.atmosphere.fogColor,
+      this.config.atmosphere.fogNear,
+      this.config.atmosphere.fogFar,
+    );
+    this.scene.background = new THREE.Color(this.config.atmosphere.backgroundColor);
+  }
+
+  clearAtmosphere() {
+    if (this.previousFog === undefined) {
+      return;
+    }
+
+    this.scene.fog = this.previousFog;
+    this.scene.background = this.previousBackground;
+    this.previousFog = undefined;
+    this.previousBackground = undefined;
   }
 
   dispose() {
+    this.clearAtmosphere();
     this.terrain?.dispose();
     this.sky?.dispose();
+    this.graniteLandmark?.dispose();
+    this.birdFlock?.dispose();
     this.streamStrips.length = 0;
     super.dispose();
   }

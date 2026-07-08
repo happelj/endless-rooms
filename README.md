@@ -2,13 +2,13 @@
 
 Endless Rooms is a browser-based first-person exploration project built with Three.js, Vite, ES modules, JavaScript, HTML5, and CSS3.
 
-This repository currently contains Step 11: Yosemite Room. The lobby now connects to the Test Room, Tom & Jerry Room, Aquarium Room, Library Room, and Yosemite Room. Step 11 introduces the first outdoor environment architecture with reusable terrain, sky, and vegetation systems.
+This repository currently contains Step 11.1: Yosemite Landmark and Scenic Overhaul. The lobby now connects to the Test Room, Tom & Jerry Room, Aquarium Room, Library Room, and Yosemite Room. Step 11.1 elevates the outdoor room with a stylized Half Dome-inspired granite landmark, atmospheric perspective, a composed trail reveal, a scenic overlook, and lightweight wildlife.
 
 ## Current Step
 
-Version: 1.1
+Version: 1.1.1
 
-Step 11 includes:
+Step 11.1 includes:
 
 - Vite development setup
 - Three.js scene, perspective camera, and WebGL renderer
@@ -38,7 +38,7 @@ Step 11 includes:
 - Ambient and positional room audio
 - Aquarium fish, bubbles, water movement, and exhibit plaques
 - Library bookshelves, reading tables, chairs, lamps, fireplace, display books, plants, and artwork
-- Yosemite terrain, trail, sky, clouds, trees, shrubs, wildflowers, boulders, logs, water, trail markers, and outdoor ambience
+- Yosemite terrain, composed trail, sky, clouds, stylized granite landmark, trees, shrubs, wildflowers, boulders, logs, water, scenic overlook, trail markers, wildlife, and outdoor ambience
 - Collision for room shells, major furniture, exhibit props, terrain boundaries, trees, rocks, logs, and trail markers
 - HUD room metadata with connected destination names
 - Debug HUD for coordinates, grounded state, vertical velocity, room, portal count, and connected rooms
@@ -81,25 +81,29 @@ Open that URL in a browser to view the project.
 - Press `E` while reading to close the Content Panel; `ESC` still unlocks the mouse.
 - Press `ESC` during normal play to unlock the mouse and show the start overlay again.
 
-## Step 11: Yosemite Room
+## Step 11.1: Yosemite Landmark
 
 `src/rooms/YosemiteRoom.js` creates the first outdoor destination. It captures a Yosemite-inspired atmosphere without reproducing a real-world location exactly.
 
 The Yosemite Room includes:
 
 - Rolling walkable terrain
-- Winding trail
+- Redesigned winding trail with a composed landmark reveal
 - Granite cliff boundaries
+- Stylized Half Dome-inspired granite landmark
+- Soft blue haze and room-specific fog for atmospheric perspective
 - Pine forest elements
 - Shrubs and wildflowers
 - Fallen logs
 - Boulders
 - Reflective pond and stream strips
+- Scenic overlook platform with wooden railing
 - Blue outdoor sky
 - Lightweight moving cloud approximation
+- Lightweight circling birds above the landmark
 - Directional sunlight
 - Hemisphere outdoor fill lighting
-- Positional wind, birds, and distant-water ambience
+- Positional wind, stronger overlook wind, birds, and distant-water ambience
 - Interactable trail markers that use the shared Content Panel
 
 The room is connected through the lobby south wall with:
@@ -113,12 +117,50 @@ The room remains bounded for gameplay stability, but the walls are represented a
 
 Step 11 adds reusable outdoor systems under `src/environment/`:
 
+- `GraniteLandmark` builds an original stylized rounded granite formation with a sheer face, layered masses, and collision volumes.
 - `Terrain` builds a sampled BufferGeometry landscape and exposes a reusable ground collider.
 - `TerrainGroundCollider` lets player physics query terrain height without coupling physics to a specific room.
 - `Sky` owns the sky dome and moving cloud meshes.
 - `VegetationFactory` creates reusable trees, shrubs, wildflowers, boulders, and fallen logs with shared materials and optional collision.
+- `BirdFlock` creates lightweight reusable wildlife animation for circling distant birds.
 
 These systems are intentionally simple and modular so future outdoor rooms can replace or extend them with authored terrain, instancing, LOD, model assets, weather, or richer ecosystem simulation.
+
+## Granite Landmark System
+
+`src/environment/GraniteLandmark.js` owns the reusable landmark geometry. It creates:
+
+- A large rounded dome silhouette
+- A prominent sheer face
+- Layered granite base masses
+- Subtle strata and crease geometry
+- Collision boxes exposed to the room
+
+The landmark is original and stylized. It is designed to evoke Yosemite's granite formations without attempting to reproduce Half Dome exactly.
+
+## Atmospheric Perspective
+
+The Yosemite Room applies room-specific fog and a lightweight transparent haze plane while the room is active. This creates distance and scale around the far landmark without affecting indoor rooms.
+
+When the player leaves Yosemite, the previous scene fog and background are restored.
+
+## Trail Composition
+
+The trail is generated from a reusable curve function inside `YosemiteRoom`. It starts near the Lobby portal, bends naturally through the foreground, and pulls toward the granite landmark near the overlook.
+
+The terrain height sampler flattens the walking path while preserving surrounding rolling hills. This keeps the trail walkable and lets the player remain grounded on outdoor terrain.
+
+## Scenic Overlook
+
+The far end of the trail contains a small wooden overlook with:
+
+- Ground-level deck planks
+- Side and back railing collision
+- An informational plaque
+- Existing `[E] Read Trail Marker` interaction
+- Existing Content Panel display
+
+The overlook acts as the scenic endpoint for the current Yosemite experience and a test case for future outdoor points of interest.
 
 ## Terrain System
 
@@ -146,6 +188,7 @@ That allows future rooms to add:
 The Yosemite Room registers:
 
 - Spacious wind ambience
+- Stronger positional wind near the scenic overlook
 - Distant bird ambience
 - Distant water ambience near the pond and stream
 
@@ -173,6 +216,7 @@ The interaction system currently supports:
 - Library bookshelves
 - Library display books
 - Yosemite trail markers
+- Yosemite scenic overlook plaque
 
 Interaction prompts are hidden while the Content Panel is open.
 
@@ -272,9 +316,11 @@ Collidable objects currently include:
 - Library planters
 - Yosemite terrain boundaries
 - Yosemite cliffs
+- Yosemite granite landmark
 - Yosemite trees
 - Yosemite boulders
 - Yosemite fallen logs
+- Yosemite overlook railings
 - Yosemite trail markers
 
 `Movement` remains focused on horizontal movement. `Physics` remains focused on gravity, grounded state, vertical velocity, floor snapping, and ceiling resolution.
@@ -358,6 +404,8 @@ endless-rooms/
     |-- debug/
     |   `-- DebugVisuals.js
     |-- environment/
+    |   |-- BirdFlock.js
+    |   |-- GraniteLandmark.js
     |   |-- Sky.js
     |   |-- Terrain.js
     |   |-- TerrainGroundCollider.js
@@ -416,7 +464,9 @@ The application is intentionally organized around small classes with narrow resp
 - `Portal` owns directional doorway metadata and trigger volume detection.
 - `Room` owns reusable room lifecycle, materials, geometry caching, interactables, ground colliders, and collision registration.
 - `RectangularRoom` owns reusable rectangular room shell construction.
-- `YosemiteRoom` owns the themed outdoor layout, terrain, trail markers, outdoor ambience, and natural collision objects.
+- `YosemiteRoom` owns the themed outdoor layout, trail composition, landmark placement, overlook, trail markers, outdoor ambience, and natural collision objects.
+- `GraniteLandmark` owns reusable stylized granite landmark geometry and collision box metadata.
+- `BirdFlock` owns reusable lightweight distant wildlife animation.
 - `Terrain` owns reusable outdoor terrain mesh generation and terrain height sampling.
 - `TerrainGroundCollider` owns reusable terrain grounding queries for player physics.
 - `Sky` owns reusable sky dome and cloud animation.
@@ -441,6 +491,8 @@ Planned future steps:
 
 - Add Space Station Room as the next themed destination
 - Add reusable low-gravity or artificial-gravity room settings
+- Add higher-fidelity outdoor LOD and instancing for dense natural scenes
+- Add authored outdoor landmark and trail content
 - Add richer Content Panel layouts with images and media references
 - Replace placeholder educational content with authored structured content
 - Add authored ambient audio files
@@ -459,7 +511,7 @@ Planned future steps:
 - Add VR support
 - Add performance profiling and asset streaming
 
-## Step 11 Verification
+## Step 11.1 Verification
 
 After running `npm run dev`, verify:
 
@@ -483,12 +535,18 @@ After running `npm run dev`, verify:
 - Walking back through the Library doorway changes Current Room back to `Lobby`.
 - Walking through the Yosemite doorway changes Current Room from `Lobby` to `Yosemite Room`.
 - Walking back through the Yosemite doorway changes Current Room back to `Lobby`.
+- The granite landmark is immediately visible after entering from the Lobby portal.
+- Trees and trail geometry frame the landmark instead of blocking it.
 - Yosemite terrain is walkable and the player stays grounded on gentle elevation changes.
-- Yosemite trees, cliffs, boulders, logs, and trail markers block movement.
+- The trail remains fully walkable from entry to the overlook.
+- Yosemite trees, cliffs, landmark collision, boulders, logs, overlook railings, and trail markers block movement.
 - Looking at a Yosemite trail marker shows `[E] Read Trail Marker`.
 - Pressing `E` near a trail marker opens the Content Panel.
+- Looking at the overlook plaque shows `[E] Read Trail Marker`.
+- Pressing `E` near the overlook plaque opens the Content Panel.
 - Pressing `E` closes the Content Panel without leaving pointer lock.
-- Yosemite wind, birds, and distant-water ambience start after entering pointer lock and remain subtle.
+- Circling birds animate above the granite landmark.
+- Yosemite wind, overlook wind, birds, and distant-water ambience start after entering pointer lock and remain subtle.
 - Library book interactions still open and close the Content Panel correctly.
 - Aquarium plaques still open and hide their exhibit information panel correctly.
 - Tom & Jerry TV power and volume interactions still work.
