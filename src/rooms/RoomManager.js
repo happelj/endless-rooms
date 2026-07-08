@@ -1,9 +1,11 @@
 import { PORTAL_CONFIGS, ROOM_MANAGER_CONFIG } from '../config/constants.js';
 import { Portal } from '../portals/Portal.js';
 import { PortalManager } from '../portals/PortalManager.js';
+import { RoomThemeManager } from '../themes/RoomThemeManager.js';
 import { AquariumRoom } from './AquariumRoom.js';
 import { LibraryRoom } from './LibraryRoom.js';
 import { LobbyRoom } from './LobbyRoom.js';
+import { SpaceStationRoom } from './SpaceStationRoom.js';
 import { TestRoom } from './TestRoom.js';
 import { TomAndJerryRoom } from './TomAndJerryRoom.js';
 import { YosemiteRoom } from './YosemiteRoom.js';
@@ -16,6 +18,7 @@ export class RoomManager {
     this.audioManager = audioManager;
     this.rooms = new Map();
     this.portalManager = new PortalManager();
+    this.themeManager = new RoomThemeManager(scene);
     this.activeRoomId = null;
     this.player = null;
 
@@ -36,6 +39,7 @@ export class RoomManager {
     this.registerRoom(new AquariumRoom(this.scene, this.collisionSystem));
     this.registerRoom(new LibraryRoom(this.scene, this.collisionSystem));
     this.registerRoom(new YosemiteRoom(this.scene, this.collisionSystem));
+    this.registerRoom(new SpaceStationRoom(this.scene, this.collisionSystem));
   }
 
   registerRoom(room) {
@@ -73,6 +77,7 @@ export class RoomManager {
     }
 
     const room = this.getRequiredRoom(roomId);
+    this.themeManager.applyTheme(room.getTheme());
     room.activate();
     this.activeRoomId = roomId;
     this.audioManager?.setActiveRoom(roomId);
@@ -173,6 +178,7 @@ export class RoomManager {
     }
 
     this.portalManager.dispose();
+    this.themeManager.dispose();
     this.rooms.clear();
     this.activeRoomId = null;
     this.player = null;

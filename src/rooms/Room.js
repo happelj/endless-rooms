@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { AabbCollider } from '../collision/AabbCollider.js';
 import { Interactable } from '../interactions/Interactable.js';
+import { RoomTheme } from '../themes/RoomTheme.js';
 
 const DEFAULT_ORIGIN = Object.freeze({ x: 0, y: 0, z: 0 });
 
@@ -11,6 +12,7 @@ export class Room {
     this.config = config;
     this.id = config.id;
     this.name = config.name;
+    this.theme = RoomTheme.from(config.theme ?? { id: `${this.id}-default-theme`, name: `${this.name} Default Theme` });
     this.origin = new THREE.Vector3(
       config.origin?.x ?? DEFAULT_ORIGIN.x,
       config.origin?.y ?? DEFAULT_ORIGIN.y,
@@ -95,6 +97,7 @@ export class Room {
 
   addLight(light) {
     this.lights.add(light);
+    light.visible = this.isActive;
     this.group.add(light);
   }
 
@@ -129,8 +132,13 @@ export class Room {
     return Array.from(this.interactables);
   }
 
+  getTheme() {
+    return this.theme;
+  }
+
   activate() {
     this.isActive = true;
+    this.setLightingEnabled(true);
 
     for (const collider of this.registeredBoundsColliders) {
       collider.setActive(true);
@@ -139,9 +147,16 @@ export class Room {
 
   deactivate() {
     this.isActive = false;
+    this.setLightingEnabled(false);
 
     for (const collider of this.registeredBoundsColliders) {
       collider.setActive(false);
+    }
+  }
+
+  setLightingEnabled(enabled) {
+    for (const light of this.lights) {
+      light.visible = enabled;
     }
   }
 

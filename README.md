@@ -2,13 +2,13 @@
 
 Endless Rooms is a browser-based first-person exploration project built with Three.js, Vite, ES modules, JavaScript, HTML5, and CSS3.
 
-This repository currently contains Step 11.1: Yosemite Landmark and Scenic Overhaul. The lobby now connects to the Test Room, Tom & Jerry Room, Aquarium Room, Library Room, and Yosemite Room. Step 11.1 elevates the outdoor room with a stylized Half Dome-inspired granite landmark, atmospheric perspective, a composed trail reveal, a scenic overlook, and lightweight wildlife.
+This repository currently contains Step 12: Space Station Room. The lobby now connects to the Test Room, Tom & Jerry Room, Aquarium Room, Library Room, Yosemite Room, and Space Station Room. Step 12 introduces the first science-fiction destination, a reusable Room Theme system, animated display panels, and a lightweight orbital exterior.
 
 ## Current Step
 
-Version: 1.1.1
+Version: 1.2
 
-Step 11.1 includes:
+Step 12 includes:
 
 - Vite development setup
 - Three.js scene, perspective camera, and WebGL renderer
@@ -25,11 +25,15 @@ Step 11.1 includes:
 - Connected Aquarium Room
 - Connected Library Room
 - Connected Yosemite Room
+- Connected Space Station Room
 - Directional portal system
 - Room manager with room registration and activation
+- Reusable `RoomTheme` and `RoomThemeManager`
 - Raycast-based interaction manager
 - Reusable `Interactable` framework
 - Reusable `ContentPanel` and `ContentManager`
+- Reusable animated display panels
+- Reusable orbital exterior backdrop
 - Movement pause while reading content
 - Range-limited interaction prompts
 - Interactive CRT television with local video texture playback
@@ -39,7 +43,8 @@ Step 11.1 includes:
 - Aquarium fish, bubbles, water movement, and exhibit plaques
 - Library bookshelves, reading tables, chairs, lamps, fireplace, display books, plants, and artwork
 - Yosemite terrain, composed trail, sky, clouds, stylized granite landmark, trees, shrubs, wildflowers, boulders, logs, water, scenic overlook, trail markers, wildlife, and outdoor ambience
-- Collision for room shells, major furniture, exhibit props, terrain boundaries, trees, rocks, logs, and trail markers
+- Space Station observation deck, exterior planet view, star field, nebula, workstations, equipment racks, animated consoles, and station ambience
+- Collision for room shells, major furniture, exhibit props, terrain boundaries, trees, rocks, logs, trail markers, station consoles, support columns, cabinets, and equipment racks
 - HUD room metadata with connected destination names
 - Debug HUD for coordinates, grounded state, vertical velocity, room, portal count, and connected rooms
 - Optional debug visualization for player bounds, portal triggers, room bounds, and interaction ranges
@@ -80,6 +85,79 @@ Open that URL in a browser to view the project.
 - Look at an interactable object and press `E` to use it.
 - Press `E` while reading to close the Content Panel; `ESC` still unlocks the mouse.
 - Press `ESC` during normal play to unlock the mouse and show the start overlay again.
+
+## Step 12: Space Station Room
+
+`src/rooms/SpaceStationRoom.js` creates a quiet orbital observation deck aboard a modern research station. The room emphasizes cool lighting, subtle audio, animated displays, and a large exterior view.
+
+The Space Station Room includes:
+
+- Futuristic observation deck layout
+- Metallic floor and ceiling panels
+- Curved wall panel approximation
+- Dominant observation windows
+- Earth-like planet outside the station
+- Distant star field
+- Faint nebula layers
+- Slow orbital drift animation
+- Central command console
+- Side workstations
+- Animated holographic-style display panels
+- Storage cabinets
+- Equipment racks
+- Support beams and columns
+- Cool white and blue lighting
+- Low engine hum, HVAC, ventilation, and occasional beeps
+- Interactable command console, observation terminal, and research display
+
+The room is connected through the lobby west wall with:
+
+- `lobby-to-space-station-room`
+- `space-station-room-to-lobby`
+
+The Space Station is spatially offset from the Aquarium Room so both west-side lobby destinations remain separate and do not overlap.
+
+## Room Theme System
+
+Step 12 adds reusable room theme infrastructure under `src/themes/`:
+
+- `RoomTheme` normalizes room theme data with sensible defaults.
+- `RoomThemeManager` applies active-room background and fog settings.
+
+Each room can now define:
+
+- Ambient lighting profile
+- Accent colors
+- Ambience profile
+- Fog settings
+- Future music profile
+- Environmental presets
+
+Existing rooms use default themes unless they define their own. The Space Station Room uses a cool orbital theme with a dark exterior background and subtle fog. Yosemite still owns its specialized outdoor atmosphere override.
+
+## Animated Display Framework
+
+`src/displays/AnimatedDisplayPanel.js` creates reusable 3D display panels with canvas textures. The panels render lightweight looping graphics without shader complexity.
+
+Current display usage includes:
+
+- Command console systems display
+- Observation terminal
+- Research display
+
+Future rooms can reuse the same panel class for terminals, exhibits, dashboards, control panels, or in-world signage.
+
+## Orbital Environment
+
+`src/environment/OrbitalBackdrop.js` owns the Space Station exterior view. It creates:
+
+- Earth-like planet
+- Procedural continent and cloud patches
+- Distant star field
+- Faint nebula layers
+- Subtle drift and planet rotation
+
+The animation is intentionally lightweight and runs only through simple transform updates.
 
 ## Step 11.1: Yosemite Landmark
 
@@ -192,7 +270,14 @@ The Yosemite Room registers:
 - Distant bird ambience
 - Distant water ambience near the pond and stream
 
-All Yosemite audio uses positional loops so the outdoor soundscape changes naturally as the player moves.
+The Space Station Room registers:
+
+- Low engine hum
+- Quiet HVAC
+- Positional ventilation
+- Occasional electronic beeps
+
+Room ambience uses positional loops where appropriate so soundscapes change naturally as the player moves.
 
 ## Interaction System
 
@@ -217,6 +302,9 @@ The interaction system currently supports:
 - Library display books
 - Yosemite trail markers
 - Yosemite scenic overlook plaque
+- Space Station command console
+- Space Station observation terminal
+- Space Station research display
 
 Interaction prompts are hidden while the Content Panel is open.
 
@@ -281,15 +369,14 @@ Each portal owns:
 
 Doorway openings are also registered with the source room bounds collider, so the player can walk through open passages while still being blocked by solid walls or natural boundaries.
 
-The lobby now has five functional connected destinations:
+The lobby now has six functional connected destinations:
 
 - Test Room
 - Tom & Jerry Room
 - Aquarium Room
 - Library Room
 - Yosemite Room
-
-The remaining unimplemented destination still displays `Coming Soon`.
+- Space Station Room
 
 ## Collision
 
@@ -322,6 +409,11 @@ Collidable objects currently include:
 - Yosemite fallen logs
 - Yosemite overlook railings
 - Yosemite trail markers
+- Space Station command console
+- Space Station workstations
+- Space Station cabinets
+- Space Station equipment racks
+- Space Station support columns
 
 `Movement` remains focused on horizontal movement. `Physics` remains focused on gravity, grounded state, vertical velocity, floor snapping, and ceiling resolution.
 
@@ -338,6 +430,7 @@ TOM_AND_JERRY_ROOM_DIMENSIONS
 AQUARIUM_ROOM_DIMENSIONS
 LIBRARY_ROOM_DIMENSIONS
 YOSEMITE_ROOM_DIMENSIONS
+SPACE_STATION_ROOM_DIMENSIONS
 PLAYER_CONFIG
 PORTAL_CONFIGS
 DEBUG_CONFIG
@@ -403,9 +496,12 @@ endless-rooms/
     |   `-- RoomBoundsCollider.js
     |-- debug/
     |   `-- DebugVisuals.js
+    |-- displays/
+    |   `-- AnimatedDisplayPanel.js
     |-- environment/
     |   |-- BirdFlock.js
     |   |-- GraniteLandmark.js
+    |   |-- OrbitalBackdrop.js
     |   |-- Sky.js
     |   |-- Terrain.js
     |   |-- TerrainGroundCollider.js
@@ -420,6 +516,9 @@ endless-rooms/
     |-- portals/
     |   |-- Portal.js
     |   `-- PortalManager.js
+    |-- themes/
+    |   |-- RoomTheme.js
+    |   `-- RoomThemeManager.js
     |-- scene/
     |   |-- SceneManager.js
     |   |-- Renderer.js
@@ -439,6 +538,7 @@ endless-rooms/
     |   |-- AquariumRoom.js
     |   |-- LibraryRoom.js
     |   |-- YosemiteRoom.js
+    |   |-- SpaceStationRoom.js
     |   |-- FurnitureBuilder.js
     |   |-- RoomLabel.js
     |   `-- aquarium/
@@ -460,10 +560,15 @@ The application is intentionally organized around small classes with narrow resp
 - `SceneManager` owns startup, lifecycle, frame updates, and system composition.
 - `AudioManager` owns Web Audio lifecycle, listener updates, positional ambience, and future sound effects.
 - `RoomManager` owns room registration, activation, and portal registration.
+- `RoomThemeManager` owns active-room theme application for background and fog settings.
+- `RoomTheme` normalizes room theme settings with defaults for lighting, accents, ambience, fog, music, and environmental presets.
 - `PortalManager` owns portal lookup and connected-room counts.
 - `Portal` owns directional doorway metadata and trigger volume detection.
 - `Room` owns reusable room lifecycle, materials, geometry caching, interactables, ground colliders, and collision registration.
 - `RectangularRoom` owns reusable rectangular room shell construction.
+- `SpaceStationRoom` owns the orbital observation deck layout, display interactions, station ambience, and exterior view composition.
+- `AnimatedDisplayPanel` owns reusable in-world canvas display animation.
+- `OrbitalBackdrop` owns reusable planet, star field, nebula, and orbital drift visuals.
 - `YosemiteRoom` owns the themed outdoor layout, trail composition, landmark placement, overlook, trail markers, outdoor ambience, and natural collision objects.
 - `GraniteLandmark` owns reusable stylized granite landmark geometry and collision box metadata.
 - `BirdFlock` owns reusable lightweight distant wildlife animation.
@@ -489,8 +594,9 @@ The application is intentionally organized around small classes with narrow resp
 
 Planned future steps:
 
-- Add Space Station Room as the next themed destination
 - Add reusable low-gravity or artificial-gravity room settings
+- Add richer station systems interactions and room state
+- Add a dedicated content authoring format for room terminals and exhibits
 - Add higher-fidelity outdoor LOD and instancing for dense natural scenes
 - Add authored outdoor landmark and trail content
 - Add richer Content Panel layouts with images and media references
@@ -511,7 +617,7 @@ Planned future steps:
 - Add VR support
 - Add performance profiling and asset streaming
 
-## Step 11.1 Verification
+## Step 12 Verification
 
 After running `npm run dev`, verify:
 
@@ -535,6 +641,15 @@ After running `npm run dev`, verify:
 - Walking back through the Library doorway changes Current Room back to `Lobby`.
 - Walking through the Yosemite doorway changes Current Room from `Lobby` to `Yosemite Room`.
 - Walking back through the Yosemite doorway changes Current Room back to `Lobby`.
+- Walking through the Space Station doorway changes Current Room from `Lobby` to `Space Station Room`.
+- Walking back through the Space Station doorway changes Current Room back to `Lobby`.
+- The Space Station theme applies a dark orbital background and subtle fog.
+- Animated Space Station display panels update while the room is active.
+- The planet, stars, and nebula outside the observation windows drift subtly.
+- Space Station engine hum, HVAC, ventilation, and beeps remain subtle after entering pointer lock.
+- Looking at Space Station consoles shows `[E] Access Console`.
+- Pressing `E` near a Space Station console opens the Content Panel.
+- Space Station consoles, cabinets, racks, and support columns block movement.
 - The granite landmark is immediately visible after entering from the Lobby portal.
 - Trees and trail geometry frame the landmark instead of blocking it.
 - Yosemite terrain is walkable and the player stays grounded on gentle elevation changes.
