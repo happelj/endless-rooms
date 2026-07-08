@@ -25,6 +25,7 @@ export class Room {
     this.materials = new Map();
     this.registeredColliders = new Set();
     this.registeredBoundsColliders = new Set();
+    this.registeredGroundColliders = new Set();
     this.interactables = new Set();
     this.labels = new Set();
     this.lights = new Set();
@@ -85,6 +86,11 @@ export class Room {
   addBoundsCollider(collider) {
     this.collisionSystem.addBoundsCollider(collider);
     this.registeredBoundsColliders.add(collider);
+  }
+
+  addGroundCollider(collider) {
+    this.collisionSystem.addGroundCollider(collider);
+    this.registeredGroundColliders.add(collider);
   }
 
   addLight(light) {
@@ -170,6 +176,10 @@ export class Room {
       this.collisionSystem.removeBoundsCollider(collider);
     }
 
+    for (const collider of this.registeredGroundColliders) {
+      this.collisionSystem.removeGroundCollider(collider);
+    }
+
     for (const label of this.labels) {
       label.dispose();
     }
@@ -195,6 +205,7 @@ export class Room {
 
     this.registeredColliders.clear();
     this.registeredBoundsColliders.clear();
+    this.registeredGroundColliders.clear();
     this.interactables.clear();
     this.labels.clear();
     this.lights.clear();

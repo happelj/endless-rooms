@@ -152,11 +152,10 @@ export class AquariumRoom extends RectangularRoom {
       }),
     });
 
-    this.glassMaterial = this.trackMaterial('AquariumGlass', new THREE.MeshPhysicalMaterial({
+    this.glassMaterial = this.trackMaterial('AquariumGlass', new THREE.MeshStandardMaterial({
       color: 0xd4fbff,
       roughness: 0.04,
       metalness: 0,
-      transmission: 0.35,
       transparent: true,
       opacity: 0.28,
       depthWrite: false,
@@ -164,7 +163,7 @@ export class AquariumRoom extends RectangularRoom {
       emissiveIntensity: 0.04,
     }));
 
-    this.waterMaterial = this.trackMaterial('AquariumWaterVolume', new THREE.MeshPhysicalMaterial({
+    this.waterMaterial = this.trackMaterial('AquariumWaterVolume', new THREE.MeshStandardMaterial({
       color: 0x1b8fc1,
       roughness: 0.18,
       metalness: 0,

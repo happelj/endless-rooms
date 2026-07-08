@@ -6,6 +6,7 @@ import { LibraryRoom } from './LibraryRoom.js';
 import { LobbyRoom } from './LobbyRoom.js';
 import { TestRoom } from './TestRoom.js';
 import { TomAndJerryRoom } from './TomAndJerryRoom.js';
+import { YosemiteRoom } from './YosemiteRoom.js';
 
 export class RoomManager {
   constructor(scene, collisionSystem, hud, audioManager = null) {
@@ -34,6 +35,7 @@ export class RoomManager {
     this.registerRoom(new TomAndJerryRoom(this.scene, this.collisionSystem));
     this.registerRoom(new AquariumRoom(this.scene, this.collisionSystem));
     this.registerRoom(new LibraryRoom(this.scene, this.collisionSystem));
+    this.registerRoom(new YosemiteRoom(this.scene, this.collisionSystem));
   }
 
   registerRoom(room) {

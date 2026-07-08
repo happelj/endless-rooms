@@ -2,13 +2,13 @@
 
 Endless Rooms is a browser-based first-person exploration project built with Three.js, Vite, ES modules, JavaScript, HTML5, and CSS3.
 
-This repository currently contains Step 10: Library Room and Content Panel. The lobby now connects to the Test Room, Tom & Jerry Room, Aquarium Room, and Library Room. Step 10 introduces a reusable content reading system that future rooms can use for books, plaques, exhibits, notes, and educational material.
+This repository currently contains Step 11: Yosemite Room. The lobby now connects to the Test Room, Tom & Jerry Room, Aquarium Room, Library Room, and Yosemite Room. Step 11 introduces the first outdoor environment architecture with reusable terrain, sky, and vegetation systems.
 
 ## Current Step
 
-Version: 1.0
+Version: 1.1
 
-Step 10 includes:
+Step 11 includes:
 
 - Vite development setup
 - Three.js scene, perspective camera, and WebGL renderer
@@ -17,13 +17,14 @@ Step 10 includes:
 - Left Shift sprint
 - Smooth delta-time horizontal movement
 - Player physics module for gravity and grounding
-- Configurable player height, eye height, and gravity settings
-- Collision-backed floor and ceiling resolution
+- Terrain-aware ground detection
+- Configurable player height, eye height, gravity, movement, room, portal, audio, and debug settings
 - Enclosed lobby hub
 - Connected Test Room
 - Connected Tom & Jerry Room
 - Connected Aquarium Room
 - Connected Library Room
+- Connected Yosemite Room
 - Directional portal system
 - Room manager with room registration and activation
 - Raycast-based interaction manager
@@ -32,16 +33,13 @@ Step 10 includes:
 - Movement pause while reading content
 - Range-limited interaction prompts
 - Interactive CRT television with local video texture playback
-- TV power control
-- TV volume control
-- Subtle CRT glow, scanlines, and brightness flicker
+- TV power and volume controls
 - Web Audio based `AudioManager`
-- Ambient room audio loops
-- Positional room audio
+- Ambient and positional room audio
 - Aquarium fish, bubbles, water movement, and exhibit plaques
 - Library bookshelves, reading tables, chairs, lamps, fireplace, display books, plants, and artwork
-- Library book interactions with placeholder educational content
-- Furniture collision for major room props
+- Yosemite terrain, trail, sky, clouds, trees, shrubs, wildflowers, boulders, logs, water, trail markers, and outdoor ambience
+- Collision for room shells, major furniture, exhibit props, terrain boundaries, trees, rocks, logs, and trail markers
 - HUD room metadata with connected destination names
 - Debug HUD for coordinates, grounded state, vertical velocity, room, portal count, and connected rooms
 - Optional debug visualization for player bounds, portal triggers, room bounds, and interaction ranges
@@ -83,87 +81,75 @@ Open that URL in a browser to view the project.
 - Press `E` while reading to close the Content Panel; `ESC` still unlocks the mouse.
 - Press `ESC` during normal play to unlock the mouse and show the start overlay again.
 
-## Step 10: Library Room
+## Step 11: Yosemite Room
 
-`src/rooms/LibraryRoom.js` creates the third themed destination. It reuses `RectangularRoom` for the room shell, `FurnitureBuilder` for primitive room props, `Interactable` for book prompts, the shared collision system for furniture blocking, and `AudioManager` for room ambience.
+`src/rooms/YosemiteRoom.js` creates the first outdoor destination. It captures a Yosemite-inspired atmosphere without reproducing a real-world location exactly.
 
-The Library Room includes:
+The Yosemite Room includes:
 
-- Warm painted walls and ceiling
-- Wall-to-wall bookshelves
-- Reading tables
-- Comfortable chairs
-- Rugs
-- Floor lamps
-- Desk lamps
-- Static fireplace with warm glow
-- Decorative plants
-- Generic framed artwork
-- Magazine and book display table
-- Positional low-volume room ambience
-- Interactable books and shelves
+- Rolling walkable terrain
+- Winding trail
+- Granite cliff boundaries
+- Pine forest elements
+- Shrubs and wildflowers
+- Fallen logs
+- Boulders
+- Reflective pond and stream strips
+- Blue outdoor sky
+- Lightweight moving cloud approximation
+- Directional sunlight
+- Hemisphere outdoor fill lighting
+- Positional wind, birds, and distant-water ambience
+- Interactable trail markers that use the shared Content Panel
 
-The Library is connected through the lobby east wall with:
+The room is connected through the lobby south wall with:
 
-- `lobby-to-library-room`
-- `library-room-to-lobby`
+- `lobby-to-yosemite-room`
+- `yosemite-room-to-lobby`
 
-The Library is spatially offset from the Tom & Jerry Room while keeping its doorway aligned with the lobby opening. That prevents room geometry and furniture colliders from overlapping while preserving a natural portal transition.
+The room remains bounded for gameplay stability, but the walls are represented as natural cliffs and outdoor limits rather than indoor walls.
 
-## Content Panel System
+## Outdoor Environment Architecture
 
-Step 10 adds:
+Step 11 adds reusable outdoor systems under `src/environment/`:
 
-- `src/ui/ContentPanel.js`
-- `src/ui/ContentManager.js`
+- `Terrain` builds a sampled BufferGeometry landscape and exposes a reusable ground collider.
+- `TerrainGroundCollider` lets player physics query terrain height without coupling physics to a specific room.
+- `Sky` owns the sky dome and moving cloud meshes.
+- `VegetationFactory` creates reusable trees, shrubs, wildflowers, boulders, and fallen logs with shared materials and optional collision.
 
-`ContentPanel` owns the DOM for readable content. `ContentManager` owns open/close state, `E` closing, and player movement pause/resume.
+These systems are intentionally simple and modular so future outdoor rooms can replace or extend them with authored terrain, instancing, LOD, model assets, weather, or richer ecosystem simulation.
 
-Browsers reserve `ESC` as the pointer-lock exit gesture, so readable content uses `E` to close without leaving the game.
+## Terrain System
 
-Readable interactions call:
+The terrain uses a configurable height sampler to generate gentle elevation changes. Player grounding reads from the terrain collider, while horizontal movement still uses the shared collision system for trees, rocks, logs, cliffs, and boundaries.
+
+`Room` now supports registering ground colliders through:
 
 ```js
-contentManager.open({
-  title: 'Ancient History',
-  body: [
-    'Placeholder educational content.',
-    'Future authored material can replace this copy without changing room interaction logic.',
-  ],
-});
+room.addGroundCollider(collider);
 ```
 
-This keeps educational content separate from room construction. Future rooms can reuse the same system for:
+That allows future rooms to add:
 
-- Books
-- Plaques
-- Exhibit panels
-- Notes
-- Buttons
-- Terminals
-- NPC conversation text
-- Room-specific discoveries
+- Outdoor terrain
+- Ramps
+- Stairs
+- Platforms
+- Bridges
+- Room-specific floor surfaces
 
 ## Audio System
 
 `src/audio/AudioManager.js` owns Web Audio lifecycle, listener updates, positional loop registration, room-based source muting, and future sound-effect support. It creates the underlying audio graph only after the player enters pointer lock, then suspends audio when pointer lock exits.
 
-The manager supports:
+The Yosemite Room registers:
 
-- Ambient room loops
-- Positional audio sources
-- Room-based source activation
-- Global suspend/resume when pointer lock changes
-- Future one-shot sound effects
+- Spacious wind ambience
+- Distant bird ambience
+- Distant water ambience near the pond and stream
 
-The Library Room registers:
-
-- Quiet HVAC ambience
-- Subtle page-turn texture
-- Faint chair creak tone
-- Soft lamp buzz
-
-All Library sources are intentionally low volume so the room feels calm.
+All Yosemite audio uses positional loops so the outdoor soundscape changes naturally as the player moves.
 
 ## Interaction System
 
@@ -186,8 +172,29 @@ The interaction system currently supports:
 - Aquarium exhibit plaques
 - Library bookshelves
 - Library display books
+- Yosemite trail markers
 
 Interaction prompts are hidden while the Content Panel is open.
+
+## Content Panel System
+
+`src/ui/ContentPanel.js` owns the DOM for readable content. `src/ui/ContentManager.js` owns open/close state, `E` closing, and player movement pause/resume.
+
+Browsers reserve `ESC` as the pointer-lock exit gesture, so readable content uses `E` to close without leaving the game.
+
+Readable interactions call:
+
+```js
+contentManager.open({
+  title: 'Valley Floor',
+  body: [
+    'Placeholder trail note.',
+    'Future authored material can replace this copy without changing room interaction logic.',
+  ],
+});
+```
+
+Future rooms can reuse the same system for books, plaques, exhibit panels, notes, terminals, NPC conversations, and environmental discoveries.
 
 ## Room System
 
@@ -228,16 +235,17 @@ Each portal owns:
 - Trigger volume
 - Continuous-transition flag
 
-Doorway openings are also registered with the source room bounds collider, so the player can walk through open passages while still being blocked by solid walls.
+Doorway openings are also registered with the source room bounds collider, so the player can walk through open passages while still being blocked by solid walls or natural boundaries.
 
-The lobby now has four functional connected destinations:
+The lobby now has five functional connected destinations:
 
 - Test Room
 - Tom & Jerry Room
 - Aquarium Room
 - Library Room
+- Yosemite Room
 
-Unimplemented lobby destinations still display `Coming Soon`.
+The remaining unimplemented destination still displays `Coming Soon`.
 
 ## Collision
 
@@ -262,6 +270,12 @@ Collidable objects currently include:
 - Library fireplace
 - Library display table
 - Library planters
+- Yosemite terrain boundaries
+- Yosemite cliffs
+- Yosemite trees
+- Yosemite boulders
+- Yosemite fallen logs
+- Yosemite trail markers
 
 `Movement` remains focused on horizontal movement. `Physics` remains focused on gravity, grounded state, vertical velocity, floor snapping, and ceiling resolution.
 
@@ -277,6 +291,7 @@ TEST_ROOM_DIMENSIONS
 TOM_AND_JERRY_ROOM_DIMENSIONS
 AQUARIUM_ROOM_DIMENSIONS
 LIBRARY_ROOM_DIMENSIONS
+YOSEMITE_ROOM_DIMENSIONS
 PLAYER_CONFIG
 PORTAL_CONFIGS
 DEBUG_CONFIG
@@ -342,6 +357,11 @@ endless-rooms/
     |   `-- RoomBoundsCollider.js
     |-- debug/
     |   `-- DebugVisuals.js
+    |-- environment/
+    |   |-- Sky.js
+    |   |-- Terrain.js
+    |   |-- TerrainGroundCollider.js
+    |   `-- Vegetation.js
     |-- audio/
     |   `-- AudioManager.js
     |-- interactions/
@@ -370,6 +390,7 @@ endless-rooms/
     |   |-- TomAndJerryRoom.js
     |   |-- AquariumRoom.js
     |   |-- LibraryRoom.js
+    |   |-- YosemiteRoom.js
     |   |-- FurnitureBuilder.js
     |   |-- RoomLabel.js
     |   `-- aquarium/
@@ -393,9 +414,13 @@ The application is intentionally organized around small classes with narrow resp
 - `RoomManager` owns room registration, activation, and portal registration.
 - `PortalManager` owns portal lookup and connected-room counts.
 - `Portal` owns directional doorway metadata and trigger volume detection.
-- `Room` owns reusable room lifecycle, materials, geometry caching, interactables, and collision registration.
+- `Room` owns reusable room lifecycle, materials, geometry caching, interactables, ground colliders, and collision registration.
 - `RectangularRoom` owns reusable rectangular room shell construction.
-- `LibraryRoom` owns the themed Library layout, book interactions, furniture collisions, and library ambience.
+- `YosemiteRoom` owns the themed outdoor layout, terrain, trail markers, outdoor ambience, and natural collision objects.
+- `Terrain` owns reusable outdoor terrain mesh generation and terrain height sampling.
+- `TerrainGroundCollider` owns reusable terrain grounding queries for player physics.
+- `Sky` owns reusable sky dome and cloud animation.
+- `VegetationFactory` owns reusable primitive outdoor props.
 - `ContentManager` owns reusable reading state and movement pause/resume.
 - `ContentPanel` owns reusable readable content UI.
 - `Interactable` owns reusable prompt, range, target, and callback metadata.
@@ -414,14 +439,16 @@ The application is intentionally organized around small classes with narrow resp
 
 Planned future steps:
 
-- Add Yosemite Room as the next themed destination
-- Replace placeholder educational content with authored structured content
+- Add Space Station Room as the next themed destination
+- Add reusable low-gravity or artificial-gravity room settings
 - Add richer Content Panel layouts with images and media references
+- Replace placeholder educational content with authored structured content
 - Add authored ambient audio files
 - Add room-specific sound effects
+- Add weather and day-night controls for outdoor rooms
+- Add LOD and instancing for large outdoor environments
 - Add richer aquarium species data for plaques
 - Add a TV channel/source selector
-- Add richer object interactions
 - Add jump and crouch input
 - Add furniture colliders with more precise compound shapes
 - Add ramps, stairs, and platform grounding
@@ -432,7 +459,7 @@ Planned future steps:
 - Add VR support
 - Add performance profiling and asset streaming
 
-## Step 10 Verification
+## Step 11 Verification
 
 After running `npm run dev`, verify:
 
@@ -442,7 +469,7 @@ After running `npm run dev`, verify:
 - `W`, `A`, `S`, and `D` move the player smoothly.
 - Holding `Left Shift` increases movement speed.
 - Pressing `ESC` exits pointer lock and shows the overlay again.
-- The player remains grounded on the floor.
+- The player remains grounded on floors and Yosemite terrain.
 - The HUD shows live `X`, `Y`, and `Z` coordinates.
 - The HUD shows the current room name.
 - The HUD shows portal count, connected room count, and destination names.
@@ -454,16 +481,17 @@ After running `npm run dev`, verify:
 - Walking back through the Aquarium doorway changes Current Room back to `Lobby`.
 - Walking through the Library doorway changes Current Room from `Lobby` to `Library Room`.
 - Walking back through the Library doorway changes Current Room back to `Lobby`.
-- Looking at a Library bookshelf or display book shows `[E] Read Book`.
-- Pressing `E` near a readable Library object opens the Content Panel.
-- Player movement pauses while the Content Panel is open.
+- Walking through the Yosemite doorway changes Current Room from `Lobby` to `Yosemite Room`.
+- Walking back through the Yosemite doorway changes Current Room back to `Lobby`.
+- Yosemite terrain is walkable and the player stays grounded on gentle elevation changes.
+- Yosemite trees, cliffs, boulders, logs, and trail markers block movement.
+- Looking at a Yosemite trail marker shows `[E] Read Trail Marker`.
+- Pressing `E` near a trail marker opens the Content Panel.
 - Pressing `E` closes the Content Panel without leaving pointer lock.
-- Player movement resumes after the Content Panel closes.
-- Library shelves, tables, chairs, fireplace, display table, and planters block movement.
-- Library room ambience starts after entering pointer lock and remains subtle.
-- Aquarium fish animate smoothly inside the tank.
+- Yosemite wind, birds, and distant-water ambience start after entering pointer lock and remain subtle.
+- Library book interactions still open and close the Content Panel correctly.
 - Aquarium plaques still open and hide their exhibit information panel correctly.
 - Tom & Jerry TV power and volume interactions still work.
 - Room audio suspends when pressing `ESC`.
-- Solid walls still block movement.
+- Solid walls and natural boundaries still block movement.
 - Project builds successfully with `npm run build`.

@@ -1,7 +1,7 @@
 export const APP_METADATA = Object.freeze({
   title: 'Endless Rooms',
-  version: '1.0',
-  stepLabel: 'Step 10 - Library Room',
+  version: '1.1',
+  stepLabel: 'Step 11 - Yosemite Room',
 });
 
 export const SCENE_CONFIG = Object.freeze({
@@ -102,12 +102,22 @@ export const LIBRARY_ROOM_DIMENSIONS = Object.freeze({
   ceilingThickness: 0.22,
 });
 
+export const YOSEMITE_ROOM_DIMENSIONS = Object.freeze({
+  width: 34,
+  length: 38,
+  height: 18,
+  wallThickness: 0.35,
+  floorThickness: 0.18,
+  ceilingThickness: 0.22,
+});
+
 export const ROOM_IDS = Object.freeze({
   lobby: 'lobby',
   testRoom: 'test-room',
   tomAndJerry: 'tom-and-jerry-room',
   aquarium: 'aquarium-room',
   library: 'library-room',
+  yosemite: 'yosemite-room',
 });
 
 export const TEST_ROOM_ORIGIN = Object.freeze({
@@ -143,6 +153,12 @@ export const LIBRARY_ROOM_ORIGIN = Object.freeze({
   x: ROOM_DIMENSIONS.width / 2 + ROOM_DIMENSIONS.wallThickness + LIBRARY_ROOM_DIMENSIONS.width / 2,
   y: 0,
   z: LOBBY_OPENING_CENTERS.library - LIBRARY_ROOM_DOOR_CENTER,
+});
+
+export const YOSEMITE_ROOM_ORIGIN = Object.freeze({
+  x: 0,
+  y: 0,
+  z: ROOM_DIMENSIONS.length / 2 + ROOM_DIMENSIONS.wallThickness + YOSEMITE_ROOM_DIMENSIONS.length / 2,
 });
 
 export const PLAYER_CONFIG = Object.freeze({
@@ -379,6 +395,53 @@ export const AUDIO_CONFIG = Object.freeze({
       }),
     }),
   }),
+  yosemite: Object.freeze({
+    wind: Object.freeze({
+      id: 'yosemite-room-wind',
+      kind: 'noise',
+      volume: 0.012,
+      position: Object.freeze({ x: 0, y: 6.5, z: 3 }),
+      panner: Object.freeze({
+        refDistance: 9,
+        maxDistance: 42,
+        rolloffFactor: 0.35,
+      }),
+      filter: Object.freeze({
+        type: 'lowpass',
+        frequency: 760,
+        q: 0.4,
+      }),
+    }),
+    birds: Object.freeze({
+      id: 'yosemite-room-birds',
+      kind: 'oscillator',
+      waveform: 'sine',
+      frequency: 720,
+      volume: 0.0018,
+      position: Object.freeze({ x: -8.5, y: 5.5, z: 6 }),
+      panner: Object.freeze({
+        refDistance: 4,
+        maxDistance: 26,
+        rolloffFactor: 0.8,
+      }),
+    }),
+    water: Object.freeze({
+      id: 'yosemite-room-distant-water',
+      kind: 'noise',
+      volume: 0.011,
+      position: Object.freeze({ x: 8, y: 0.6, z: 9 }),
+      panner: Object.freeze({
+        refDistance: 2.4,
+        maxDistance: 18,
+        rolloffFactor: 1.25,
+      }),
+      filter: Object.freeze({
+        type: 'bandpass',
+        frequency: 620,
+        q: 0.8,
+      }),
+    }),
+  }),
 });
 
 export const LOBBY_ROOM_CONFIG = Object.freeze({
@@ -423,7 +486,7 @@ export const LOBBY_ROOM_CONFIG = Object.freeze({
       Object.freeze({ id: ROOM_IDS.testRoom, label: 'Test Room', wall: 'north', center: LOBBY_OPENING_CENTERS.testRoom, isMain: true }),
       Object.freeze({ id: ROOM_IDS.library, label: 'Library', wall: 'east', center: LOBBY_OPENING_CENTERS.library }),
       Object.freeze({ id: ROOM_IDS.tomAndJerry, label: 'Tom & Jerry', wall: 'east', center: LOBBY_OPENING_CENTERS.tomAndJerry }),
-      Object.freeze({ id: 'yosemite', label: 'Yosemite', subtitle: 'Coming Soon', wall: 'south', center: LOBBY_OPENING_CENTERS.yosemite }),
+      Object.freeze({ id: ROOM_IDS.yosemite, label: 'Yosemite', wall: 'south', center: LOBBY_OPENING_CENTERS.yosemite }),
       Object.freeze({ id: ROOM_IDS.aquarium, label: 'Aquarium', wall: 'west', center: LOBBY_OPENING_CENTERS.aquarium }),
       Object.freeze({ id: 'space-station', label: 'Space Station', subtitle: 'Coming Soon', wall: 'west', center: LOBBY_OPENING_CENTERS.spaceStation }),
     ]),
@@ -773,6 +836,43 @@ export const LIBRARY_ROOM_CONFIG = Object.freeze({
   }),
 });
 
+export const YOSEMITE_ROOM_CONFIG = Object.freeze({
+  id: ROOM_IDS.yosemite,
+  name: 'Yosemite Room',
+  origin: YOSEMITE_ROOM_ORIGIN,
+  dimensions: YOSEMITE_ROOM_DIMENSIONS,
+  openings: Object.freeze({
+    width: 2.4,
+    height: 2.7,
+    entries: Object.freeze([
+      Object.freeze({ id: ROOM_IDS.lobby, wall: 'north', center: 0 }),
+    ]),
+  }),
+  terrain: Object.freeze({
+    segmentsX: 50,
+    segmentsZ: 58,
+  }),
+  lighting: Object.freeze({
+    hemisphere: Object.freeze({
+      skyColor: 0xcfefff,
+      groundColor: 0x47623b,
+      intensity: 0.82,
+      position: Object.freeze({ x: 0, y: 22, z: 0 }),
+    }),
+    sun: Object.freeze({
+      color: 0xfff0cc,
+      intensity: 2.1,
+      position: Object.freeze({ x: -11, y: 18, z: 9 }),
+      target: Object.freeze({ x: 0, y: 0.5, z: 8 }),
+      shadowMapSize: 2048,
+      shadowCameraSize: 46,
+      shadowCameraNear: 1,
+      shadowCameraFar: 70,
+      shadowBias: -0.00018,
+    }),
+  }),
+});
+
 export const PORTAL_CONFIGS = Object.freeze([
   Object.freeze({
     id: 'lobby-to-test-room',
@@ -964,6 +1064,58 @@ export const PORTAL_CONFIGS = Object.freeze([
         z: LOBBY_OPENING_CENTERS.library,
       }),
       size: Object.freeze({ x: 0.4, y: LIBRARY_ROOM_CONFIG.openings.height, z: 2.05 }),
+    }),
+  }),
+  Object.freeze({
+    id: 'lobby-to-yosemite-room',
+    sourceRoom: ROOM_IDS.lobby,
+    destinationRoom: ROOM_IDS.yosemite,
+    continuous: true,
+    spawnPosition: Object.freeze({
+      x: 0,
+      y: PLAYER_CONFIG.body.eyeHeight,
+      z: YOSEMITE_ROOM_ORIGIN.z - YOSEMITE_ROOM_DIMENSIONS.length / 2 + 1.1,
+    }),
+    spawnRotation: Object.freeze({ y: 0 }),
+    doorway: Object.freeze({
+      wall: 'south',
+      center: LOBBY_OPENING_CENTERS.yosemite,
+      width: LOBBY_ROOM_CONFIG.openings.width,
+      height: LOBBY_ROOM_CONFIG.openings.height,
+    }),
+    triggerVolume: Object.freeze({
+      center: Object.freeze({
+        x: LOBBY_OPENING_CENTERS.yosemite,
+        y: LOBBY_ROOM_CONFIG.openings.height / 2,
+        z: ROOM_DIMENSIONS.length / 2 + ROOM_DIMENSIONS.wallThickness + 0.45,
+      }),
+      size: Object.freeze({ x: 2.05, y: LOBBY_ROOM_CONFIG.openings.height, z: 0.4 }),
+    }),
+  }),
+  Object.freeze({
+    id: 'yosemite-room-to-lobby',
+    sourceRoom: ROOM_IDS.yosemite,
+    destinationRoom: ROOM_IDS.lobby,
+    continuous: true,
+    spawnPosition: Object.freeze({
+      x: 0,
+      y: PLAYER_CONFIG.body.eyeHeight,
+      z: ROOM_DIMENSIONS.length / 2 - 1.1,
+    }),
+    spawnRotation: Object.freeze({ y: Math.PI }),
+    doorway: Object.freeze({
+      wall: 'north',
+      center: 0,
+      width: YOSEMITE_ROOM_CONFIG.openings.width,
+      height: YOSEMITE_ROOM_CONFIG.openings.height,
+    }),
+    triggerVolume: Object.freeze({
+      center: Object.freeze({
+        x: LOBBY_OPENING_CENTERS.yosemite,
+        y: YOSEMITE_ROOM_CONFIG.openings.height / 2,
+        z: ROOM_DIMENSIONS.length / 2 + 0.18,
+      }),
+      size: Object.freeze({ x: 2.05, y: YOSEMITE_ROOM_CONFIG.openings.height, z: 0.46 }),
     }),
   }),
 ]);
