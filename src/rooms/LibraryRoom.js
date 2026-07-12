@@ -7,6 +7,7 @@ import { RectangularRoom } from './RectangularRoom.js';
 const SHARED_WALL_SURFACE_OFFSET = 0.018;
 const SHARED_WALL_SURFACE_DEPTH = 0.035;
 const BOOK_READ_RANGE = 2.45;
+const TV_GUIDE_READ_RANGE = 3;
 
 const BOOKSHELF = Object.freeze({
   height: 2.55,
@@ -60,6 +61,13 @@ const TABLES = Object.freeze([
   Object.freeze({ id: 'main', x: -1.35, z: 0.55, size: Object.freeze({ x: 2.6, z: 1.22 }) }),
   Object.freeze({ id: 'side', x: 3.65, z: -0.35, size: Object.freeze({ x: 1.55, z: 0.95 }) }),
 ]);
+
+const TV_GUIDE_PLACEMENT = Object.freeze({
+  position: Object.freeze({ x: 3.65, y: 0.84, z: -0.35 }),
+  size: Object.freeze({ x: 0.82, y: 0.07, z: 0.98 }),
+  coverOffsetY: 0.043,
+  cover: Object.freeze({ width: 0.74, height: 0.46 }),
+});
 
 const CHAIRS = Object.freeze([
   Object.freeze({ id: 'main-north', x: -1.35, z: -0.55, rotation: Math.PI }),
@@ -808,23 +816,27 @@ export class LibraryRoom extends RectangularRoom {
   addTvGuideBook() {
     const book = this.furniture.addBox({
       name: 'LibraryTvGuideBook',
-      size: { x: 0.52, y: 0.055, z: 0.68 },
-      position: { x: 4.2, y: 0.69, z: 2.86 },
+      size: TV_GUIDE_PLACEMENT.size,
+      position: TV_GUIDE_PLACEMENT.position,
       material: this.libraryMaterials.tvGuide,
       castShadow: true,
       receiveShadow: true,
     });
 
-    this.addBookCoverText('LibraryTvGuideBookCoverText', {
+    const cover = this.addBookCoverText('LibraryTvGuideBookCoverText', {
       text: 'TV GUIDE',
-      width: 0.48,
-      height: 0.28,
-      position: { x: 4.2, y: 0.723, z: 2.86 },
+      width: TV_GUIDE_PLACEMENT.cover.width,
+      height: TV_GUIDE_PLACEMENT.cover.height,
+      position: {
+        x: TV_GUIDE_PLACEMENT.position.x,
+        y: TV_GUIDE_PLACEMENT.position.y + TV_GUIDE_PLACEMENT.coverOffsetY,
+        z: TV_GUIDE_PLACEMENT.position.z,
+      },
     });
 
-    this.registerInteractable(book, {
+    this.registerInteractable([book, cover], {
       id: 'library-tv-guide-book',
-      range: BOOK_READ_RANGE,
+      range: TV_GUIDE_READ_RANGE,
       prompt: 'Read TV Guide',
       onInteract: ({ contentManager, roomManager }) => this.openTvGuide(contentManager, roomManager),
     });
@@ -851,6 +863,7 @@ export class LibraryRoom extends RectangularRoom {
 
     const material = new THREE.MeshBasicMaterial({
       map: texture,
+      side: THREE.DoubleSide,
       toneMapped: false,
     });
     material.name = `${this.name}:${name}:Material`;
@@ -907,11 +920,13 @@ export class LibraryRoom extends RectangularRoom {
 
   openTvGuide(contentManager, roomManager) {
     roomManager?.markBroadcastGuideRead();
+    const accessCode = roomManager?.getFormattedBroadcastAccessCode() ?? '---- - ----';
+
     contentManager?.open({
       title: 'TV Guide',
       body: [
         'Late Night Broadcast Access',
-        `Access Code: ${roomManager?.getFormattedBroadcastAccessCode() ?? '---- - ----'}`,
+        `Access Code: ${accessCode}`,
         'Use this code on the small television hidden somewhere in The Forgotten Level.',
       ],
       footer: 'Remember the code, then press E to close.',
