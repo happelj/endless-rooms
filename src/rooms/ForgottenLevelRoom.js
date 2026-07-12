@@ -334,6 +334,10 @@ export class ForgottenLevelRoom extends Room {
     this.hiddenBroadcastRoom.resumeMedia();
   }
 
+  getCompassTargetWorldPosition() {
+    return this.hiddenBroadcastRoom.getTargetWorldPosition();
+  }
+
   dispose() {
     this.hiddenBroadcastRoom.dispose();
     this.chunkManager.reset();

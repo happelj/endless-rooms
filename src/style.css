@@ -161,6 +161,83 @@ select {
   display: none;
 }
 
+.trail-compass {
+  position: absolute;
+  top: clamp(18px, 3vh, 34px);
+  left: 50%;
+  z-index: 3;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  transform: translateX(-50%);
+  border: 1px solid rgb(142 255 174 / 0.22);
+  border-radius: 8px;
+  padding: 10px 12px 9px;
+  background: rgb(8 12 17 / 0.66);
+  box-shadow: 0 14px 34px rgb(0 0 0 / 0.24);
+  color: #ddffe6;
+  pointer-events: none;
+  backdrop-filter: blur(12px);
+}
+
+.trail-compass[hidden] {
+  display: none;
+}
+
+.trail-compass__ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border: 1px solid rgb(142 255 174 / 0.36);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgb(142 255 174 / 0.13), transparent 62%),
+    rgb(4 13 8 / 0.68);
+  box-shadow: inset 0 0 24px rgb(142 255 174 / 0.08);
+}
+
+.trail-compass__ring::before,
+.trail-compass__ring::after {
+  position: absolute;
+  background: rgb(221 255 230 / 0.18);
+  content: "";
+}
+
+.trail-compass__ring::before {
+  width: 1px;
+  height: 42px;
+}
+
+.trail-compass__ring::after {
+  width: 42px;
+  height: 1px;
+}
+
+.trail-compass__arrow {
+  position: relative;
+  z-index: 1;
+  width: 0;
+  height: 0;
+  border-right: 9px solid transparent;
+  border-bottom: 34px solid #4cff7c;
+  border-left: 9px solid transparent;
+  filter: drop-shadow(0 0 8px rgb(76 255 124 / 0.42));
+  transform-origin: 50% 62%;
+}
+
+.trail-compass__label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: #c8ffd4;
+  font-size: 0.78rem;
+  font-weight: 720;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
 .info-panel {
   position: absolute;
   left: clamp(16px, 2.4vw, 28px);
@@ -610,6 +687,22 @@ select {
 
   .interaction-prompt {
     bottom: calc(128px + env(safe-area-inset-bottom));
+  }
+
+  .trail-compass {
+    top: calc(12px + env(safe-area-inset-top));
+    padding: 8px 10px;
+  }
+
+  .trail-compass__ring {
+    width: 48px;
+    height: 48px;
+  }
+
+  .trail-compass__arrow {
+    border-right-width: 8px;
+    border-bottom-width: 29px;
+    border-left-width: 8px;
   }
 
   .info-panel {
