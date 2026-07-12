@@ -41,6 +41,10 @@ export class ContentManager {
       return;
     }
 
+    if (event.target?.closest?.('.content-panel__code-entry')) {
+      return;
+    }
+
     event.preventDefault();
     event.stopImmediatePropagation();
     this.close();

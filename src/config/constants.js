@@ -1,7 +1,7 @@
 export const APP_METADATA = Object.freeze({
   title: 'Endless Rooms',
-  version: '1.3',
-  stepLabel: 'Step 13 - The Forgotten Level',
+  version: '1.4',
+  stepLabel: 'Step 14 - Hidden Broadcast Room',
 });
 
 export const SCENE_CONFIG = Object.freeze({
@@ -1272,6 +1272,30 @@ export const FORGOTTEN_LEVEL_CONFIG = Object.freeze({
     escapeChance: 0.012,
     deeperEscapePenalty: 0.00008,
     deeperEntityBonus: 0.0035,
+  }),
+  hiddenBroadcast: Object.freeze({
+    minDepth: 12,
+    maxDepth: 18,
+    guidanceRadiusChunks: 7,
+    arrowSize: 1.55,
+    closet: Object.freeze({
+      width: 3.8,
+      depth: 3.3,
+      height: 2.85,
+      wallThickness: 0.16,
+      doorWidth: 1.25,
+    }),
+    video: Object.freeze({
+      src: import.meta.env.VITE_RIKKI_TIKKI_VIDEO_SRC || '/videos/short-rikki-tikki-tavi.mp4',
+      loop: true,
+      defaultVolume: 0.5,
+      volumeStep: 0.1,
+    }),
+    spatialAudio: Object.freeze({
+      referenceDistance: 1.8,
+      maxDistance: 8,
+      minMultiplier: 0.12,
+    }),
   }),
   materials: Object.freeze({
     carpet: Object.freeze({

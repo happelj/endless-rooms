@@ -5,6 +5,7 @@ import { ChunkManager } from '../forgotten/ChunkManager.js';
 import { EntitySpawnManager } from '../forgotten/EntitySpawnManager.js';
 import { EscapeManager } from '../forgotten/EscapeManager.js';
 import { ForgottenLevelGenerator } from '../forgotten/ForgottenLevelGenerator.js';
+import { HiddenBroadcastRoom } from '../forgotten/HiddenBroadcastRoom.js';
 import { ProceduralSeedManager } from '../forgotten/ProceduralSeedManager.js';
 import { Room } from './Room.js';
 
@@ -15,11 +16,16 @@ export class ForgottenLevelRoom extends Room {
     this.generator = new ForgottenLevelGenerator(this.seedManager, config.procedural);
     this.escapeManager = new EscapeManager(this);
     this.entitySpawnManager = new EntitySpawnManager(this, this.generator, config.procedural);
+    this.hiddenBroadcastRoom = new HiddenBroadcastRoom({
+      room: this,
+      config: config.hiddenBroadcast,
+    });
     this.chunkManager = new ChunkManager({
       room: this,
       generator: this.generator,
       entitySpawnManager: this.entitySpawnManager,
       escapeManager: this.escapeManager,
+      hiddenBroadcastRoom: this.hiddenBroadcastRoom,
       config: config.procedural,
     });
     this.currentSeed = null;
@@ -82,6 +88,7 @@ export class ForgottenLevelRoom extends Room {
         emissiveIntensity: 0.18,
       }),
     });
+    this.hiddenBroadcastRoom.createMaterials();
   }
 
   trackMaterial(name, material) {
@@ -125,6 +132,7 @@ export class ForgottenLevelRoom extends Room {
   beginRun(seed = undefined) {
     this.currentSeed = this.seedManager.startRun(seed);
     this.chunkManager.reset();
+    this.hiddenBroadcastRoom.startRun(this.seedManager);
     this.entitySpawnManager.reset();
     this.escapeManager.reset();
     this.nextEventTime = 7;
@@ -189,6 +197,7 @@ export class ForgottenLevelRoom extends Room {
     this.updateEntityAudio(elapsedTime, entitySummary);
     this.handleEntityCapture(entitySummary, player, roomManager, elapsedTime);
     this.escapeManager.update(player, roomManager);
+    this.hiddenBroadcastRoom.update(player);
     this.updateAtmosphereEvents(elapsedTime, player);
   }
 
@@ -317,7 +326,16 @@ export class ForgottenLevelRoom extends Room {
     });
   }
 
+  pauseMedia() {
+    this.hiddenBroadcastRoom.pauseMedia();
+  }
+
+  resumeMedia() {
+    this.hiddenBroadcastRoom.resumeMedia();
+  }
+
   dispose() {
+    this.hiddenBroadcastRoom.dispose();
     this.chunkManager.reset();
     this.entitySpawnManager.reset();
     this.escapeManager.reset();

@@ -187,6 +187,11 @@ export class LibraryRoom extends RectangularRoom {
         roughness: 0.92,
         metalness: 0,
       }),
+      tvGuide: this.createMaterial('LibraryTvGuideCover', {
+        color: 0x204b73,
+        roughness: 0.78,
+        metalness: 0,
+      }),
     });
 
     this.bookMaterials = Object.freeze([
@@ -796,7 +801,69 @@ export class LibraryRoom extends RectangularRoom {
       receiveShadow: true,
     });
 
+    this.addTvGuideBook();
     this.registerReadable(targets, 'library-display-books', READABLE_CONTENT.designNotes);
+  }
+
+  addTvGuideBook() {
+    const book = this.furniture.addBox({
+      name: 'LibraryTvGuideBook',
+      size: { x: 0.52, y: 0.055, z: 0.68 },
+      position: { x: 4.2, y: 0.69, z: 2.86 },
+      material: this.libraryMaterials.tvGuide,
+      castShadow: true,
+      receiveShadow: true,
+    });
+
+    this.addBookCoverText('LibraryTvGuideBookCoverText', {
+      text: 'TV GUIDE',
+      width: 0.48,
+      height: 0.28,
+      position: { x: 4.2, y: 0.723, z: 2.86 },
+    });
+
+    this.registerInteractable(book, {
+      id: 'library-tv-guide-book',
+      range: BOOK_READ_RANGE,
+      prompt: 'Read TV Guide',
+      onInteract: ({ contentManager, roomManager }) => this.openTvGuide(contentManager, roomManager),
+    });
+  }
+
+  addBookCoverText(name, { text, width, height, position }) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 256;
+    const context = canvas.getContext('2d');
+    context.fillStyle = '#102a42';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.strokeStyle = '#f4d06f';
+    context.lineWidth = 14;
+    context.strokeRect(28, 28, canvas.width - 56, canvas.height - 56);
+    context.fillStyle = '#f7f1d0';
+    context.font = '800 74px Inter, Segoe UI, Arial, sans-serif';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(text, canvas.width / 2, canvas.height / 2 + 4);
+
+    const texture = this.trackTexture(new THREE.CanvasTexture(canvas));
+    texture.colorSpace = THREE.SRGBColorSpace;
+
+    const material = new THREE.MeshBasicMaterial({
+      map: texture,
+      toneMapped: false,
+    });
+    material.name = `${this.name}:${name}:Material`;
+    this.materials.set(name, material);
+
+    const geometry = new THREE.PlaneGeometry(width, height);
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.name = name;
+    mesh.position.set(position.x, position.y, position.z);
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.renderOrder = 2;
+
+    return this.addMesh(mesh, { disposeGeometry: true });
   }
 
   addDisplayTableLegs(center, tableSize) {
@@ -835,6 +902,19 @@ export class LibraryRoom extends RectangularRoom {
     contentManager?.open({
       title: content.title,
       body: content.body,
+    });
+  }
+
+  openTvGuide(contentManager, roomManager) {
+    roomManager?.markBroadcastGuideRead();
+    contentManager?.open({
+      title: 'TV Guide',
+      body: [
+        'Late Night Broadcast Access',
+        `Access Code: ${roomManager?.getFormattedBroadcastAccessCode() ?? '---- - ----'}`,
+        'Use this code on the small television hidden somewhere in The Forgotten Level.',
+      ],
+      footer: 'Remember the code, then press E to close.',
     });
   }
 

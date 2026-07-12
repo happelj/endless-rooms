@@ -7,6 +7,7 @@ import {
 } from '../config/constants.js';
 import { Portal } from '../portals/Portal.js';
 import { PortalManager } from '../portals/PortalManager.js';
+import { BroadcastCodeManager } from '../state/BroadcastCodeManager.js';
 import { RoomThemeManager } from '../themes/RoomThemeManager.js';
 import { AquariumRoom } from './AquariumRoom.js';
 import { ForgottenLevelRoom } from './ForgottenLevelRoom.js';
@@ -25,6 +26,7 @@ export class RoomManager {
     this.audioManager = audioManager;
     this.rooms = new Map();
     this.portalManager = new PortalManager();
+    this.broadcastCodeManager = new BroadcastCodeManager();
     this.themeManager = new RoomThemeManager(scene);
     this.activeRoomId = null;
     this.player = null;
@@ -180,6 +182,26 @@ export class RoomManager {
       this.hud?.hideInfoPanel();
       this.infoPanelTimeoutId = null;
     }, durationMs);
+  }
+
+  markBroadcastGuideRead() {
+    this.broadcastCodeManager.markGuideRead();
+  }
+
+  hasReadBroadcastGuide() {
+    return this.broadcastCodeManager.hasGuideBeenRead();
+  }
+
+  getBroadcastAccessCode() {
+    return this.broadcastCodeManager.getCode();
+  }
+
+  getFormattedBroadcastAccessCode() {
+    return this.broadcastCodeManager.getFormattedCode();
+  }
+
+  verifyBroadcastAccessCode(input) {
+    return this.broadcastCodeManager.verify(input);
   }
 
   getConnectedDestinationNames(roomId) {

@@ -26,6 +26,7 @@ export class Room {
     this.geometryCache = new Map();
     this.ownedGeometries = new Set();
     this.materials = new Map();
+    this.ownedTextures = new Set();
     this.registeredColliders = new Set();
     this.registeredBoundsColliders = new Set();
     this.registeredGroundColliders = new Set();
@@ -81,6 +82,12 @@ export class Room {
     return mesh;
   }
 
+  trackTexture(texture) {
+    this.ownedTextures.add(texture);
+
+    return texture;
+  }
+
   addCollider(collider) {
     collider.setActive?.(this.isActive);
     this.collisionSystem.addCollider(collider);
@@ -134,6 +141,15 @@ export class Room {
     this.interactables.add(interactable);
 
     return interactable;
+  }
+
+  unregisterInteractable(interactable) {
+    if (!this.interactables.has(interactable)) {
+      return;
+    }
+
+    interactable.dispose();
+    this.interactables.delete(interactable);
   }
 
   getInteractables() {
@@ -240,6 +256,10 @@ export class Room {
       material.dispose();
     }
 
+    for (const texture of this.ownedTextures) {
+      texture.dispose();
+    }
+
     this.registeredColliders.clear();
     this.registeredBoundsColliders.clear();
     this.registeredGroundColliders.clear();
@@ -248,6 +268,7 @@ export class Room {
     this.lights.clear();
     this.geometryCache.clear();
     this.ownedGeometries.clear();
+    this.ownedTextures.clear();
     this.materials.clear();
   }
 }
