@@ -175,22 +175,22 @@ export class RoomManager {
       return;
     }
 
-    const targetPosition = activeRoom.getCompassTargetWorldPosition?.();
+    const guidance = activeRoom.getCompassGuidance?.(this.player.position);
 
-    if (!targetPosition) {
+    if (!guidance?.targetPosition) {
       this.hud.updateTrailCompass({ isVisible: false });
       return;
     }
 
+    const { targetPosition } = guidance;
     const deltaX = targetPosition.x - this.player.position.x;
     const deltaZ = targetPosition.z - this.player.position.z;
     const angle = Math.atan2(deltaX, -deltaZ);
-    const distance = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
 
     this.hud.updateTrailCompass({
       isVisible: true,
       angle,
-      distance,
+      distance: guidance.distance ?? Math.sqrt(deltaX * deltaX + deltaZ * deltaZ),
     });
   }
 

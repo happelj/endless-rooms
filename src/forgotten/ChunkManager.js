@@ -45,6 +45,12 @@ export class ChunkManager {
     };
   }
 
+  getChunkDataAtCoordinates(x, z) {
+    const key = this.generator.getKey(x, z);
+
+    return this.chunks.get(key) ?? this.generator.generateChunk(x, z);
+  }
+
   ensureChunksAroundPlayer() {
     for (let x = this.playerChunk.x - this.config.activeRadius; x <= this.playerChunk.x + this.config.activeRadius; x += 1) {
       for (let z = this.playerChunk.z - this.config.activeRadius; z <= this.playerChunk.z + this.config.activeRadius; z += 1) {

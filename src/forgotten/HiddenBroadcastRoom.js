@@ -105,6 +105,34 @@ export class HiddenBroadcastRoom {
     );
   }
 
+  getCompassGuidance(playerWorldPosition, chunkManager) {
+    const targetPosition = this.getTargetWorldPosition();
+    const distance = Math.hypot(
+      targetPosition.x - playerWorldPosition.x,
+      targetPosition.z - playerWorldPosition.z,
+    );
+    const playerChunk = chunkManager.getChunkCoordinates(playerWorldPosition);
+    const chunk = chunkManager.getChunkDataAtCoordinates(playerChunk.x, playerChunk.z);
+    const routeDirection = this.getBestOpenDirection(chunk);
+    const routeVector = DIRECTIONS[routeDirection];
+
+    if (!routeVector) {
+      return {
+        targetPosition,
+        distance,
+      };
+    }
+
+    return {
+      targetPosition: new THREE.Vector3(
+        playerWorldPosition.x + routeVector.x,
+        0,
+        playerWorldPosition.z + routeVector.z,
+      ),
+      distance,
+    };
+  }
+
   addGuideArrow(chunk, chunkManager) {
     const direction = this.getBestOpenDirection(chunk);
 
