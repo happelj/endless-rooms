@@ -97,6 +97,14 @@ export class HiddenBroadcastRoom {
     return chunk.x === this.targetChunk.x && chunk.z === this.targetChunk.z;
   }
 
+  getTargetWorldPosition() {
+    return new THREE.Vector3(
+      this.room.origin.x + this.targetChunk.x * this.room.config.procedural.chunkSize,
+      0,
+      this.room.origin.z + this.targetChunk.z * this.room.config.procedural.chunkSize,
+    );
+  }
+
   addGuideArrow(chunk, chunkManager) {
     const direction = this.getBestOpenDirection(chunk);
 

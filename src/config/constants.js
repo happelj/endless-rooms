@@ -1,7 +1,7 @@
 export const APP_METADATA = Object.freeze({
   title: 'Endless Rooms',
-  version: '1.4',
-  stepLabel: 'Step 14 - Hidden Broadcast Room',
+  version: '1.5',
+  stepLabel: 'Step 15 - Forgotten Trail Compass',
 });
 
 export const SCENE_CONFIG = Object.freeze({

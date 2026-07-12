@@ -27,6 +27,9 @@ export class Hud {
     this.infoPanelElement = this.root.querySelector('[data-info-panel]');
     this.infoPanelTitleElement = this.root.querySelector('[data-info-panel-title]');
     this.infoPanelBodyElement = this.root.querySelector('[data-info-panel-body]');
+    this.trailCompassElement = this.root.querySelector('[data-trail-compass]');
+    this.trailCompassArrowElement = this.root.querySelector('[data-trail-compass-arrow]');
+    this.trailCompassDistanceElement = this.root.querySelector('[data-trail-compass-distance]');
   }
 
   createTemplate() {
@@ -86,6 +89,16 @@ export class Hud {
 
       <div class="interaction-prompt" data-interaction-prompt hidden></div>
 
+      <section class="trail-compass" data-trail-compass hidden aria-label="Forgotten Level trail compass">
+        <div class="trail-compass__ring">
+          <div class="trail-compass__arrow" data-trail-compass-arrow></div>
+        </div>
+        <div class="trail-compass__label">
+          Trail
+          <span data-trail-compass-distance>--m</span>
+        </div>
+      </section>
+
       <section class="info-panel" data-info-panel hidden aria-label="Exhibit information">
         <h2 class="info-panel__title" data-info-panel-title></h2>
         <p class="info-panel__body" data-info-panel-body></p>
@@ -115,6 +128,17 @@ export class Hud {
   updateInteractionPrompt(text) {
     this.interactionPromptElement.textContent = text;
     this.interactionPromptElement.hidden = text.length === 0;
+  }
+
+  updateTrailCompass({ isVisible, angle = 0, distance = 0 }) {
+    this.trailCompassElement.hidden = !isVisible;
+
+    if (!isVisible) {
+      return;
+    }
+
+    this.trailCompassArrowElement.style.transform = `rotate(${angle}rad)`;
+    this.trailCompassDistanceElement.textContent = `${Math.round(distance)}m`;
   }
 
   showInfoPanel({ title, body }) {

@@ -30,6 +30,7 @@ export class RoomManager {
     this.themeManager = new RoomThemeManager(scene);
     this.activeRoomId = null;
     this.player = null;
+    this.hasCompass = false;
     this.infoPanelTimeoutId = null;
 
     this.createRooms();
@@ -165,6 +166,32 @@ export class RoomManager {
       connectedRooms: this.portalManager.getConnectedRoomCount(this.activeRoomId),
       connectedDestinations: this.getConnectedDestinationNames(this.activeRoomId),
     });
+    this.updateTrailCompass(activeRoom);
+  }
+
+  updateTrailCompass(activeRoom) {
+    if (!this.hasCompass || this.activeRoomId !== ROOM_IDS.forgottenLevel || !this.player) {
+      this.hud.updateTrailCompass({ isVisible: false });
+      return;
+    }
+
+    const targetPosition = activeRoom.getCompassTargetWorldPosition?.();
+
+    if (!targetPosition) {
+      this.hud.updateTrailCompass({ isVisible: false });
+      return;
+    }
+
+    const deltaX = targetPosition.x - this.player.position.x;
+    const deltaZ = targetPosition.z - this.player.position.z;
+    const angle = Math.atan2(deltaX, -deltaZ);
+    const distance = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
+
+    this.hud.updateTrailCompass({
+      isVisible: true,
+      angle,
+      distance,
+    });
   }
 
   showTemporaryInfo({ title, body, durationMs = 2400 }) {
@@ -202,6 +229,15 @@ export class RoomManager {
 
   verifyBroadcastAccessCode(input) {
     return this.broadcastCodeManager.verify(input);
+  }
+
+  collectTrailCompass() {
+    this.hasCompass = true;
+    this.updateHud();
+  }
+
+  hasTrailCompass() {
+    return this.hasCompass;
   }
 
   getConnectedDestinationNames(roomId) {

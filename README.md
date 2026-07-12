@@ -2,13 +2,13 @@
 
 Endless Rooms is a browser-based first-person exploration project built with Three.js, Vite, ES modules, JavaScript, HTML5, and CSS3.
 
-This repository currently contains Step 14: Hidden Broadcast Room. The lobby connects to the Test Room, Tom & Jerry Room, Aquarium Room, Library Room, Yosemite Room, and Space Station Room. The Test Room contains a hidden black-light secret entrance into a Backrooms-style procedural area called The Forgotten Level, which now contains a rare hidden broadcast closet.
+This repository currently contains Step 15: Forgotten Trail Compass. The lobby connects to the Test Room, Tom & Jerry Room, Aquarium Room, Library Room, Yosemite Room, and Space Station Room. The Test Room contains a hidden black-light secret entrance into a Backrooms-style procedural area called The Forgotten Level, which now contains a rare hidden broadcast closet and optional compass guidance.
 
 ## Current Step
 
-Version: 1.4
+Version: 1.5
 
-Step 14 includes:
+Step 15 includes:
 
 - Vite development setup
 - Three.js scene, perspective camera, and WebGL renderer
@@ -51,6 +51,7 @@ Step 14 includes:
 - Aquarium fish, bubbles, water movement, and exhibit plaques
 - Library bookshelves, reading tables, chairs, lamps, fireplace, display books, plants, and artwork
 - Yosemite terrain, composed trail, sky, clouds, stylized granite landmark, trees, shrubs, wildflowers, boulders, logs, water, scenic overlook, trail markers, wildlife, and outdoor ambience
+- Yosemite compass pickup that unlocks Forgotten Level trail guidance
 - Space Station observation deck, telescope view, exterior planet view, star field, nebula, workstations, equipment racks, animated consoles, and station ambience
 - Test Room secret light switch puzzle with black light reveal
 - Hidden fluorescent `ENTER HERE` writing
@@ -58,6 +59,7 @@ Step 14 includes:
 - The Forgotten Level chunk streaming, seeded layouts, flickering lights, unsettling ambience, rare exits, and entity encounters
 - Hidden Forgotten Level closet room placed away from the spawn each run
 - Green floor-arrow guidance that appears near the hidden closet route
+- Compass HUD that points toward the hidden Forgotten Level trail after pickup
 - Library `TV Guide` book with a regenerated eight-character access code
 - Locked hidden television with access-code entry and Rikki-Tikki video playback
 - Collision for room shells, major furniture, exhibit props, terrain boundaries, trees, rocks, logs, trail markers, station consoles, support columns, cabinets, and equipment racks
@@ -139,6 +141,21 @@ If the environment variable is not set, the app uses the local development path:
 ```text
 /videos/tom-and-jerry-short.mp4
 ```
+
+## Step 15: Forgotten Trail Compass
+
+Step 15 adds a collectible compass that makes the hidden Forgotten Level broadcast route easier to recover across runs.
+
+The feature includes:
+
+- A physical compass placed on the ground in Yosemite Room
+- A `Pick Up Compass` interaction
+- A pickup notification explaining that it helps track the Forgotten Level trail
+- Session inventory state in `RoomManager`
+- A top-center compass HUD that appears only inside The Forgotten Level
+- A compass arrow that points toward the generated hidden broadcast trail target
+
+The compass does not reveal the hidden room from every other room. It stays hidden until the player enters The Forgotten Level, then points toward the same generated destination that controls the green floor-arrow trail.
 
 ## Step 14: Hidden Broadcast Room
 
@@ -714,7 +731,7 @@ The application is intentionally organized around small classes with narrow resp
 
 - `SceneManager` owns startup, lifecycle, frame updates, and system composition.
 - `AudioManager` owns Web Audio lifecycle, listener updates, positional ambience, and future sound effects.
-- `RoomManager` owns room registration, activation, and portal registration.
+- `RoomManager` owns room registration, activation, portal registration, and lightweight session inventory such as the Yosemite compass.
 - `RoomThemeManager` owns active-room theme application for background and fog settings.
 - `RoomTheme` normalizes room theme settings with defaults for lighting, accents, ambience, fog, music, and environmental presets.
 - `PortalManager` owns portal lookup and connected-room counts.
@@ -733,7 +750,7 @@ The application is intentionally organized around small classes with narrow resp
 - `SpaceStationRoom` owns the orbital observation deck layout, display interactions, station ambience, and exterior view composition.
 - `AnimatedDisplayPanel` owns reusable in-world canvas display animation.
 - `OrbitalBackdrop` owns reusable planet, star field, nebula, and orbital drift visuals.
-- `YosemiteRoom` owns the themed outdoor layout, trail composition, landmark placement, overlook, trail markers, outdoor ambience, and natural collision objects.
+- `YosemiteRoom` owns the themed outdoor layout, trail composition, landmark placement, overlook, trail markers, compass pickup, outdoor ambience, and natural collision objects.
 - `GraniteLandmark` owns reusable stylized granite landmark geometry and collision box metadata.
 - `BirdFlock` owns reusable lightweight distant wildlife animation.
 - `Terrain` owns reusable outdoor terrain mesh generation and terrain height sampling.
@@ -752,7 +769,7 @@ The application is intentionally organized around small classes with narrow resp
 - `MobileControls` owns the Android/iPhone touch joystick, look surface, sprint, interact, and pause controls.
 - `Movement` converts input into smooth delta-time horizontal camera movement.
 - `Physics` owns vertical movement, gravity, floor snapping, and grounded state.
-- `Hud` owns the overlay DOM, coordinates, room debug values, physics debug values, interaction prompt, and exhibit information panel.
+- `Hud` owns the overlay DOM, coordinates, room debug values, physics debug values, interaction prompt, exhibit information panel, and Forgotten Level compass display.
 - `DebugVisuals` owns optional visual helpers for physics, portals, room bounds, and interaction ranges.
 - `StartOverlay` owns the click/tap-to-begin UI.
 

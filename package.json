@@ -1,8 +1,8 @@
 {
   "name": "endless-rooms",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "private": true,
-  "description": "Step 14 hidden broadcast room feature for a browser-based first-person exploration project.",
+  "description": "Step 15 Yosemite compass and Forgotten Level trail guidance feature for a browser-based first-person exploration project.",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",

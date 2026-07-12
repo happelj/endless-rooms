@@ -17,6 +17,8 @@ const TRAIL_SEGMENT_LENGTH = 2.65;
 const TRAIL_START_Z = -16.6;
 const TRAIL_END_Z = 14.5;
 const OVERLOOK_Z = 14.1;
+const COMPASS_PICKUP_RANGE = 2.35;
+const COMPASS_PLACEMENT = Object.freeze({ x: -2.25, z: 11.8 });
 
 const OVERLOOK_MARKER = Object.freeze({
   id: 'granite-overlook',
@@ -104,6 +106,8 @@ export class YosemiteRoom extends Room {
     super(scene, collisionSystem, config);
     this.cloudTime = 0;
     this.streamStrips = [];
+    this.compassMeshes = [];
+    this.compassInteractable = null;
     this.previousFog = undefined;
     this.previousBackground = undefined;
     this.build();
@@ -124,6 +128,7 @@ export class YosemiteRoom extends Room {
     this.addForegroundDetails();
     this.addScenicOverlook();
     this.addTrailMarkers();
+    this.addTrailCompass();
     this.addWildlife();
   }
 
@@ -208,6 +213,26 @@ export class YosemiteRoom extends Room {
         color: 0xd3b075,
         roughness: 0.7,
         metalness: 0,
+      }),
+      compassBrass: this.createMaterial('TrailCompassBrass', {
+        color: 0xb68a39,
+        roughness: 0.48,
+        metalness: 0.38,
+      }),
+      compassFace: this.createMaterial('TrailCompassFace', {
+        color: 0xf2e6c8,
+        roughness: 0.66,
+        metalness: 0,
+      }),
+      compassNeedle: this.createMaterial('TrailCompassNeedle', {
+        color: 0xc83b2f,
+        roughness: 0.42,
+        metalness: 0.16,
+      }),
+      compassTail: this.createMaterial('TrailCompassTail', {
+        color: 0x273642,
+        roughness: 0.48,
+        metalness: 0.16,
       }),
       bird: this.trackMaterial('DistantBirds', new THREE.MeshBasicMaterial({
         color: 0x263035,
@@ -753,6 +778,92 @@ export class YosemiteRoom extends Room {
         onInteract: ({ contentManager }) => this.openTrailMarker(contentManager, marker),
       });
     }
+  }
+
+  addTrailCompass() {
+    const groundY = this.getTerrainY(COMPASS_PLACEMENT.x, COMPASS_PLACEMENT.z);
+    const position = {
+      x: COMPASS_PLACEMENT.x,
+      y: groundY + 0.07,
+      z: COMPASS_PLACEMENT.z,
+    };
+    const targets = [
+      this.addCompassDisc('YosemiteTrailCompassBase', {
+        radius: 0.42,
+        height: 0.075,
+        position,
+        material: this.yosemiteMaterials.compassBrass,
+      }),
+      this.addCompassDisc('YosemiteTrailCompassFace', {
+        radius: 0.32,
+        height: 0.024,
+        position: { x: position.x, y: position.y + 0.052, z: position.z },
+        material: this.yosemiteMaterials.compassFace,
+      }),
+      this.addCompassNeedle('YosemiteTrailCompassNeedleNorth', {
+        size: { x: 0.075, y: 0.024, z: 0.34 },
+        position: { x: position.x, y: position.y + 0.082, z: position.z - 0.11 },
+        material: this.yosemiteMaterials.compassNeedle,
+      }),
+      this.addCompassNeedle('YosemiteTrailCompassNeedleSouth', {
+        size: { x: 0.075, y: 0.022, z: 0.24 },
+        position: { x: position.x, y: position.y + 0.081, z: position.z + 0.12 },
+        material: this.yosemiteMaterials.compassTail,
+      }),
+    ];
+
+    this.compassMeshes = targets;
+    this.compassInteractable = this.registerInteractable(targets, {
+      id: 'yosemite-trail-compass',
+      range: COMPASS_PICKUP_RANGE,
+      prompt: 'Pick Up Compass',
+      onInteract: ({ roomManager }) => this.pickUpCompass(roomManager),
+    });
+  }
+
+  addCompassDisc(name, { radius, height, position, material }) {
+    const geometry = new THREE.CylinderGeometry(radius, radius, height, 36);
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.name = name;
+    mesh.position.set(position.x, position.y, position.z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+
+    return this.addMesh(mesh, { disposeGeometry: true });
+  }
+
+  addCompassNeedle(name, { size, position, material }) {
+    const geometry = new THREE.BoxGeometry(size.x, size.y, size.z);
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.name = name;
+    mesh.position.set(position.x, position.y, position.z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+
+    return this.addMesh(mesh, { disposeGeometry: true });
+  }
+
+  pickUpCompass(roomManager) {
+    if (!roomManager || roomManager.hasTrailCompass()) {
+      this.setCompassVisible(false);
+      return;
+    }
+
+    roomManager.collectTrailCompass();
+    this.setCompassVisible(false);
+    roomManager.showTemporaryInfo?.({
+      title: 'Compass picked up',
+      body: 'The compass will help you pick up the trail inside The Forgotten Level.',
+      durationMs: 3200,
+    });
+  }
+
+  setCompassVisible(isVisible) {
+    for (const mesh of this.compassMeshes) {
+      mesh.visible = isVisible;
+    }
+
+    this.compassInteractable?.setEnabled(isVisible);
   }
 
   openTrailMarker(contentManager, marker) {
