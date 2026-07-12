@@ -2,13 +2,13 @@
 
 Endless Rooms is a browser-based first-person exploration project built with Three.js, Vite, ES modules, JavaScript, HTML5, and CSS3.
 
-This repository currently contains Step 13: The Forgotten Level. The lobby connects to the Test Room, Tom & Jerry Room, Aquarium Room, Library Room, Yosemite Room, and Space Station Room. The Test Room now contains a hidden black-light secret entrance into a Backrooms-style procedural area called The Forgotten Level.
+This repository currently contains Step 14: Hidden Broadcast Room. The lobby connects to the Test Room, Tom & Jerry Room, Aquarium Room, Library Room, Yosemite Room, and Space Station Room. The Test Room contains a hidden black-light secret entrance into a Backrooms-style procedural area called The Forgotten Level, which now contains a rare hidden broadcast closet.
 
 ## Current Step
 
-Version: 1.3
+Version: 1.4
 
-Step 13 includes:
+Step 14 includes:
 
 - Vite development setup
 - Three.js scene, perspective camera, and WebGL renderer
@@ -38,6 +38,7 @@ Step 13 includes:
 - Reusable animated display panels
 - Reusable orbital exterior backdrop
 - Reusable procedural seed manager
+- Session broadcast code manager
 - Chunk-based procedural generation
 - Procedural entity spawn manager
 - Procedural escape manager
@@ -55,6 +56,10 @@ Step 13 includes:
 - Hidden fluorescent `ENTER HERE` writing
 - Pass-through secret wall that opens only under black-light conditions
 - The Forgotten Level chunk streaming, seeded layouts, flickering lights, unsettling ambience, rare exits, and entity encounters
+- Hidden Forgotten Level closet room placed away from the spawn each run
+- Green floor-arrow guidance that appears near the hidden closet route
+- Library `TV Guide` book with a regenerated eight-character access code
+- Locked hidden television with access-code entry and Rikki-Tikki video playback
 - Collision for room shells, major furniture, exhibit props, terrain boundaries, trees, rocks, logs, trail markers, station consoles, support columns, cabinets, and equipment racks
 - HUD room metadata with connected destination names
 - Debug HUD for coordinates, grounded state, vertical velocity, room, portal count, and connected rooms
@@ -134,6 +139,32 @@ If the environment variable is not set, the app uses the local development path:
 ```text
 /videos/tom-and-jerry-short.mp4
 ```
+
+## Step 14: Hidden Broadcast Room
+
+Step 14 adds a secret broadcast side objective that ties the Library and The Forgotten Level together.
+
+The feature includes:
+
+- A generated eight-character access code for each app session
+- A `TV Guide` book on the Library display table
+- Dynamic TV Guide content that reveals the current access code
+- A hidden closet-sized room placed in a distant Forgotten Level chunk each run
+- Green floor arrows that appear when the player gets close enough to the hidden room route
+- A small television on a stand inside the hidden closet
+- A locked code-entry Content Panel using the format `---- - ----`
+- Rikki-Tikki video playback after the correct code is entered
+
+Flow:
+
+1. Read the `TV Guide` book in the Library.
+2. Enter The Forgotten Level through the Test Room black-light secret entrance.
+3. Wander until green floor arrows appear.
+4. Follow the arrows to the hidden closet.
+5. Interact with the television and enter the code from the TV Guide.
+6. The hidden broadcast unlocks and begins playing.
+
+If the player reaches the hidden television before reading the guide, the television tells them to check the `TV Guide` in the Library.
 
 ## Step 13: The Forgotten Level
 
@@ -525,6 +556,7 @@ PORTAL_CONFIGS
 DEBUG_CONFIG
 INTERACTION_CONFIG
 TV_CONFIG
+FORGOTTEN_LEVEL_CONFIG.hiddenBroadcast
 AUDIO_CONFIG
 ```
 
@@ -539,10 +571,16 @@ Both flags default to `false`.
 
 ## Video Assets
 
-The deployed TV video asset is:
+The deployed Tom & Jerry TV video asset is:
 
 ```text
 public/videos/tom-and-jerry-short.mp4
+```
+
+The deployed hidden broadcast video asset is:
+
+```text
+public/videos/short-rikki-tikki-tavi.mp4
 ```
 
 The original local source file is:
@@ -551,9 +589,11 @@ The original local source file is:
 public/videos/Tom-and-Jerry.mp4
 ```
 
-The original source file is intentionally ignored by Git and Vercel because it is larger than GitHub and Vercel's normal file-size limits. The shorter MP4 stays under Vercel Hobby's 100 MB static upload limit and is used by default through `TV_CONFIG.video.src` in `src/config/constants.js`.
+The original source file is intentionally ignored by Git and Vercel because it is larger than GitHub and Vercel's normal file-size limits. The shorter MP4 files stay under Vercel Hobby's 100 MB static upload limit. Tom & Jerry uses `TV_CONFIG.video.src`, and the hidden broadcast uses `FORGOTTEN_LEVEL_CONFIG.hiddenBroadcast.video.src`.
 
 For a different production video, set `VITE_TV_VIDEO_SRC` to a compressed HTTPS video URL.
+
+For a different hidden broadcast video, set `VITE_RIKKI_TIKKI_VIDEO_SRC` to a compressed HTTPS video URL.
 
 ## Build
 
@@ -602,6 +642,7 @@ endless-rooms/
     |   |-- EscapeManager.js
     |   |-- ForgottenEntity.js
     |   |-- ForgottenLevelGenerator.js
+    |   |-- HiddenBroadcastRoom.js
     |   `-- ProceduralSeedManager.js
     |-- environment/
     |   |-- BirdFlock.js
@@ -624,6 +665,8 @@ endless-rooms/
     |-- themes/
     |   |-- RoomTheme.js
     |   `-- RoomThemeManager.js
+    |-- state/
+    |   `-- BroadcastCodeManager.js
     |-- scene/
     |   |-- SceneManager.js
     |   |-- Renderer.js
@@ -683,6 +726,7 @@ The application is intentionally organized around small classes with narrow resp
 - `ProceduralSeedManager` owns deterministic seed generation and seeded random helpers.
 - `ForgottenLevelGenerator` owns chunk type, connection, danger, entity, and escape decisions.
 - `ChunkManager` owns active chunk streaming, chunk mesh construction, collider registration, flicker state, and distant chunk unloading.
+- `HiddenBroadcastRoom` owns the secret closet target, floor-arrow guidance, hidden television, code-entry interaction, and streamed cleanup.
 - `EntitySpawnManager` owns rare entity spawning and cleanup as chunks stream.
 - `ForgottenEntity` owns lightweight entity state behavior: idle, investigate, stalk, chase, and disappear.
 - `EscapeManager` owns rare escape trigger registration and exit detection.
@@ -697,7 +741,8 @@ The application is intentionally organized around small classes with narrow resp
 - `Sky` owns reusable sky dome and cloud animation.
 - `VegetationFactory` owns reusable primitive outdoor props.
 - `ContentManager` owns reusable reading state and movement pause/resume.
-- `ContentPanel` owns reusable readable content UI and optional visual slots such as the telescope starfield.
+- `ContentPanel` owns reusable readable content UI, optional visual slots such as the telescope starfield, and access-code entry panels.
+- `BroadcastCodeManager` owns the generated session code shared by the Library TV Guide and hidden broadcast television.
 - `Interactable` owns reusable prompt, range, target, and callback metadata.
 - `InteractionManager` owns active-room range filtering, raycast focus, and interaction triggering.
 - `FurnitureBuilder` owns reusable primitive furniture construction.

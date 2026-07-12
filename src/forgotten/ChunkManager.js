@@ -4,11 +4,12 @@ import { AabbCollider } from '../collision/AabbCollider.js';
 const OPENING_WIDTH = 3.2;
 
 export class ChunkManager {
-  constructor({ room, generator, entitySpawnManager, escapeManager, config }) {
+  constructor({ room, generator, entitySpawnManager, escapeManager, hiddenBroadcastRoom, config }) {
     this.room = room;
     this.generator = generator;
     this.entitySpawnManager = entitySpawnManager;
     this.escapeManager = escapeManager;
+    this.hiddenBroadcastRoom = hiddenBroadcastRoom;
     this.config = config;
     this.chunks = new Map();
     this.playerChunk = { x: 0, z: 0 };
@@ -89,14 +90,22 @@ export class ChunkManager {
 
     this.addShell(chunk);
     this.addCeilingPanels(chunk);
-    this.addDetails(chunk);
 
-    if (chunk.hasEscape) {
+    if (!this.hiddenBroadcastRoom?.isTargetChunk(chunk)) {
+      this.addDetails(chunk);
+    }
+
+    this.hiddenBroadcastRoom?.decorateChunk(chunk, this);
+
+    if (chunk.hasEscape && !this.hiddenBroadcastRoom?.isTargetChunk(chunk)) {
       this.addEscape(chunk);
     }
 
     this.chunks.set(chunk.key, chunk);
-    this.entitySpawnManager?.considerChunk(chunk);
+
+    if (!this.hiddenBroadcastRoom?.isTargetChunk(chunk)) {
+      this.entitySpawnManager?.considerChunk(chunk);
+    }
   }
 
   unloadChunk(key) {
@@ -108,6 +117,7 @@ export class ChunkManager {
 
     this.escapeManager?.unregisterExit(key);
     this.entitySpawnManager?.removeChunk(key);
+    this.hiddenBroadcastRoom?.unloadChunk(key);
 
     for (const collider of chunk.colliders) {
       this.room.removeCollider(collider);
